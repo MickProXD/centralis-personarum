@@ -1225,6 +1225,21 @@ select.form-input option{background:var(--bg2)}
             </div>
             <div id="cfg-analitica-list" style="padding:14px"></div>
           </div>
+          <div class="panel" data-cap="config" id="panel-respaldo" style="display:none">
+            <div class="ph">
+              <svg fill="none" stroke="var(--green)" stroke-width="1.5" viewBox="0 0 16 16" style="width:13px;height:13px"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 12v1a1 1 0 001 1h8a1 1 0 001-1v-1"/></svg>
+              <div class="ph-title">Respaldo y recuperación</div>
+            </div>
+            <div style="padding:14px">
+              <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px">
+                Genera una copia completa de todos los datos del sistema en un solo archivo. Guárdala fuera de este sistema (tu computadora, Google Drive, etc.) — no sirve de nada un respaldo que viva en el mismo lugar que se protege.
+              </div>
+              <button class="btn primary" onclick="descargarRespaldoCompleto()">⬇ Generar y descargar respaldo completo</button>
+              <div style="font-size:10px;color:var(--text3);margin-top:10px;line-height:1.5">
+                Recomendado: uno semanal, y siempre antes de cambios grandes en el sistema. La restauración de un respaldo requiere asistencia técnica directa — no es un botón de un clic, por diseño, para evitar sobrescribir datos por error.
+              </div>
+            </div>
+          </div>
           <div class="panel" data-cap="config">
             <div class="ph">
               <svg fill="none" stroke="var(--purple)" stroke-width="1.5" viewBox="0 0 16 16" style="width:13px;height:13px"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
@@ -3893,6 +3908,27 @@ async function resolverBug(id){
 }
 
 /* ── Analítica de uso — solo Dirección ── */
+/* ── Respaldo completo — solo Dirección, descarga un JSON con todo ── */
+function renderRespaldoPanel(){
+  const panel = document.getElementById('panel-respaldo');
+  if (!panel) return;
+  panel.style.display = currentUser?.role === 'direccion_ceo' ? 'block' : 'none';
+}
+
+async function descargarRespaldoCompleto(){
+  const { data, error } = await sb.rpc('exportar_respaldo_completo');
+  if (error){ toast('Error generando el respaldo: '+error.message,'error'); return; }
+  const fecha = new Date().toISOString().split('T')[0];
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = `respaldo_bio-centralis_${fecha}.json`;
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  await audit('config', 'Respaldo completo del sistema generado y descargado', 'b');
+  toast('Respaldo descargado. Guárdalo fuera de este sistema.','success');
+}
+
 async function renderAnaliticaConfig(){
   const panel = document.getElementById('panel-analitica');
   const cont = document.getElementById('cfg-analitica-list');
@@ -6358,6 +6394,7 @@ async function renderConfig(){
   renderSolicitudesConfig();
   renderBugsConfig();
   renderAnaliticaConfig();
+  renderRespaldoPanel();
   renderUsuariosConfig();
 }
 
