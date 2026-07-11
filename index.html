@@ -588,6 +588,9 @@ select.form-input option{background:var(--bg2)}
       <select class="form-input" id="bv-bionave" style="margin-bottom:10px"></select>
       <label class="form-lbl req">Funciones principales</label>
       <textarea class="form-input" id="bv-funciones" rows="3" placeholder="Describe brevemente tus funciones del día a día"></textarea>
+      <div style="font-size:9.5px;color:var(--text3);line-height:1.6;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        Este sistema registra métricas de uso operativo (acciones ejecutadas por módulo y tiempo de ejecución) con el propósito de identificar áreas de mejora en la eficiencia del sistema. No se registra contenido introducido por el usuario, dirección IP, ni ubicación geográfica. El acceso a estos registros está restringido exclusivamente a Dirección.
+      </div>
       <div class="form-err" id="err-bienvenida" style="margin-top:8px">—</div>
     </div>
     <div class="modal-foot">
@@ -1214,6 +1217,13 @@ select.form-input option{background:var(--bg2)}
               <div class="ph-title">Reportes de bugs <span class="tag warn" id="bugs-badge" style="margin-left:6px">0</span></div>
             </div>
             <div id="cfg-bugs-list"></div>
+          </div>
+          <div class="panel" data-cap="config" id="panel-analitica" style="display:none">
+            <div class="ph">
+              <svg fill="none" stroke="var(--blue)" stroke-width="1.5" viewBox="0 0 16 16" style="width:13px;height:13px"><path d="M2 14V8M6 14V4M10 14v-6M14 14V2"/></svg>
+              <div class="ph-title">Analítica de uso</div>
+            </div>
+            <div id="cfg-analitica-list" style="padding:14px"></div>
           </div>
           <div class="panel" data-cap="config">
             <div class="ph">
@@ -2839,6 +2849,24 @@ async function toggleUsuario(id, activoActual){
 }
 
 /* ── Auditoría — ahora vive en Supabase; el hash lo calcula el servidor ── */
+/* ── Analítica de uso — Fase 2 ──
+   Registra acciones completadas y el tiempo transcurrido desde que se
+   abrió el módulo correspondiente. No registra navegación granular,
+   pulsaciones de teclado ni contenido escrito por el usuario. ── */
+let _moduloAbiertoTs = {};
+function marcarInicioModulo(modulo){ _moduloAbiertoTs[modulo] = Date.now(); }
+
+async function registrarEvento(accion, modulo){
+  if (!currentUser?.userId) return;
+  const inicio = _moduloAbiertoTs[modulo];
+  const duracionSeg = inicio ? Math.round((Date.now() - inicio) / 100) / 10 : null;
+  try {
+    await sb.from('eventos_uso').insert({
+      accion, modulo, usuario_id: currentUser.userId, rol: currentUser.role, duracion_seg: duracionSeg
+    });
+  } catch(e){ /* no crítico: si falla el registro de analítica, no interrumpe la operación */ }
+}
+
 async function audit(tipo, descripcion, color){
   if (!currentUser?.userId) return;
   await sb.from('auditoria').insert({
@@ -2883,6 +2911,7 @@ async function ejecutarVerificacionAuditoria(){
 // NAV
 // ═══════════════════════════════════════════════════════════════════
 function nav(page, el){
+  marcarInicioModulo(page);
   // Guardia de seguridad por rol (las sub-vistas heredan acceso de su página padre)
   const subvistas = ['expediente','unidad','sitedetail'];
   if (!subvistas.includes(page) && !caps().pages.includes(page)){
@@ -3371,6 +3400,7 @@ async function guardarPermiso(){
   const { error } = await sb.from('permisos').insert(reg);
   if (error){ toast(error.message,'error'); return; }
   await audit('permiso', `Permiso legal registrado: <strong>${esc(nombre)}</strong>`, 'b');
+  await registrarEvento('alta_permiso', 'permisos');
   closeModal('modal-permiso');
   ['permiso-nombre','permiso-emisor','permiso-vig'].forEach(i=>document.getElementById(i).value='');
   const fn=document.getElementById('permiso-fn'); fn.textContent='Sin archivo'; fn.classList.remove('has');
@@ -3465,6 +3495,7 @@ async function guardarColab(){
     const { error } = await sb.from('colaboradores').update(payload).eq('id', editingColabId);
     if (error){ toast(error.message, 'error'); return; }
     await audit('edit', `Editó datos de <strong>${esc(nombre)}</strong>`, 'a');
+    await registrarEvento('edicion_colaborador', 'personal');
     toast('Colaborador actualizado', 'success');
     editingColabId = null;
   } else {
@@ -3473,6 +3504,7 @@ async function guardarColab(){
     const { error } = await sb.from('colaboradores').insert(payload);
     if (error){ toast(error.message, 'error'); return; }
     await audit('alta', `Alta de colaborador <strong>${esc(nombre)}</strong> (${esc(puesto)})`, 'g');
+    await registrarEvento('alta_colaborador', 'personal');
     toast('Colaborador registrado', 'success');
   }
 
@@ -3860,6 +3892,46 @@ async function resolverBug(id){
   renderBugsConfig();
 }
 
+/* ── Analítica de uso — solo Dirección ── */
+async function renderAnaliticaConfig(){
+  const panel = document.getElementById('panel-analitica');
+  const cont = document.getElementById('cfg-analitica-list');
+  if (!panel || !cont) return;
+  if (currentUser?.role !== 'direccion_ceo'){ panel.style.display='none'; return; }
+  panel.style.display = 'block';
+
+  const desde = new Date(); desde.setDate(desde.getDate()-90);
+  const { data, error } = await sb.from('eventos_uso').select('accion,modulo,duracion_seg')
+    .gte('created_at', desde.toISOString());
+  if (error){ cont.innerHTML = '<div class="empty">Error al cargar analítica</div>'; return; }
+  if (!data || !data.length){
+    cont.innerHTML = '<div class="empty"><div class="empty-sub">Sin datos de uso registrados en los últimos 90 días</div></div>';
+    return;
+  }
+
+  const agregado = {};
+  data.forEach(e=>{
+    if (!agregado[e.accion]) agregado[e.accion] = { modulo:e.modulo, conteo:0, sumaDur:0, nDur:0 };
+    agregado[e.accion].conteo++;
+    if (e.duracion_seg != null){ agregado[e.accion].sumaDur += e.duracion_seg; agregado[e.accion].nDur++; }
+  });
+  const filas = Object.entries(agregado).map(([accion, d])=>({
+    accion, modulo:d.modulo, conteo:d.conteo,
+    promedioSeg: d.nDur ? Math.round(d.sumaDur/d.nDur*10)/10 : null
+  })).sort((a,b)=>b.conteo-a.conteo);
+
+  cont.innerHTML = `<div style="font-size:10px;color:var(--text3);margin-bottom:10px">Últimos 90 días · ${data.length} eventos registrados</div>
+  <table style="width:100%;border-collapse:collapse;font-size:11px">
+    <tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:6px 4px;color:var(--text3);font-weight:600">Acción</th><th style="text-align:left;padding:6px 4px;color:var(--text3);font-weight:600">Módulo</th><th style="text-align:right;padding:6px 4px;color:var(--text3);font-weight:600">Veces</th><th style="text-align:right;padding:6px 4px;color:var(--text3);font-weight:600">Tiempo promedio</th></tr>
+    ${filas.map(f=>`<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px 4px">${esc(f.accion)}</td>
+      <td style="padding:6px 4px;color:var(--text2)">${esc(f.modulo)}</td>
+      <td style="padding:6px 4px;text-align:right;font-weight:700">${f.conteo}</td>
+      <td style="padding:6px 4px;text-align:right;color:${f.promedioSeg>60?'var(--red)':'var(--text2)'}">${f.promedioSeg!=null?f.promedioSeg+' s':'—'}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
 function renderBodegasConfig(){
   const cont = document.getElementById('cfg-bodegas-list');
   if(!cont) return;
@@ -4198,6 +4270,7 @@ async function ejecutarBaja(){
     notas: document.getElementById('baja-notas').value
   });
   await audit('baja', `Baja de <strong>${esc(c.nombre)}</strong> — ${esc(bajaMotivo)}`, 'r');
+  await registrarEvento('baja_colaborador', 'personal');
   document.getElementById('baja-suc-txt').textContent = `El expediente de ${c.nombre} fue archivado el ${new Date().toLocaleDateString('es-MX')}.`;
   document.getElementById('baja-suc-doc').textContent = bajaFile ? bajaFile.name : 'documento_baja.pdf';
   bajaStep = 4; renderBajaModal();
@@ -4304,6 +4377,7 @@ async function guardarUnidad(){
     const { error } = await sb.from('unidades').insert(payload);
     if (error){ toast(error.message,'error'); return; }
     await audit('alta', `Alta de unidad <strong>${esc(bak)}</strong> (${esc(jurisdiccion)})`, 'g');
+    await registrarEvento('alta_unidad', 'flota');
   }
 
   // PENDIENTE (siguiente bloque): subir póliza/verificación/tarjeta de
@@ -5283,6 +5357,7 @@ async function guardarDocumento(){
     (DB.colaboradores.find(c=>String(c.id)===String(currentColabId))||{}).nombre :
     (DB.unidades.find(u=>String(u.id)===String(currentUnidadId))||{}).bak;
   await audit('documento', `Documento <strong>${esc(tipo)}</strong> subido a ${esc(entidad)||'—'}`, 'b');
+  await registrarEvento('subida_documento', currentDocCtx==='colab' ? 'personal' : 'flota');
   sdFile = null;
   if (currentDocCtx==='colab' && document.getElementById('page-expediente').classList.contains('active')) renderExpDocs();
   if (currentDocCtx==='unidad' && document.getElementById('page-unidad').classList.contains('active')) renderUnidadDocs();
@@ -5423,6 +5498,7 @@ function cerrarSemana(){
     );
     if (error){ toast(error.message,'error'); return; }
     await audit('cierre', `Semana ${getNumSemana(currentSemana)} cerrada`, 'a');
+    await registrarEvento('cierre_semana', 'asistencias');
     renderAsistencias();
     toast('Semana cerrada','success');
     await descargarPreNominaExcel();
@@ -5510,6 +5586,7 @@ async function guardarFirmaSemana(){
     await sb.from('semanas_cerradas').upsert({ semana_iso: semanaIso, cerrado_por: currentUser.userId, firmado: true }, { onConflict: 'semana_iso' });
   } catch(e){ toast('Error al guardar la firma: '+e.message,'error'); return; }
   await audit('cierre', `Semana ${getNumSemana(currentSemana)} firmada y cerrada por <strong>${esc(currentUser.name)}</strong>`, 'g');
+  await registrarEvento('cierre_semana_firmado', 'asistencias');
   closeModal('modal-firma');
   renderAsistencias();
   renderFirmaEstado();
@@ -5680,6 +5757,7 @@ async function guardarAsistencia(){
   DB.asistencias[key] = { tipo: asisTipo, capturadoPor: currentUser.userId, ts: new Date().toISOString() };
   const c = DB.colaboradores.find(c=>String(c.id)===asisCurrent.colabId);
   await audit('asistencia', `${esc(c?c.nombre:'—')}: ${asisTipo} en ${asisCurrent.dia}`, 'g');
+  await registrarEvento('marcar_asistencia', 'asistencias');
   closeModal('modal-asistencia');
   renderAsistencias();
   toast('Asistencia registrada','success');
@@ -6279,6 +6357,7 @@ async function renderConfig(){
   renderAreasConfig();
   renderSolicitudesConfig();
   renderBugsConfig();
+  renderAnaliticaConfig();
   renderUsuariosConfig();
 }
 
