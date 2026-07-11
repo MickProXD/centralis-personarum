@@ -2616,9 +2616,11 @@ async function enviarSolicitudCuenta(){
 
   const btn = document.getElementById('sol-btn');
   btn.disabled = true; btn.textContent = 'Enviando...';
-  const { error } = await sb.from('solicitudes_cuenta').insert({ nombre, correo, usuario, funciones });
+  const { data, error } = await sb.functions.invoke('solicitar-cuenta', {
+    body: { nombre, correo, usuario, funciones }
+  });
   btn.disabled = false; btn.textContent = 'Enviar solicitud';
-  if (error) return fail(error.message);
+  if (error || data?.error) return fail(data?.error || error.message);
   ['sol-nombre','sol-correo','sol-usuario','sol-funciones'].forEach(id=>document.getElementById(id).value='');
   okEl.style.display = 'block';
 }
