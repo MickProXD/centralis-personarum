@@ -6011,7 +6011,31 @@ function calHoy(){ calMes = new Date().getMonth(); calAnio = new Date().getFullY
 // ═══════════════════════════════════════════════════════════════════
 // KPIs Y DIRECCIÓN (vista ejecutiva)
 // ═══════════════════════════════════════════════════════════════════
-function renderKPIs(){
+/* Precarga masiva de TODOS los documentos (personal + flota) — para que
+   KPIs/Compliance reflejen la realidad sin depender de haber visitado
+   cada expediente individualmente antes. Mismo patrón que usamos para
+   TAGs en la vista de Permisos. */
+async function cargarTodosDocumentos(){
+  const { data, error } = await sb.from('documentos').select('*');
+  if (error){ toast('Error cargando documentos: '+error.message,'error'); return; }
+  (data||[]).forEach(d=>{
+    const ctx = d.entidad_tipo === 'colaborador' ? 'colab' : 'unidad';
+    DB.documentos[`${ctx}-${d.entidad_id}-${d.tipo_documento}`] = {
+      tipo: d.tipo_documento, emision: d.emision, vigencia: d.vigencia, costo: d.costo,
+      storagePath: d.storage_path, nombre: d.nombre_archivo, subidoPor: d.subido_por
+    };
+  });
+}
+
+async function cargarAuditoriaReciente(dias = 30){
+  const desde = new Date(); desde.setDate(desde.getDate() - dias);
+  const { data, error } = await sb.from('auditoria').select('*').gte('created_at', desde.toISOString());
+  if (error){ DB.auditoria = []; return; }
+  DB.auditoria = (data||[]).map(a => ({ ...a, ts: new Date(a.created_at).getTime() }));
+}
+
+async function renderKPIs(){
+  await Promise.all([ cargarTodosDocumentos(), cargarAuditoriaReciente(30) ]);
   const activos = DB.colaboradores.filter(c=>c.estatus==='activo').length;
   const bajas = DB.colaboradores.filter(c=>c.estatus==='baja').length;
   const unidsAct = DB.unidades.filter(u=>u.estatus==='activo').length;
@@ -6095,7 +6119,14 @@ function renderKPIs(){
 // ═══════════════════════════════════════════════════════════════════
 // COMPLIANCE / CUMPLIMIENTO LEGAL
 // ═══════════════════════════════════════════════════════════════════
-function renderCompliance(){
+async function cargarContratosVigentes(){
+  const { data, error } = await sb.from('contratos').select('colaborador_id').eq('vigente', true);
+  if (error){ DB.contratosVigentes = new Set(); return; }
+  DB.contratosVigentes = new Set((data||[]).map(c=>String(c.colaborador_id)));
+}
+
+async function renderCompliance(){
+  await Promise.all([ cargarTodosDocumentos(), cargarContratosVigentes() ]);
   const cats = [
     { titulo: 'Documentos vehiculares', tipos: ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia'], scope: 'unidad' },
     { titulo: 'Documentos laborales', tipos: ['Licencia de conducir','Contrato laboral','Alta IMSS','Identificación oficial'], scope: 'colab' }
@@ -6106,14 +6137,15 @@ function renderCompliance(){
   // Colaboradores con expediente completo (contrato + IMSS + ID; licencia solo si es chofer)
   const colabOk = activos.filter(c=>{
     const req = c.puesto==='Operador'
-      ? ['Licencia de conducir','Contrato laboral','Alta IMSS','Identificación oficial']
-      : ['Contrato laboral','Alta IMSS','Identificación oficial'];
-    return req.every(t=>{
+      ? ['Licencia de conducir','Alta IMSS','Identificación oficial']
+      : ['Alta IMSS','Identificación oficial'];
+    const docsOk = req.every(t=>{
       const d = DB.documentos[`colab-${c.id}-${t}`];
       if (!d) return false;
       const dias = diasHasta(d.vigencia);
       return dias === null || dias >= 0;
     });
+    return docsOk && DB.contratosVigentes.has(String(c.id));
   }).length;
   const elCo = document.getElementById('comp-colab-ok');
   if (elCo){ elCo.textContent = colabOk; document.getElementById('comp-colab-sub').textContent = `${colabOk} de ${activos.length}`; }
@@ -6144,7 +6176,7 @@ function renderCompliance(){
   const chk = document.getElementById('comp-checklist');
   if (chk){
     const items = [
-      { ok: activos.every(c=>DB.documentos[`colab-${c.id}-Contrato laboral`]), txt:'Todos los colaboradores activos tienen contrato firmado' },
+      { ok: activos.every(c=>DB.contratosVigentes.has(String(c.id))), txt:'Todos los colaboradores activos tienen contrato firmado' },
       { ok: activos.every(c=>DB.documentos[`colab-${c.id}-Alta IMSS`]), txt:'Todos los colaboradores tienen alta IMSS' },
       { ok: activos.filter(c=>c.puesto==='Operador').every(c=>{ const d=DB.documentos[`colab-${c.id}-Licencia de conducir`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Choferes con licencia vigente' },
       { ok: DB.unidades.every(u=>{ const d=DB.documentos[`unidad-${u.id}-Póliza de seguro`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades con póliza vigente' },
@@ -6165,6 +6197,10 @@ function renderCompliance(){
       const entidades = cat.scope==='unidad' ? DB.unidades : activos;
       let ok = 0, falt = 0, venc = 0;
       entidades.forEach(e=>{
+        if (tipo === 'Contrato laboral'){
+          if (DB.contratosVigentes.has(String(e.id))) ok++; else falt++;
+          return;
+        }
         const key = `${cat.scope}-${e.id}-${tipo}`;
         const doc = DB.documentos[key];
         if (!doc){ falt++; return; }
