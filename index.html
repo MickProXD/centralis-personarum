@@ -4217,7 +4217,7 @@ function renderExpAsis(){
     if (r) regs.push({ fecha:fmtDate(d), tipo:r.tipo, nota:r.nota||'' });
   }
   if (regs.length === 0) document.getElementById('exp-asis-list').innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">Sin registros de asistencia en últimas 4 semanas.</div></div>';
-  else document.getElementById('exp-asis-list').innerHTML = regs.reverse().map(r=>`<div class="doc-row"><div style="flex:1"><div class="doc-name">${r.fecha}</div>${r.nota?`<div class="doc-meta">${r.nota}</div>`:''}</div><span class="tag ${r.tipo==='P'?'g':r.tipo==='F'?'r':r.tipo==='FJ'?'a':r.tipo==='V'?'b':'p'}">${{'P':'Presente','F':'Falta','FJ':'Justificada','V':'Vacaciones','I':'Incapacidad'}[r.tipo]}</span></div>`).join('');
+  else document.getElementById('exp-asis-list').innerHTML = regs.reverse().map(r=>`<div class="doc-row"><div style="flex:1"><div class="doc-name">${esc(r.fecha)}</div>${r.nota?`<div class="doc-meta">${esc(r.nota)}</div>`:''}</div><span class="tag ${r.tipo==='P'?'g':r.tipo==='F'?'r':r.tipo==='FJ'?'a':r.tipo==='V'?'b':'p'}">${{'P':'Presente','F':'Falta','FJ':'Justificada','V':'Vacaciones','I':'Incapacidad'}[r.tipo]}</span></div>`).join('');
 }
 
 function renderExpHist(){
