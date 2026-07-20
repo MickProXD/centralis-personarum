@@ -1477,6 +1477,35 @@ select.form-input option{background:var(--bg2)}
   </div>
 </div>
 
+<!-- EDITAR PERFIL DE CUENTA (rol, área, Bio-Nave) — solo Dirección -->
+<div class="overlay" id="modal-editar-perfil" onclick="if(event.target===this)closeModal('modal-editar-perfil')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Editar cuenta</div>
+      <button class="modal-close" onclick="closeModal('modal-editar-perfil')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:12px" id="ep-resumen">—</div>
+      <label class="form-lbl req">Rol</label>
+      <select class="form-input" id="ep-role" style="margin-bottom:10px">
+        <option value="supervisor">Supervisor</option>
+        <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
+        <option value="rh">Recursos Humanos</option>
+        <option value="direccion_ceo">Dirección / CEO</option>
+      </select>
+      <label class="form-lbl">Área</label>
+      <select class="form-input" id="ep-area" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
+      <label class="form-lbl">Bio-Nave</label>
+      <select class="form-input" id="ep-bionave" style="margin-bottom:6px"><option value="">Sin asignar</option></select>
+      <div class="form-err" id="err-ep" style="margin-bottom:8px">—</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-editar-perfil')">Cancelar</button>
+      <button class="btn primary" onclick="guardarEdicionPerfil()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <!-- REPORTE DE BUG / ERROR / CRASH -->
 <div class="overlay" id="modal-bug" onclick="if(event.target===this)closeModal('modal-bug')">
   <div class="modal">
@@ -2882,7 +2911,7 @@ async function renderUsuariosConfig(){
       <div class="doc-name" style="${u.activo?'':'opacity:.5'}">${esc(u.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(u.usuario)}</span></div>
       <div class="doc-meta">${ROLES[u.role]?.label||u.role} · ${u.activo?'Activo':'Desactivado'}</div>
     </div>
-    ${u.id !== currentUser.userId ? `<button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
+    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
   </div>`).join('');
 }
 
@@ -2929,6 +2958,43 @@ async function toggleUsuario(id, activoActual){
   const { error } = await sb.from('profiles').update({ activo: !activoActual }).eq('id', id);
   if (error){ toast(error.message,'error'); return; }
   toast(!activoActual ? 'Cuenta reactivada' : 'Cuenta desactivada','success');
+  renderUsuariosConfig();
+}
+
+let _epUsuarioId = null;
+
+async function abrirEditarPerfil(id){
+  if (!can('config')){ toast('Sin permiso','error'); return; }
+  const { data: u, error } = await sb.from('profiles').select('*').eq('id', id).single();
+  if (error || !u){ toast('Cuenta no encontrada','error'); return; }
+  _epUsuarioId = id;
+  document.getElementById('ep-resumen').innerHTML = `<strong>${esc(u.nombre)}</strong> · ${esc(u.correo_contacto||u.usuario)}`;
+
+  const [{ data: areas }, { data: bionaves }] = await Promise.all([
+    sb.from('areas').select('*').order('nombre'),
+    sb.from('bio_naves').select('*').order('nombre')
+  ]);
+  document.getElementById('ep-area').innerHTML = '<option value="">Sin asignar</option>' + (areas||[]).map(a=>`<option value="${a.id}">${esc(a.nombre)}</option>`).join('');
+  document.getElementById('ep-bionave').innerHTML = '<option value="">Sin asignar</option>' + (bionaves||[]).map(b=>`<option value="${b.id}">${esc(b.nombre)}</option>`).join('');
+
+  document.getElementById('ep-role').value = u.role;
+  document.getElementById('ep-area').value = u.area_id || '';
+  document.getElementById('ep-bionave').value = u.bio_nave_id || '';
+  document.getElementById('err-ep').classList.remove('show');
+  openModal('modal-editar-perfil');
+}
+
+async function guardarEdicionPerfil(){
+  if (!_epUsuarioId) return;
+  const role = document.getElementById('ep-role').value;
+  const area_id = document.getElementById('ep-area').value || null;
+  const bio_nave_id = document.getElementById('ep-bionave').value || null;
+  const { error } = await sb.from('profiles').update({ role, area_id, bio_nave_id }).eq('id', _epUsuarioId);
+  if (error){ document.getElementById('err-ep').textContent = error.message; document.getElementById('err-ep').classList.add('show'); return; }
+  await audit('config', `Perfil de cuenta actualizado (rol: ${role})`, 'a');
+  closeModal('modal-editar-perfil');
+  _epUsuarioId = null;
+  toast('Cuenta actualizada','success');
   renderUsuariosConfig();
 }
 
