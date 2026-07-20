@@ -2951,11 +2951,6 @@ async function registrarEvento(accion, modulo){
   } catch(e){ /* no crítico: si falla el registro de analítica, no interrumpe la operación */ }
 }
 
-/* ── Chat interno — libre entre cuentas, censura server-side,
-   guardado permanente para supervisión de Dirección. ── */
-let _chatContactoActivo = null;
-let _chatCanalRealtime = null;
-
 /* ── Chat interno — widget flotante estilo Messenger, libre entre
    cuentas, censura server-side, guardado permanente para supervisión. ── */
 let _chatContactoActivo = null;
