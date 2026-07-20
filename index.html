@@ -611,10 +611,6 @@ select.form-input option{background:var(--bg2)}
   </div>
   <nav class="sb-nav">
     <div class="sb-sec">Operación</div>
-    <div class="sb-item" data-page="chat" onclick="nav('chat',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M2 3h12v8H5l-3 3V3z"/></svg>
-      Chat
-    </div>
     <div class="sb-item active" data-page="dashboard" onclick="nav('dashboard',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
       Dashboard
@@ -717,20 +713,23 @@ select.form-input option{background:var(--bg2)}
   </div>
 
   <div class="content">
-    <!-- CHAT INTERNO -->
-  <div id="page-chat" class="page fadein" style="display:flex;height:calc(100vh - 20px)">
-    <div style="width:220px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0">
-      <div style="padding:12px;font-family:var(--head);font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase">Contactos</div>
-      <div id="chat-contactos-list"></div>
+    <!-- CHAT FLOTANTE ESTILO MESSENGER — fijo, visible en toda la app -->
+  <div id="chat-widget-launcher" onclick="toggleChatWidget()" style="display:none;position:fixed;bottom:16px;right:16px;width:48px;height:48px;border-radius:50%;background:var(--green);align-items:center;justify-content:center;cursor:pointer;z-index:500;box-shadow:0 4px 14px rgba(0,0,0,.35)">
+    <svg fill="none" stroke="#0a0a0a" stroke-width="1.8" viewBox="0 0 16 16" style="width:20px;height:20px"><path d="M2 3h12v8H5l-3 3V3z"/></svg>
+  </div>
+  <div id="chat-widget-panel" style="display:none;position:fixed;bottom:72px;right:16px;width:280px;height:380px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:500;overflow:hidden;flex-direction:column">
+    <div id="chat-widget-header" style="padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px">
+      <span id="chat-widget-back" onclick="mostrarContactosChat()" style="display:none;cursor:pointer">←</span>
+      <span id="chat-widget-title">Chat</span>
+      <span onclick="toggleChatWidget()" style="margin-left:auto;cursor:pointer;color:var(--text3)">✕</span>
     </div>
-    <div style="flex:1;display:flex;flex-direction:column">
-      <div id="chat-header" style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:700">Selecciona un contacto</div>
-      <div id="chat-mensajes" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px"></div>
-      <div style="padding:12px;border-top:1px solid var(--border);display:flex;gap:8px">
-        <input class="form-input" id="chat-input" placeholder="Escribe un mensaje..." style="flex:1" onkeydown="if(event.key==='Enter')enviarMensajeChat()" disabled>
-        <button class="btn primary" onclick="enviarMensajeChat()" id="chat-send-btn" disabled>Enviar</button>
+    <div id="chat-contactos-list" style="flex:1;overflow-y:auto"></div>
+    <div id="chat-conversacion-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+      <div id="chat-mensajes" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;font-size:11px"></div>
+      <div style="padding:8px;border-top:1px solid var(--border);display:flex;gap:6px">
+        <input class="form-input" id="chat-input" placeholder="Mensaje..." style="flex:1;font-size:11px;padding:6px 8px" onkeydown="if(event.key==='Enter')enviarMensajeChat()">
+        <button class="btn primary" onclick="enviarMensajeChat()" style="padding:6px 10px;font-size:11px">➤</button>
       </div>
-      <div style="padding:6px 16px;font-size:9px;color:var(--text3)">Los mensajes se guardan y pueden ser revisados por Dirección. Las palabras altisonantes se censuran automáticamente.</div>
     </div>
   </div>
 
@@ -2201,35 +2200,35 @@ const ROLES = {
 //   sites: 'none'|'own'|'all_view'|'all'   ·   reportes: 'none'|'own'|'personnel'|'all'
 const CAPS = {
   monitoreo: {
-    pages:['dashboard','flota','documentos','equipos','chat'],
+    pages:['dashboard','flota','documentos','equipos'],
     fleet:true, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:true
   },
   chofer: {
-    pages:['dashboard','personal','chat'],
+    pages:['dashboard','personal'],
     fleet:false, personnel:'self', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   supervisor: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','chat'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos'],
     fleet:true, personnel:'own_sites', editPersonnel:'own_sites', baja:false,
     sites:'own', createSite:true, permisosLegales:false, permisos:true,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'own', actas:'own_sites', firmaAsistencia:true, equipos:true
   },
   rh: {
-    pages:['dashboard','sites','personal','asistencias','reportes','compliance','kpis','chat'],
+    pages:['dashboard','sites','personal','asistencias','reportes','compliance','kpis'],
     fleet:false, personnel:'all', editPersonnel:'all', baja:false,
     sites:'all_view', createSite:false, permisosLegales:false, permisos:false,
     config:'personnel', auditoria:false, kpis:true, compliance:true,
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
   direccion_ceo: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','chat'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos'],
     fleet:true, personnel:'all', editPersonnel:'all', baja:true,
     sites:'all', createSite:true, permisosLegales:true, permisos:true,
     config:true, auditoria:true, kpis:true, compliance:true,
@@ -2793,6 +2792,7 @@ async function cargarPerfilYActivarSesion(){
   _sesionActiva = true; _lastActivity = Date.now();
   Sentry.setUser({ id: currentUser.userId, username: currentUser.name });
   Sentry.setTag('rol', currentUser.role);
+  document.getElementById('chat-widget-launcher').style.display = 'flex';
   document.getElementById('login-screen').style.display = 'none';
   const un=document.getElementById('sb-uname'); if(un) un.textContent = currentUser.name;
   const ur=document.getElementById('sb-urole'); if(ur) ur.textContent = ROLES[currentUser.role]?.label || currentUser.role;
@@ -2956,14 +2956,34 @@ async function registrarEvento(accion, modulo){
 let _chatContactoActivo = null;
 let _chatCanalRealtime = null;
 
+/* ── Chat interno — widget flotante estilo Messenger, libre entre
+   cuentas, censura server-side, guardado permanente para supervisión. ── */
+let _chatContactoActivo = null;
+let _chatCanalRealtime = null;
+let _chatWidgetAbierto = false;
+
+function toggleChatWidget(){
+  _chatWidgetAbierto = !_chatWidgetAbierto;
+  document.getElementById('chat-widget-panel').style.display = _chatWidgetAbierto ? 'flex' : 'none';
+  if (_chatWidgetAbierto && !_chatCanalRealtime) renderChat();
+}
+
+function mostrarContactosChat(){
+  _chatContactoActivo = null;
+  document.getElementById('chat-contactos-list').style.display = 'block';
+  document.getElementById('chat-conversacion-wrap').style.display = 'none';
+  document.getElementById('chat-widget-back').style.display = 'none';
+  document.getElementById('chat-widget-title').textContent = 'Chat';
+}
+
 async function renderChat(){
   const { data, error } = await sb.from('profiles').select('id,nombre,role').neq('id', currentUser.userId).eq('activo', true).order('nombre');
   const cont = document.getElementById('chat-contactos-list');
-  if (error){ cont.innerHTML = '<div class="empty" style="padding:16px">Error al cargar contactos</div>'; return; }
-  cont.innerHTML = (data||[]).map(p=>`<div class="chat-contacto" onclick="abrirConversacionChat('${p.id}','${esc(p.nombre)}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)">
-    <div style="font-size:12px;font-weight:600">${esc(p.nombre)}</div>
-    <div style="font-size:10px;color:var(--text3)">${esc(p.role)}</div>
-  </div>`).join('') || '<div class="empty" style="padding:16px">Sin otros contactos aún</div>';
+  if (error){ cont.innerHTML = '<div class="empty" style="padding:16px;font-size:11px">Error al cargar contactos</div>'; return; }
+  cont.innerHTML = (data||[]).map(p=>`<div onclick="abrirConversacionChat('${p.id}','${esc(p.nombre)}')" style="padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--border)">
+    <div style="font-size:11px;font-weight:600">${esc(p.nombre)}</div>
+    <div style="font-size:9px;color:var(--text3)">${esc(p.role)}</div>
+  </div>`).join('') || '<div class="empty" style="padding:16px;font-size:11px">Sin otros contactos aún</div>';
 
   if (_chatCanalRealtime) sb.removeChannel(_chatCanalRealtime);
   _chatCanalRealtime = sb.channel('chat-'+currentUser.userId)
@@ -2975,9 +2995,10 @@ async function renderChat(){
 
 async function abrirConversacionChat(contactoId, contactoNombre){
   _chatContactoActivo = { id: contactoId, nombre: contactoNombre };
-  document.getElementById('chat-header').textContent = contactoNombre;
-  document.getElementById('chat-input').disabled = false;
-  document.getElementById('chat-send-btn').disabled = false;
+  document.getElementById('chat-widget-title').textContent = contactoNombre;
+  document.getElementById('chat-widget-back').style.display = 'inline';
+  document.getElementById('chat-contactos-list').style.display = 'none';
+  document.getElementById('chat-conversacion-wrap').style.display = 'flex';
   const { data, error } = await sb.from('mensajes_chat').select('*')
     .or(`and(remitente_id.eq.${currentUser.userId},destinatario_id.eq.${contactoId}),and(remitente_id.eq.${contactoId},destinatario_id.eq.${currentUser.userId})`)
     .order('created_at');
@@ -2985,7 +3006,6 @@ async function abrirConversacionChat(contactoId, contactoNombre){
   cont.innerHTML = '';
   if (!error) (data||[]).forEach(m=>pintarMensajeChat(m));
   cont.scrollTop = cont.scrollHeight;
-  // Marcar como leídos los que me enviaron a mí
   await sb.from('mensajes_chat').update({ leido:true }).eq('destinatario_id', currentUser.userId).eq('remitente_id', contactoId).eq('leido', false);
 }
 
@@ -2993,8 +3013,8 @@ function pintarMensajeChat(m){
   const cont = document.getElementById('chat-mensajes');
   const esMio = m.remitente_id === currentUser.userId;
   const div = document.createElement('div');
-  div.style.cssText = `max-width:65%;padding:8px 12px;border-radius:10px;font-size:12px;align-self:${esMio?'flex-end':'flex-start'};background:${esMio?'var(--green)':'var(--surface2,#2a2a2a)'};color:${esMio?'#0a0a0a':'inherit'}`;
-  div.innerHTML = `${esc(m.contenido)}<div style="font-size:9px;opacity:.6;margin-top:2px">${new Date(m.created_at).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}</div>`;
+  div.style.cssText = `max-width:75%;padding:6px 9px;border-radius:9px;align-self:${esMio?'flex-end':'flex-start'};background:${esMio?'var(--green)':'var(--surface2,#2a2a2a)'};color:${esMio?'#0a0a0a':'inherit'}`;
+  div.innerHTML = `${esc(m.contenido)}<div style="font-size:8px;opacity:.6;margin-top:1px">${new Date(m.created_at).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}</div>`;
   cont.appendChild(div);
   cont.scrollTop = cont.scrollHeight;
 }
@@ -3081,7 +3101,6 @@ function nav(page, el){
   if (page === 'dashboard') renderDashboard();
   if (page === 'calendario') renderCalendario();
   if (page === 'kpis') renderKPIs();
-  if (page === 'chat') renderChat();
   if (page === 'compliance') renderCompliance();
   if (page === 'auditoria') renderAuditoria();
   if (page === 'configuracion') renderConfig();
