@@ -1489,6 +1489,7 @@ select.form-input option{background:var(--bg2)}
       <label class="form-lbl req">Rol de la cuenta</label>
       <select class="form-input" id="aps-role" style="margin-bottom:10px">
         <option value="supervisor" selected>Supervisor</option>
+        <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
         <option value="rh">Recursos Humanos</option>
         <option value="direccion_ceo">Dirección / CEO</option>
       </select>
@@ -1546,6 +1547,7 @@ select.form-input option{background:var(--bg2)}
           <label class="form-lbl req">Rol</label>
           <select class="form-input" id="au-role">
             <option value="supervisor" selected>Supervisor</option>
+            <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
             <option value="rh">Recursos Humanos</option>
             <option value="direccion_ceo">Dirección / CEO</option>
           </select>
@@ -2177,6 +2179,13 @@ const ROLES = {
 //   personnel/editPersonnel/actas: 'none'|'self'|'own_sites'|'all'
 //   sites: 'none'|'own'|'all_view'|'all'   ·   reportes: 'none'|'own'|'personnel'|'all'
 const CAPS = {
+  monitoreo: {
+    pages:['dashboard','flota','documentos','equipos'],
+    fleet:true, personnel:'none', editPersonnel:'none', baja:false,
+    sites:'none', createSite:false, permisosLegales:false, permisos:false,
+    config:false, auditoria:false, kpis:false, compliance:false,
+    reportes:'none', actas:'none', firmaAsistencia:false, equipos:true
+  },
   chofer: {
     pages:['dashboard','personal'],
     fleet:false, personnel:'self', editPersonnel:'none', baja:false,
