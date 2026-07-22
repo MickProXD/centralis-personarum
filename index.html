@@ -684,6 +684,9 @@ select.form-input option{background:var(--bg2)}
         <div class="sb-av" id="sb-av">ML</div>
         <div style="min-width:0"><div class="sb-uname" id="sb-uname">Marco Lucero</div><div class="sb-urole" id="sb-urole">Dirección/CEO</div></div>
       </div>
+      <button onclick="abrirCambiarPassword(false)" title="Cambiar contraseña" style="flex-shrink:0;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;margin-right:2px">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" style="width:13px;height:13px"><rect x="4" y="7" width="8" height="6" rx="1"/><path d="M6 7V5a2 2 0 014 0v2"/></svg>
+      </button>
       <button onclick="cerrarSesion()" title="Cerrar sesión" style="flex-shrink:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;transition:all .18s" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border2)'">
         <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 16 16" style="width:13px;height:13px"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6"/></svg>
       </button>
@@ -1477,6 +1480,47 @@ select.form-input option{background:var(--bg2)}
   </div>
 </div>
 
+<!-- CAMBIAR CONTRASEÑA -->
+<div class="overlay" id="modal-cambiar-pass" onclick="if(event.target===this && !_passForzado)closeModal('modal-cambiar-pass')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Cambiar contraseña</div>
+      <button class="modal-close" id="cambiar-pass-x" onclick="closeModal('modal-cambiar-pass')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div id="cambiar-pass-aviso" style="display:none;font-size:11px;color:var(--red);line-height:1.5;margin-bottom:12px;font-weight:600">Debes cambiar tu contraseña temporal antes de continuar usando el sistema.</div>
+      <label class="form-lbl req">Nueva contraseña</label>
+      <input class="form-input" type="password" id="cp-nueva" autocomplete="new-password" style="margin-bottom:10px">
+      <label class="form-lbl req">Confirmar contraseña</label>
+      <input class="form-input" type="password" id="cp-confirmar" autocomplete="new-password" style="margin-bottom:6px">
+      <div class="form-err" id="err-cp" style="margin-bottom:8px">—</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn primary" onclick="guardarNuevaPassword()" style="width:100%;justify-content:center">Guardar nueva contraseña</button>
+    </div>
+  </div>
+</div>
+
+<!-- VERIFICACIÓN TOTP — candado extra para Supervisor en datos bancarios -->
+<div class="overlay" id="modal-verificar-totp-banco" onclick="if(event.target===this)closeModal('modal-verificar-totp-banco')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">🔒 Verificación requerida</div>
+      <button class="modal-close" onclick="closeModal('modal-verificar-totp-banco')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Datos bancarios: información delicada. Ingresa tu código del autenticador para ver o modificar.</div>
+      <label class="form-lbl req">Código de 6 dígitos</label>
+      <input class="form-input" id="totp-banco-codigo" maxlength="6" placeholder="000000" style="text-align:center;letter-spacing:4px;font-size:16px">
+      <div class="form-err" id="err-totp-banco" style="margin-top:8px">—</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-verificar-totp-banco')">Cancelar</button>
+      <button class="btn primary" onclick="verificarTOTPBanco()">Verificar</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDITAR PERFIL DE CUENTA (rol, área, Bio-Nave) — solo Dirección -->
 <div class="overlay" id="modal-editar-perfil" onclick="if(event.target===this)closeModal('modal-editar-perfil')">
   <div class="modal">
@@ -1732,7 +1776,11 @@ select.form-input option{background:var(--bg2)}
       </div>
 
       <div id="ac-banco-wrap" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-family:var(--head);font-size:11px;font-weight:900;color:var(--text);letter-spacing:.3px;margin-bottom:4px">Datos bancarios (opcional) <span style="font-weight:400;color:var(--text3)">— solo RH/Dirección los ven</span></div>
+        <div style="font-family:var(--head);font-size:11px;font-weight:900;color:var(--text);letter-spacing:.3px;margin-bottom:4px">Datos bancarios (opcional) <span style="font-weight:400;color:var(--text3)">— información delicada</span></div>
+        <div id="ac-banco-lock" style="display:none">
+          <button class="btn sm" onclick="abrirVerificacionTOTPBanco()">🔒 Verificar código para ver/editar</button>
+        </div>
+        <div id="ac-banco-fields">
         <div class="grid2">
           <div>
             <label class="form-lbl">Tipo de dato</label>
@@ -1752,6 +1800,7 @@ select.form-input option{background:var(--bg2)}
         <input type="file" id="ac-banco-file" accept=".pdf,.png,.jpg,.jpeg" onchange="handleBancoFile(this)" style="display:none">
         <button class="btn sm" onclick="document.getElementById('ac-banco-file').click()">Seleccionar archivo</button>
         <span class="doc-upload-fn" id="ac-banco-fn" style="margin-left:8px">Sin archivo</span>
+        </div>
       </div>
 
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
@@ -2860,6 +2909,7 @@ async function cargarPerfilYActivarSesion(){
     const { count } = await sb.from('solicitudes_cuenta').select('*', { count:'exact', head:true }).eq('estado','pendiente');
     if ((count||0) > 0) toast(`Tienes ${count} solicitud${count>1?'es':''} de cuenta pendiente${count>1?'s':''} en Configuración`, 'info');
   }
+  await verificarPasswordForzado();
 
   if (!profile.cuestionario_completado) await abrirCuestionarioBienvenida();
 }
@@ -3113,6 +3163,80 @@ async function enviarMensajeChat(){
   }).select().single();
   if (error){ toast(error.message,'error'); return; }
   pintarMensajeChat(data);
+}
+
+/* ── Cambio de contraseña + bloqueo forzoso a las 24h de una temporal ── */
+let _passForzado = false;
+
+async function abrirCambiarPassword(forzado = false){
+  _passForzado = forzado;
+  document.getElementById('cambiar-pass-aviso').style.display = forzado ? 'block' : 'none';
+  document.getElementById('cambiar-pass-x').style.display = forzado ? 'none' : 'flex';
+  document.getElementById('cp-nueva').value = '';
+  document.getElementById('cp-confirmar').value = '';
+  document.getElementById('err-cp').classList.remove('show');
+  openModal('modal-cambiar-pass');
+}
+
+async function guardarNuevaPassword(){
+  const nueva = document.getElementById('cp-nueva').value;
+  const confirmar = document.getElementById('cp-confirmar').value;
+  const err = document.getElementById('err-cp');
+  const minLen = (currentUser.role==='rh'||currentUser.role==='direccion_ceo') ? 12 : 8;
+  if (nueva.length < minLen){ err.textContent = `Mínimo ${minLen} caracteres para tu rol`; err.classList.add('show'); return; }
+  if (nueva !== confirmar){ err.textContent = 'Las contraseñas no coinciden'; err.classList.add('show'); return; }
+  const { error: updErr } = await sb.auth.updateUser({ password: nueva });
+  if (updErr){ err.textContent = updErr.message; err.classList.add('show'); return; }
+  await sb.from('profiles').update({ debe_cambiar_password: false }).eq('id', currentUser.userId);
+  await audit('config', 'Contraseña actualizada', 'a');
+  _passForzado = false;
+  closeModal('modal-cambiar-pass');
+  toast('Contraseña actualizada correctamente','success');
+}
+
+async function verificarPasswordForzado(){
+  const { data: perfil } = await sb.from('profiles').select('debe_cambiar_password,password_set_at').eq('id', currentUser.userId).single();
+  if (!perfil || !perfil.debe_cambiar_password) return;
+  const horas = (Date.now() - new Date(perfil.password_set_at).getTime()) / 3600000;
+  if (horas >= 24){
+    abrirCambiarPassword(true);
+  } else {
+    toast(`Tienes una contraseña temporal. Cámbiala dentro de las próximas ${Math.ceil(24-horas)} horas.`, 'info');
+  }
+}
+
+/* ── Candado TOTP extra para Supervisor al ver/editar datos bancarios ── */
+let _bancoVerificadoSupervisor = false;
+
+function requiereCandadoBanco(){
+  return currentUser.role === 'supervisor' && !_bancoVerificadoSupervisor;
+}
+
+function abrirVerificacionTOTPBanco(){
+  document.getElementById('totp-banco-codigo').value = '';
+  document.getElementById('err-totp-banco').classList.remove('show');
+  openModal('modal-verificar-totp-banco');
+}
+
+async function verificarTOTPBanco(){
+  const code = document.getElementById('totp-banco-codigo').value.trim();
+  const err = document.getElementById('err-totp-banco');
+  if (!/^\d{6}$/.test(code)){ err.textContent = 'Ingresa los 6 dígitos'; err.classList.add('show'); return; }
+  try {
+    const { data: factors } = await sb.auth.mfa.listFactors();
+    const factorId = factors?.totp?.[0]?.id;
+    if (!factorId) throw new Error('No hay autenticador registrado');
+    const { data: challenge, error: chErr } = await sb.auth.mfa.challenge({ factorId });
+    if (chErr) throw chErr;
+    const { error: vErr } = await sb.auth.mfa.verify({ factorId, challengeId: challenge.id, code });
+    if (vErr) throw vErr;
+    _bancoVerificadoSupervisor = true;
+    closeModal('modal-verificar-totp-banco');
+    toast('Verificado','success');
+    if (typeof abrirAltaColab === 'function' && currentColabId) editarColab();
+  } catch(e){
+    err.textContent = e.message || 'Código incorrecto'; err.classList.add('show');
+  }
 }
 
 async function audit(tipo, descripcion, color){
@@ -3847,7 +3971,14 @@ function limpiarFormColab(){
   document.getElementById('ac-banco-fn').textContent = 'Sin archivo';
   tempBancoFile = null;
   const bancoWrap0 = document.getElementById('ac-banco-wrap');
-  if (bancoWrap0) bancoWrap0.style.display = (currentUser.role==='rh'||currentUser.role==='direccion_ceo') ? 'block' : 'none';
+  if (bancoWrap0){
+    const esRh0 = currentUser.role==='rh'||currentUser.role==='direccion_ceo';
+    const esSup0 = currentUser.role==='supervisor';
+    bancoWrap0.style.display = (esRh0||esSup0) ? 'block' : 'none';
+    const lock0 = document.getElementById('ac-banco-lock'), fields0 = document.getElementById('ac-banco-fields');
+    if (esSup0 && requiereCandadoBanco()){ lock0.style.display='block'; fields0.style.display='none'; }
+    else { lock0.style.display='none'; fields0.style.display='block'; }
+  }
   document.getElementById('ac-puesto').value = '';
   document.getElementById('ac-operador-subtipo').value = '';
   document.getElementById('ac-mecanico-subtipo').value = '';
@@ -4486,13 +4617,23 @@ async function editarColab(){
   const bodEl = document.getElementById('ac-bodega');
   if (bodEl && c.bodegaId) bodEl.value = String(c.bodegaId);
   const bancoWrap = document.getElementById('ac-banco-wrap');
+  const bancoLock = document.getElementById('ac-banco-lock');
+  const bancoFields = document.getElementById('ac-banco-fields');
   const esRhODireccion = currentUser.role === 'rh' || currentUser.role === 'direccion_ceo';
-  bancoWrap.style.display = esRhODireccion ? 'block' : 'none';
+  const esSupervisor = currentUser.role === 'supervisor';
+  bancoWrap.style.display = (esRhODireccion || esSupervisor) ? 'block' : 'none';
   document.getElementById('ac-banco-tipo').value = '';
   document.getElementById('ac-banco-digitos').value = '';
   document.getElementById('ac-banco-fn').textContent = 'Sin archivo';
   tempBancoFile = null;
-  if (esRhODireccion){
+  if (esSupervisor && requiereCandadoBanco()){
+    bancoLock.style.display = 'block';
+    bancoFields.style.display = 'none';
+    return;
+  }
+  bancoLock.style.display = 'none';
+  bancoFields.style.display = 'block';
+  if (esRhODireccion || esSupervisor){
     const { data: banco } = await sb.from('datos_bancarios').select('*').eq('colaborador_id', c.id).maybeSingle();
     if (banco){
       document.getElementById('ac-banco-tipo').value = banco.tipo;
@@ -6951,7 +7092,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   if (fechaBaja) fechaBaja.value = new Date().toISOString().split('T')[0];
   // Atajos teclado
   document.addEventListener('keydown', e=>{
-    if (e.key==='Escape') closeAllModals();
+    if (e.key==='Escape' && !_passForzado) closeAllModals();
     if ((e.ctrlKey||e.metaKey) && e.key==='k'){
       e.preventDefault();
       const s = document.getElementById('search-input');
