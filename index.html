@@ -684,8 +684,11 @@ select.form-input option{background:var(--bg2)}
         <div class="sb-av" id="sb-av">ML</div>
         <div style="min-width:0"><div class="sb-uname" id="sb-uname">Marco Lucero</div><div class="sb-urole" id="sb-urole">Dirección/CEO</div></div>
       </div>
-      <button onclick="abrirCambiarPassword(false)" title="Cambiar contraseña" style="flex-shrink:0;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;margin-right:2px">
+      <button id="btn-cambiar-pass-sidebar" onclick="abrirCambiarPassword(false)" title="Cambiar contraseña temporal" style="display:none;flex-shrink:0;width:26px;height:26px;align-items:center;justify-content:center;background:transparent;border:1px solid var(--red);border-radius:6px;color:var(--red);cursor:pointer;margin-right:2px">
         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" style="width:13px;height:13px"><rect x="4" y="7" width="8" height="6" rx="1"/><path d="M6 7V5a2 2 0 014 0v2"/></svg>
+      </button>
+      <button onclick="abrirMiCuenta()" title="Mi cuenta" style="flex-shrink:0;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;margin-right:2px">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" style="width:13px;height:13px"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
       </button>
       <button onclick="cerrarSesion()" title="Cerrar sesión" style="flex-shrink:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;transition:all .18s" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border2)'">
         <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 16 16" style="width:13px;height:13px"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6"/></svg>
@@ -1476,6 +1479,32 @@ select.form-input option{background:var(--bg2)}
     <div class="modal-foot">
       <button class="btn" onclick="closeModal('modal-com-asis')">Cancelar</button>
       <button class="btn primary" onclick="guardarComentarioAsis()">Guardar comentario</button>
+    </div>
+  </div>
+</div>
+
+<!-- MI CUENTA — configuración personal, disponible para cualquier cuenta -->
+<div class="overlay" id="modal-mi-cuenta" onclick="if(event.target===this)closeModal('modal-mi-cuenta')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Mi cuenta</div>
+      <button class="modal-close" onclick="closeModal('modal-mi-cuenta')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <label class="form-lbl req">Nombre para mostrar</label>
+      <input class="form-input" id="mc-nombre" style="margin-bottom:10px">
+      <label class="form-lbl req">Usuario</label>
+      <input class="form-input" id="mc-usuario" autocomplete="off" style="margin-bottom:10px">
+      <label class="form-lbl req">Correo de contacto</label>
+      <input class="form-input" type="email" id="mc-correo" style="margin-bottom:6px">
+      <div class="form-err" id="err-mc" style="margin-bottom:8px">—</div>
+      <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px">
+        <button class="btn sm" onclick="closeModal('modal-mi-cuenta'); abrirCambiarPassword(false)">Cambiar contraseña</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-mi-cuenta')">Cancelar</button>
+      <button class="btn primary" onclick="guardarMiCuenta()">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -2910,6 +2939,7 @@ async function cargarPerfilYActivarSesion(){
     if ((count||0) > 0) toast(`Tienes ${count} solicitud${count>1?'es':''} de cuenta pendiente${count>1?'s':''} en Configuración`, 'info');
   }
   await verificarPasswordForzado();
+  await actualizarIconoPasswordSidebar();
 
   if (!profile.cuestionario_completado) await abrirCuestionarioBienvenida();
 }
@@ -3165,6 +3195,42 @@ async function enviarMensajeChat(){
   pintarMensajeChat(data);
 }
 
+/* ── Mi cuenta — configuración personal, disponible para cualquier cuenta ── */
+async function abrirMiCuenta(){
+  document.getElementById('mc-nombre').value = currentUser.name;
+  const { data: perfil } = await sb.from('profiles').select('usuario,correo_contacto').eq('id', currentUser.userId).single();
+  document.getElementById('mc-usuario').value = perfil?.usuario || '';
+  document.getElementById('mc-correo').value = perfil?.correo_contacto || '';
+  document.getElementById('err-mc').classList.remove('show');
+  openModal('modal-mi-cuenta');
+}
+
+async function guardarMiCuenta(){
+  const nombre = document.getElementById('mc-nombre').value.trim();
+  const usuario = document.getElementById('mc-usuario').value.trim().toLowerCase();
+  const correo = document.getElementById('mc-correo').value.trim().toLowerCase();
+  const err = document.getElementById('err-mc');
+  const fail = msg => { err.textContent = msg; err.classList.add('show'); };
+  if (!nombre) return fail('El nombre es obligatorio');
+  if (!usuario || !/^[a-z0-9._-]{3,}$/.test(usuario)) return fail('Usuario: mínimo 3 caracteres, solo minúsculas/números/punto/guion');
+  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return fail('Correo inválido');
+  const { error } = await sb.from('profiles').update({ nombre, usuario, correo_contacto: correo }).eq('id', currentUser.userId);
+  if (error){ fail(error.message); return; }
+  currentUser.name = nombre;
+  document.getElementById('sb-uname').textContent = nombre;
+  closeModal('modal-mi-cuenta');
+  toast('Cuenta actualizada','success');
+}
+
+/* Muestra el candado rojo en la barra lateral solo mientras la
+   contraseña temporal siga pendiente de cambiar — desaparece al
+   cambiarla, ya que "Mi cuenta" cubre el cambio de ahí en adelante. */
+async function actualizarIconoPasswordSidebar(){
+  const { data: perfil } = await sb.from('profiles').select('debe_cambiar_password').eq('id', currentUser.userId).single();
+  const btn = document.getElementById('btn-cambiar-pass-sidebar');
+  if (btn) btn.style.display = perfil?.debe_cambiar_password ? 'flex' : 'none';
+}
+
 /* ── Cambio de contraseña + bloqueo forzoso a las 24h de una temporal ── */
 let _passForzado = false;
 
@@ -3192,6 +3258,8 @@ async function guardarNuevaPassword(){
   _passForzado = false;
   closeModal('modal-cambiar-pass');
   toast('Contraseña actualizada correctamente','success');
+  const btnSidebar = document.getElementById('btn-cambiar-pass-sidebar');
+  if (btnSidebar) btnSidebar.style.display = 'none';
 }
 
 async function verificarPasswordForzado(){
