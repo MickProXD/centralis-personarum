@@ -1731,6 +1731,29 @@ select.form-input option{background:var(--bg2)}
         <div><label class="form-lbl">Contacto de emergencia</label><input class="form-input" id="ac-emerg" placeholder="Nombre — teléfono"></div>
       </div>
 
+      <div id="ac-banco-wrap" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-family:var(--head);font-size:11px;font-weight:900;color:var(--text);letter-spacing:.3px;margin-bottom:4px">Datos bancarios (opcional) <span style="font-weight:400;color:var(--text3)">— solo RH/Dirección los ven</span></div>
+        <div class="grid2">
+          <div>
+            <label class="form-lbl">Tipo de dato</label>
+            <select class="form-input" id="ac-banco-tipo">
+              <option value="">Sin especificar</option>
+              <option value="cuenta">Número de cuenta</option>
+              <option value="clabe">CLABE</option>
+              <option value="tarjeta">Número de tarjeta</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-lbl">Dígitos</label>
+            <input class="form-input" id="ac-banco-digitos" placeholder="Ej. 012180001234567895">
+          </div>
+        </div>
+        <label class="form-lbl" style="margin-top:8px;display:block">Captura de pantalla o estado de cuenta</label>
+        <input type="file" id="ac-banco-file" accept=".pdf,.png,.jpg,.jpeg" onchange="handleBancoFile(this)" style="display:none">
+        <button class="btn sm" onclick="document.getElementById('ac-banco-file').click()">Seleccionar archivo</button>
+        <span class="doc-upload-fn" id="ac-banco-fn" style="margin-left:8px">Sin archivo</span>
+      </div>
+
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
         <div style="font-family:var(--head);font-size:11px;font-weight:900;color:var(--text);letter-spacing:.3px;margin-bottom:4px">Contrato laboral</div>
         <div style="font-size:10px;color:var(--text3);margin-bottom:12px">Carga el contrato firmado. Tendrá vista previa y descarga directa desde el expediente.</div>
@@ -3750,6 +3773,30 @@ async function guardarColab(){
     }
   }
 
+  // Datos bancarios (opcional) — solo si se capturó tipo + dígitos
+  const bancoTipo = document.getElementById('ac-banco-tipo').value;
+  const bancoDigitos = document.getElementById('ac-banco-digitos').value.trim();
+  if (bancoTipo && bancoDigitos){
+    const colabIdBanco = editingColabId || (await sb.from('colaboradores').select('id').eq('nombre', nombre).order('created_at', { ascending:false }).limit(1).maybeSingle()).data?.id;
+    if (colabIdBanco){
+      let storagePathBanco = null, nombreArchivoBanco = null;
+      if (tempBancoFile){
+        try {
+          storagePathBanco = await subirArchivoStorage('bancarios', `${colabIdBanco}/estado_${Date.now()}_${tempBancoFile.name}`, tempBancoFile);
+          nombreArchivoBanco = tempBancoFile.name;
+        } catch(e){ toast('Error subiendo el archivo bancario: '+e.message,'error'); }
+      }
+      const { error: bErr } = await sb.from('datos_bancarios').upsert({
+        colaborador_id: colabIdBanco, tipo: bancoTipo, digitos: bancoDigitos,
+        storage_path: storagePathBanco, nombre_archivo: nombreArchivoBanco,
+        actualizado_por: currentUser.userId, updated_at: new Date().toISOString()
+      }, { onConflict: 'colaborador_id' });
+      if (bErr) toast('Datos bancarios: '+bErr.message,'error');
+      else await audit('documento', `Datos bancarios registrados para <strong>${esc(nombre)}</strong>`, 'b');
+    }
+    tempBancoFile = null;
+  }
+
   closeModal('modal-alta-colab');
   limpiarFormColab();
   await cargarDatosSupabase();
@@ -3757,6 +3804,15 @@ async function guardarColab(){
 }
 
 let tempColabDoc = null;
+let tempBancoFile = null;
+function handleBancoFile(input){
+  if (!input.files.length) return;
+  const f = input.files[0];
+  if (f.size > 10*1024*1024){ toast('Archivo excede 10 MB','error'); input.value=''; return; }
+  tempBancoFile = f;
+  document.getElementById('ac-banco-fn').textContent = f.name;
+}
+
 function handleColabDoc(input){
   if (!input.files.length) return;
   const f = input.files[0];
@@ -3786,7 +3842,12 @@ function downloadColabTempDoc(){
 }
 
 function limpiarFormColab(){
-  ['ac-nombre','ac-curp','ac-rfc','ac-tel','ac-emerg','ac-ingreso','ac-observ','ac-contrato-emision','ac-contrato-vig'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  ['ac-nombre','ac-curp','ac-rfc','ac-tel','ac-emerg','ac-ingreso','ac-observ','ac-contrato-emision','ac-contrato-vig','ac-banco-digitos'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  document.getElementById('ac-banco-tipo').value = '';
+  document.getElementById('ac-banco-fn').textContent = 'Sin archivo';
+  tempBancoFile = null;
+  const bancoWrap0 = document.getElementById('ac-banco-wrap');
+  if (bancoWrap0) bancoWrap0.style.display = (currentUser.role==='rh'||currentUser.role==='direccion_ceo') ? 'block' : 'none';
   document.getElementById('ac-puesto').value = '';
   document.getElementById('ac-operador-subtipo').value = '';
   document.getElementById('ac-mecanico-subtipo').value = '';
@@ -4400,7 +4461,7 @@ function renderExpHist(){
 }
 
 function editarColabId(id){ currentColabId = String(id); editarColab(); }
-function editarColab(){
+async function editarColab(){
   const c = DB.colaboradores.find(c=>String(c.id)===currentColabId);
   if (!c) return;
   editingColabId = c.id;
@@ -4424,6 +4485,21 @@ function editarColab(){
   if (siteEl && c.siteId) siteEl.value = String(c.siteId);
   const bodEl = document.getElementById('ac-bodega');
   if (bodEl && c.bodegaId) bodEl.value = String(c.bodegaId);
+  const bancoWrap = document.getElementById('ac-banco-wrap');
+  const esRhODireccion = currentUser.role === 'rh' || currentUser.role === 'direccion_ceo';
+  bancoWrap.style.display = esRhODireccion ? 'block' : 'none';
+  document.getElementById('ac-banco-tipo').value = '';
+  document.getElementById('ac-banco-digitos').value = '';
+  document.getElementById('ac-banco-fn').textContent = 'Sin archivo';
+  tempBancoFile = null;
+  if (esRhODireccion){
+    const { data: banco } = await sb.from('datos_bancarios').select('*').eq('colaborador_id', c.id).maybeSingle();
+    if (banco){
+      document.getElementById('ac-banco-tipo').value = banco.tipo;
+      document.getElementById('ac-banco-digitos').value = banco.digitos;
+      if (banco.nombre_archivo) document.getElementById('ac-banco-fn').textContent = banco.nombre_archivo + ' (ya guardado)';
+    }
+  }
   openModal('modal-alta-colab');
 }
 
