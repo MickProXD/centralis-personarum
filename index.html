@@ -570,7 +570,7 @@ select.form-input option{background:var(--bg2)}
     </div>
 
     <div style="text-align:center;margin-top:16px;font-size:9.5px;color:var(--text3);line-height:1.6">
-      Cuenta protegida por Supabase Auth + verificación en dos pasos (TOTP)<br>
+      Cuenta protegida con verificación en dos pasos<br>
       Sesión se cierra tras 15 min de inactividad
     </div>
   </div>
@@ -1283,7 +1283,7 @@ select.form-input option{background:var(--bg2)}
               <div class="ph-title">Cuentas de acceso</div>
               <button class="ph-btn ml" data-cap="config" onclick="abrirAltaUsuario()">+ Nueva cuenta</button>
             </div>
-            <div style="padding:10px 14px 4px;font-size:10px;color:var(--text3);line-height:1.5">Cada persona entra con su propio usuario y contraseña. Las contraseñas nunca se guardan — solo su hash PBKDF2. En Fase 2 estas cuentas migran a Supabase Auth.</div>
+            <div style="padding:10px 14px 4px;font-size:10px;color:var(--text3);line-height:1.5">Cada persona entra con su propio usuario y contraseña, protegida con verificación en dos pasos.</div>
             <div id="cfg-usuarios-list"></div>
           </div>
         </div>
@@ -3690,7 +3690,7 @@ async function renderUsuariosConfig(){
       <div class="doc-name" style="${u.activo?'':'opacity:.5'}">${esc(u.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(u.usuario)}</span></div>
       <div class="doc-meta">${ROLES[u.role]?.label||u.role} · ${u.activo?'Activo':'Desactivado'}</div>
     </div>
-    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
+    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button><button class="btn sm" onclick="confirmarResetMFA('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Si perdió acceso a su autenticador">Restablecer 2FA</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
   </div>`).join('');
 }
 
@@ -3775,6 +3775,19 @@ async function guardarEdicionPerfil(){
   _epUsuarioId = null;
   toast('Cuenta actualizada','success');
   renderUsuariosConfig();
+}
+
+function confirmarResetMFA(userId, nombre){
+  confirmar(`¿Restablecer la verificación en dos pasos de <strong>${nombre}</strong>? Su código actual dejará de funcionar y tendrá que registrar uno nuevo en su siguiente inicio de sesión — úsalo solo si perdió acceso a su autenticador.`, 'Restablecer verificación', async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    const { data, error } = await sb.functions.invoke('admin-reset-mfa', {
+      body: { target_user_id: userId },
+      headers: { Authorization: `Bearer ${session.access_token}` }
+    });
+    if (error || data?.error){ toast(data?.error || error.message, 'error'); return; }
+    await audit('config', `Verificación en dos pasos restablecida para <strong>${nombre}</strong>`, 'a');
+    toast(`Listo. ${nombre} deberá registrar un nuevo autenticador en su siguiente inicio de sesión.`, 'success');
+  });
 }
 
 /* ── Auditoría — ahora vive en Supabase; el hash lo calcula el servidor ── */
