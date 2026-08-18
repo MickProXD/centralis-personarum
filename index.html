@@ -3076,7 +3076,7 @@ function mapColabRow(r){
     siteId:r.site_id, bodegaId:r.bio_nave_id, tel:r.tel, emerg:r.emerg, estatus:r.estatus, unidadId:r.unidad_id,
     observaciones:r.observaciones, observacionesUpd:r.observaciones_upd };
 }
-function mapUnidadRow(r){ return { id:r.id, bak:r.bak, marca:r.marca, modelo:r.modelo, bodegaId:r.bio_nave_id, estatus:r.estatus, choferId:r.chofer_id }; }
+function mapUnidadRow(r){ return { id:r.id, bak:r.bak, niv:r.niv, placas:r.placas, marca:r.marca, modelo:r.modelo, anio:r.anio, tipo:r.tipo, jurisdiccion:r.jurisdiccion, bodegaId:r.bio_nave_id, estatus:r.estatus, choferId:r.chofer_id }; }
 
 /* ── Subida genérica a Supabase Storage — reutilizada por Actas,
    Documentos, Contratos, Permisos, Bajas y Firmas. ── */
@@ -3100,7 +3100,7 @@ async function cargarDatosSupabase(){
     sb.from('sites').select('*').order('nombre'),
     sb.from('bio_naves').select('*').order('nombre'),
     sb.from('colaboradores').select('*').order('nombre'),
-    sb.from('unidades').select('id,bak,marca,modelo,bio_nave_id,estatus,chofer_id').order('bak'),
+    sb.from('unidades').select('id,bak,niv,placas,marca,modelo,anio,tipo,jurisdiccion,bio_nave_id,estatus,chofer_id').order('bak'),
     sb.from('equipos_moviles').select('*').order('cel_economico'),
     sb.from('asistencias').select('*').gte('fecha', desde.toISOString().split('T')[0])
   ]);
