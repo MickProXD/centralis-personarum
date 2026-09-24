@@ -571,7 +571,7 @@ select.form-input option{background:var(--bg2)}
 
     <div style="text-align:center;margin-top:16px;font-size:9.5px;color:var(--text3);line-height:1.6">
       Cuenta protegida con verificación en dos pasos<br>
-      Sesión se cierra tras 15 min de inactividad
+      Sesión se cierra tras 1 hora de inactividad
     </div>
   </div>
 </div>
@@ -3423,7 +3423,7 @@ function setRole(role){
    Reemplaza el módulo local de Fase 1. La sesión, el hash de
    contraseña y el segundo factor ahora viven en el servidor.
    ═══════════════════════════════════════════════════════════════════ */
-const INACTIVITY_MS = 15 * 60 * 1000;
+const INACTIVITY_MS = 60 * 60 * 1000;
 let _sesionActiva = false;
 let _lastActivity = Date.now();
 let _mfaFactorId = null;
