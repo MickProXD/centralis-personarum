@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script>try{var _t=localStorage.getItem('bc-tema');if(_t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Política de seguridad: sin scripts externos, sin conexiones de red salientes.
@@ -9,7 +10,7 @@
 <title>Bio-centralis — Gestión Integral · BioAmbientalistik</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -56,14 +57,49 @@
   --r2:13px;          /* antes 12px */
 
   /* ── Tipografía */
-  --head:'Nunito',sans-serif;
-  --body:'Nunito Sans',sans-serif;
+  --head:'IBM Plex Sans',sans-serif;
+  --body:'IBM Plex Sans',sans-serif;
 
   /* ── Nuevas variables de spacing para consistencia */
   --sp1:6px;
   --sp2:12px;
   --sp3:18px;
   --sp4:24px;
+}
+
+/* ── TEMA CLARO — activado por el usuario desde Mi cuenta.
+   Mismo sistema de variables, blanco no saturado, texto oscuro,
+   acentos reajustados para mantener contraste legible sobre blanco. */
+html[data-theme="light"]{
+  --bg:#f6f7f6;
+  --bg2:#eef1ee;
+  --bg3:#e7eae7;
+  --surface:#ffffff;
+  --surface2:#f2f4f2;
+
+  --border:#e0e4e0;
+  --border2:#d2d7d2;
+
+  --text:#1b211b;
+  --text2:#4d594d;
+  --text3:#7e8c7e;
+
+  --green:#2f9c57;
+  --green2:#1f7a3f;
+  --green3:#d9f2e2;
+  --ga:rgba(47,156,87,.09);
+
+  --amber:#a8780f;
+  --aa:rgba(168,120,15,.09);
+
+  --red:#c23b3b;
+  --ra:rgba(194,59,59,.09);
+
+  --blue:#2a72b5;
+  --ba:rgba(42,114,181,.09);
+
+  --purple:#7c3fb5;
+  --pa:rgba(124,63,181,.09);
 }
 body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:100vh;display:flex;-webkit-font-smoothing:antialiased}
 /* ── Scrollbar: más thin y sutil — no distrae la mirada periférica ── */
@@ -393,13 +429,14 @@ select.form-input option{background:var(--bg2)}
 .banner-txt{font-size:12px;color:var(--text);font-family:var(--body)}
 .banner-txt strong{color:var(--red);font-weight:700}
 .banner-link{margin-left:auto;font-family:var(--head);font-size:10px;font-weight:700;color:var(--red);cursor:pointer;white-space:nowrap}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:14px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:20px}
 .cal-h{font-family:var(--head);font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);text-align:center;padding-bottom:6px}
-.cal-cell{aspect-ratio:1;background:var(--surface);border-radius:5px;padding:5px;font-family:var(--head);font-size:10px;color:var(--text2);position:relative;cursor:pointer;transition:all .12s;border:1px solid transparent}
+.cal-cell{aspect-ratio:1.15;background:var(--surface);border-radius:8px;padding:10px;font-family:var(--head);font-size:14px;color:var(--text2);position:relative;cursor:pointer;transition:all .12s;border:1px solid transparent}
 .cal-cell:hover{border-color:var(--border2)}
 .cal-cell.hoy{outline:1.5px solid var(--green);outline-offset:1px}
 .cal-cell.empty{background:transparent}
 .cal-event{font-size:8px;font-weight:800;padding:1px 3px;border-radius:3px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-nota-dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--purple)}
 .cal-event.cr{background:var(--ra);color:var(--red)}
 .cal-event.w{background:var(--aa);color:var(--amber)}
 .cal-event.b{background:var(--ba);color:var(--blue)}
@@ -638,6 +675,14 @@ select.form-input option{background:var(--bg2)}
     <div class="sb-item" data-page="permisos" onclick="nav('permisos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M8 1l5 2v4c0 3-2 5-5 6-3-1-5-3-5-6V3l5-2z"/><path d="M6 8h4M8 6v4"/></svg>
       Permisos <span class="sb-bdg a" id="bdg-permisos">0</span>
+    </div>
+    <div class="sb-item" data-page="muro" onclick="nav('muro',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
+      Muro
+    </div>
+    <div class="sb-item" data-page="procesos" onclick="nav('procesos',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 8.5h6M5 11h3"/></svg>
+      Procesos
     </div>
     <div class="sb-item" data-page="calendario" onclick="nav('calendario',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M5 3V1M11 3V1"/></svg>
@@ -1063,8 +1108,27 @@ select.form-input option{background:var(--bg2)}
       </div>
     </div>
 
-    <!-- CALENDARIO -->
-    <div id="page-calendario" class="page fadein">
+    <!-- MURO — publicaciones de RH/Dirección + celebraciones del día -->
+  <div id="page-muro" class="page fadein" style="max-width:620px;margin:0 auto">
+    <div class="row" style="margin-bottom:14px">
+      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Muro BioAmbientalistik</div>
+      <button class="btn primary ml" id="muro-nueva-btn" style="display:none" onclick="abrirNuevaPublicacion()">+ Publicar</button>
+    </div>
+    <div id="muro-celebraciones" style="margin-bottom:14px"></div>
+    <div id="muro-list" style="display:flex;flex-direction:column;gap:12px"></div>
+  </div>
+
+  <!-- PROCESOS -->
+  <div id="page-procesos" class="page fadein">
+    <div class="row" style="margin-bottom:14px">
+      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Procesos</div>
+      <button class="btn primary ml" onclick="abrirNuevoProceso()">+ Nuevo proceso</button>
+    </div>
+    <div id="procesos-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- CALENDARIO -->
+  <div id="page-calendario" class="page fadein">
       <div class="row" style="margin-bottom:14px">
         <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)" id="cal-titulo">—</div>
         <span class="tag b" id="cal-tot-mes-wrap" style="margin-left:8px"><span id="cal-tot-mes">0</span>&nbsp;vencimientos</span>
@@ -1486,6 +1550,90 @@ select.form-input option{background:var(--bg2)}
   </div>
 </div>
 
+<!-- NUEVA PUBLICACIÓN (solo RH/Dirección) -->
+<div class="overlay" id="modal-publicacion" onclick="if(event.target===this)closeModal('modal-publicacion')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Nueva publicación</div>
+      <button class="modal-close" onclick="closeModal('modal-publicacion')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <label class="form-lbl">Categoría</label>
+      <select class="form-input" id="pub-categoria" style="margin-bottom:10px">
+        <option value="Aviso">Aviso</option>
+        <option value="Celebración">Celebración</option>
+        <option value="Reconocimiento">Reconocimiento</option>
+        <option value="Recordatorio">Recordatorio</option>
+      </select>
+      <label class="form-lbl req">Contenido</label>
+      <textarea class="form-input" id="pub-contenido" rows="5" placeholder="Escribe el comunicado..."></textarea>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--text2)">
+        <input type="checkbox" id="pub-fijado"> Fijar arriba del muro
+      </label>
+      <div class="form-err" id="err-publicacion" style="margin-top:8px">—</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-publicacion')">Cancelar</button>
+      <button class="btn primary" onclick="guardarPublicacion()">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CAMPANA DE NOTIFICACIONES — felicitaciones y reconocimientos recibidos -->
+<div id="bell-widget-launcher" onclick="toggleBellWidget()" style="display:none;position:fixed;bottom:16px;right:76px;width:48px;height:48px;border-radius:50%;background:var(--surface2,#2a2a2a);border:1px solid var(--border);align-items:center;justify-content:center;cursor:pointer;z-index:500;box-shadow:0 4px 14px rgba(0,0,0,.35)">
+  <svg fill="none" stroke="var(--text)" stroke-width="1.5" viewBox="0 0 16 16" style="width:19px;height:19px"><path d="M8 1.5a3 3 0 00-3 3v2c0 1-.5 2-1.5 3h9c-1-1-1.5-2-1.5-3v-2a3 3 0 00-3-3z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>
+  <span id="bell-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:50%;width:16px;height:16px;align-items:center;justify-content:center">0</span>
+</div>
+<div id="bell-widget-panel" style="display:none;position:fixed;bottom:72px;right:76px;width:280px;max-height:360px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:500;overflow-y:auto">
+  <div style="padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700;font-size:12px">Notificaciones</div>
+  <div id="bell-list"></div>
+</div>
+
+<!-- NOTAS DE CALENDARIO (ver día / agregar nota) -->
+<div class="overlay" id="modal-dia-calendario" onclick="if(event.target===this)closeModal('modal-dia-calendario')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="caldia-titulo">—</div>
+      <button class="modal-close" onclick="closeModal('modal-dia-calendario')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div id="caldia-notas-list" style="margin-bottom:14px"></div>
+      <div id="caldia-nueva-wrap" style="display:none;border-top:1px solid var(--border);padding-top:12px">
+        <label class="form-lbl req">Título</label>
+        <input class="form-input" id="caldia-nota-titulo" style="margin-bottom:8px">
+        <label class="form-lbl">Descripción</label>
+        <textarea class="form-input" id="caldia-nota-desc" rows="2" style="margin-bottom:8px"></textarea>
+        <button class="btn primary sm" onclick="guardarNotaCalendario()">+ Agregar nota</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESO (alta/edición) -->
+<div class="overlay" id="modal-proceso" onclick="if(event.target===this)closeModal('modal-proceso')">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-proceso-title">Nuevo proceso</div>
+      <button class="modal-close" onclick="closeModal('modal-proceso')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <label class="form-lbl req">Título</label>
+      <input class="form-input" id="proc-titulo" style="margin-bottom:10px">
+      <label class="form-lbl">Contenido / pasos</label>
+      <textarea class="form-input" id="proc-contenido" rows="8" placeholder="Describe el proceso paso a paso..." style="margin-bottom:10px"></textarea>
+      <label class="form-lbl">Archivo adjunto (PDF, opcional)</label><br>
+      <input type="file" id="proc-file" accept=".pdf" onchange="handleProcesoFile(this)" style="display:none">
+      <button class="btn sm" onclick="document.getElementById('proc-file').click()">Seleccionar archivo</button>
+      <span class="doc-upload-fn" id="proc-fn" style="margin-left:8px">Sin archivo</span>
+      <div class="form-err" id="err-proceso" style="margin-top:10px">—</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-proceso')">Cancelar</button>
+      <button class="btn primary" onclick="guardarProceso()">Guardar proceso</button>
+    </div>
+  </div>
+</div>
+
 <!-- MI CUENTA — configuración personal, disponible para cualquier cuenta -->
 <div class="overlay" id="modal-mi-cuenta" onclick="if(event.target===this)closeModal('modal-mi-cuenta')">
   <div class="modal">
@@ -1499,7 +1647,12 @@ select.form-input option{background:var(--bg2)}
       <label class="form-lbl req">Usuario</label>
       <input class="form-input" id="mc-usuario" autocomplete="off" style="margin-bottom:10px">
       <label class="form-lbl req">Correo de contacto</label>
-      <input class="form-input" type="email" id="mc-correo" style="margin-bottom:6px">
+      <input class="form-input" type="email" id="mc-correo" style="margin-bottom:10px">
+      <label class="form-lbl">Apariencia</label>
+      <div style="display:flex;gap:8px;margin-bottom:6px">
+        <button type="button" class="btn sm" id="mc-tema-oscuro" onclick="cambiarTema('dark')" style="flex:1">🌙 Oscuro</button>
+        <button type="button" class="btn sm" id="mc-tema-claro" onclick="cambiarTema('light')" style="flex:1">☀️ Claro</button>
+      </div>
       <div class="form-err" id="err-mc" style="margin-bottom:8px">—</div>
       <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px">
         <button class="btn sm" onclick="closeModal('modal-mi-cuenta'); abrirCambiarPassword(false)">Cambiar contraseña</button>
@@ -1564,8 +1717,9 @@ select.form-input option{background:var(--bg2)}
       <div style="font-size:11px;color:var(--text2);margin-bottom:12px" id="ep-resumen">—</div>
       <label class="form-lbl req">Rol</label>
       <select class="form-input" id="ep-role" style="margin-bottom:10px">
-        <option value="supervisor">Supervisor</option>
+        <option value="supervisor">Operación</option>
         <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
+            <option value="administracion">Administración</option>
         <option value="rh">Recursos Humanos</option>
         <option value="direccion_ceo">Dirección / CEO</option>
       </select>
@@ -1613,8 +1767,9 @@ select.form-input option{background:var(--bg2)}
       <div style="font-size:11px;color:var(--text2);margin-bottom:12px" id="aps-resumen">—</div>
       <label class="form-lbl req">Rol de la cuenta</label>
       <select class="form-input" id="aps-role" style="margin-bottom:10px">
-        <option value="supervisor" selected>Supervisor</option>
+        <option value="supervisor" selected>Operación</option>
         <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
+            <option value="administracion">Administración</option>
         <option value="rh">Recursos Humanos</option>
         <option value="direccion_ceo">Dirección / CEO</option>
       </select>
@@ -1671,8 +1826,9 @@ select.form-input option{background:var(--bg2)}
         <div>
           <label class="form-lbl req">Rol</label>
           <select class="form-input" id="au-role">
-            <option value="supervisor" selected>Supervisor</option>
+            <option value="supervisor" selected>Operación</option>
             <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
+            <option value="administracion">Administración</option>
             <option value="rh">Recursos Humanos</option>
             <option value="direccion_ceo">Dirección / CEO</option>
           </select>
@@ -1749,6 +1905,8 @@ select.form-input option{background:var(--bg2)}
           <input class="form-input" id="ac-rfc" placeholder="AAAA000000XXX" maxlength="13">
           <label class="form-lbl req">Fecha de ingreso</label>
           <input class="form-input" type="date" id="ac-ingreso">
+          <label class="form-lbl" style="margin-top:8px;display:block">Fecha de nacimiento <span style="font-weight:400;color:var(--text3)">(opcional, para cumpleaños en el Muro)</span></label>
+          <input class="form-input" type="date" id="ac-nacimiento">
         </div>
         <div>
           <label class="form-lbl req">Puesto</label>
@@ -1833,6 +1991,29 @@ select.form-input option{background:var(--bg2)}
         <button class="btn sm" onclick="document.getElementById('ac-banco-file').click()">Seleccionar archivo</button>
         <span class="doc-upload-fn" id="ac-banco-fn" style="margin-left:8px">Sin archivo</span>
         </div>
+      </div>
+
+      <div id="ac-toxico-wrap" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:none">
+        <div style="font-family:var(--head);font-size:11px;font-weight:900;color:var(--text);letter-spacing:.3px;margin-bottom:4px">Examen toxicológico (opcional) <span style="font-weight:400;color:var(--text3)">— información médica, solo RH/Dirección</span></div>
+        <div class="grid2">
+          <div>
+            <label class="form-lbl">Fecha del examen</label>
+            <input class="form-input" type="date" id="ac-toxico-fecha">
+          </div>
+          <div>
+            <label class="form-lbl">Resultado</label>
+            <select class="form-input" id="ac-toxico-resultado">
+              <option value="">Sin especificar</option>
+              <option value="Negativo">Negativo</option>
+              <option value="Positivo">Positivo</option>
+              <option value="Pendiente">Pendiente</option>
+            </select>
+          </div>
+        </div>
+        <label class="form-lbl" style="margin-top:8px;display:block">Archivo del examen (PDF/imagen)</label>
+        <input type="file" id="ac-toxico-file" accept=".pdf,.png,.jpg,.jpeg" onchange="handleToxicoFile(this)" style="display:none">
+        <button class="btn sm" onclick="document.getElementById('ac-toxico-file').click()">Seleccionar archivo</button>
+        <span class="doc-upload-fn" id="ac-toxico-fn" style="margin-left:8px">Sin archivo</span>
       </div>
 
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
@@ -2996,7 +3177,9 @@ const STORAGE_KEY = 'biocentralis_v7_data';
 // ─── Modelo de roles (4) ───
 const ROLES = {
   chofer:        { label:'Chofer',        nombre:'Chofer' },
-  supervisor:    { label:'Supervisor',    nombre:'Supervisor' },
+  supervisor:    { label:'Operación',     nombre:'Operación' },
+  monitoreo:     { label:'Monitoreo',     nombre:'Monitoreo' },
+  administracion:{ label:'Administración',nombre:'Administración' },
   rh:            { label:'RH',            nombre:'Recursos Humanos' },
   direccion_ceo: { label:'Dirección/CEO', nombre:'Dirección / CEO' }
 };
@@ -3006,35 +3189,42 @@ const ROLES = {
 //   sites: 'none'|'own'|'all_view'|'all'   ·   reportes: 'none'|'own'|'personnel'|'all'
 const CAPS = {
   monitoreo: {
-    pages:['dashboard','flota','documentos','equipos'],
+    pages:['dashboard','flota','documentos','equipos','muro'],
     fleet:true, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:true
   },
   chofer: {
-    pages:['dashboard','personal'],
+    pages:['dashboard','personal','muro'],
     fleet:false, personnel:'self', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   supervisor: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','muro'],
     fleet:true, personnel:'own_sites', editPersonnel:'own_sites', baja:false,
     sites:'own', createSite:true, permisosLegales:false, permisos:true,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'own', actas:'own_sites', firmaAsistencia:true, equipos:true
   },
   rh: {
-    pages:['dashboard','sites','personal','asistencias','reportes','compliance','kpis'],
+    pages:['dashboard','sites','personal','asistencias','reportes','compliance','kpis','calendario','procesos','muro'],
     fleet:false, personnel:'all', editPersonnel:'all', baja:false,
     sites:'all_view', createSite:false, permisosLegales:false, permisos:false,
     config:'personnel', auditoria:false, kpis:true, compliance:true,
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
+  administracion: {
+    pages:['dashboard','calendario','procesos','muro'],
+    fleet:false, personnel:'none', editPersonnel:'none', baja:false,
+    sites:'none', createSite:false, permisosLegales:false, permisos:false,
+    config:false, auditoria:false, kpis:false, compliance:false,
+    reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
+  },
   direccion_ceo: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','muro'],
     fleet:true, personnel:'all', editPersonnel:'all', baja:true,
     sites:'all', createSite:true, permisosLegales:true, permisos:true,
     config:true, auditoria:true, kpis:true, compliance:true,
@@ -3074,7 +3264,7 @@ function mapColabRow(r){
     operadorSubtipo:r.operador_subtipo, mecanicoSubtipo:r.mecanico_subtipo, mecanicoOtrosComentario:r.mecanico_otros_comentario,
     areaId:r.area_id, curp:r.curp, rfc:r.rfc, ingreso:r.ingreso, contrato:r.contrato_tipo, turno:r.turno,
     siteId:r.site_id, bodegaId:r.bio_nave_id, tel:r.tel, emerg:r.emerg, estatus:r.estatus, unidadId:r.unidad_id,
-    observaciones:r.observaciones, observacionesUpd:r.observaciones_upd };
+    observaciones:r.observaciones, observacionesUpd:r.observaciones_upd, fechaNacimiento:r.fecha_nacimiento };
 }
 function mapUnidadRow(r){ return { id:r.id, bak:r.bak, niv:r.niv, placas:r.placas, marca:r.marca, modelo:r.modelo, anio:r.anio, tipo:r.tipo, jurisdiccion:r.jurisdiccion, bodegaId:r.bio_nave_id, estatus:r.estatus, choferId:r.chofer_id }; }
 
@@ -3599,6 +3789,8 @@ async function cargarPerfilYActivarSesion(){
   Sentry.setUser({ id: currentUser.userId, username: currentUser.name });
   Sentry.setTag('rol', currentUser.role);
   document.getElementById('chat-widget-launcher').style.display = 'flex';
+  document.getElementById('bell-widget-launcher').style.display = 'flex';
+  renderBell(false);
   document.getElementById('login-screen').style.display = 'none';
   const un=document.getElementById('sb-uname'); if(un) un.textContent = currentUser.name;
   const ur=document.getElementById('sb-urole'); if(ur) ur.textContent = ROLES[currentUser.role]?.label || currentUser.role;
@@ -3891,7 +4083,21 @@ async function abrirMiCuenta(){
   document.getElementById('mc-usuario').value = perfil?.usuario || '';
   document.getElementById('mc-correo').value = perfil?.correo_contacto || '';
   document.getElementById('err-mc').classList.remove('show');
+  marcarTemaActivoUI();
   openModal('modal-mi-cuenta');
+}
+
+function cambiarTema(tema){
+  document.documentElement.setAttribute('data-theme', tema);
+  try { localStorage.setItem('bc-tema', tema); } catch(e){}
+  marcarTemaActivoUI();
+}
+
+function marcarTemaActivoUI(){
+  const tema = document.documentElement.getAttribute('data-theme') || 'dark';
+  const bOsc = document.getElementById('mc-tema-oscuro'), bCla = document.getElementById('mc-tema-claro');
+  if (bOsc) bOsc.className = 'btn sm' + (tema==='dark' ? ' primary' : '');
+  if (bCla) bCla.className = 'btn sm' + (tema==='light' ? ' primary' : '');
 }
 
 async function guardarMiCuenta(){
@@ -4066,6 +4272,8 @@ function nav(page, el){
   if (page === 'dashboard') renderDashboard();
   if (page === 'calendario') renderCalendario();
   if (page === 'kpis') renderKPIs();
+  if (page === 'procesos') renderProcesos();
+  if (page === 'muro') renderMuro();
   if (page === 'compliance') renderCompliance();
   if (page === 'auditoria') renderAuditoria();
   if (page === 'configuracion') renderConfig();
@@ -4670,7 +4878,8 @@ async function guardarColab(){
     mecanico_subtipo: puesto === 'Mecánico' ? mecanicoSubtipo : null,
     mecanico_otros_comentario: (puesto === 'Mecánico' && mecanicoSubtipo === 'Otros') ? mecanicoOtrosComentario : null,
     rfc: document.getElementById('ac-rfc').value.trim().toUpperCase(),
-    ingreso, contrato_tipo: document.getElementById('ac-contrato').value,
+    ingreso, fecha_nacimiento: document.getElementById('ac-nacimiento').value || null,
+    contrato_tipo: document.getElementById('ac-contrato').value,
     turno: document.getElementById('ac-turno').value,
     site_id: siteId, bio_nave_id: bodegaId,
     tel: document.getElementById('ac-tel').value.trim(),
@@ -4736,6 +4945,30 @@ async function guardarColab(){
     tempBancoFile = null;
   }
 
+  // Examen toxicológico (opcional) — solo si se capturó fecha
+  const toxicoFecha = document.getElementById('ac-toxico-fecha').value;
+  if (toxicoFecha){
+    const colabIdToxico = editingColabId || (await sb.from('colaboradores').select('id').eq('nombre', nombre).order('created_at', { ascending:false }).limit(1).maybeSingle()).data?.id;
+    if (colabIdToxico){
+      let storagePathTox = null, nombreArchivoTox = null;
+      if (tempToxicoFile){
+        try {
+          storagePathTox = await subirArchivoStorage('toxicologicos', `${colabIdToxico}/examen_${Date.now()}_${tempToxicoFile.name}`, tempToxicoFile);
+          nombreArchivoTox = tempToxicoFile.name;
+        } catch(e){ toast('Error subiendo el examen: '+e.message,'error'); }
+      }
+      const { error: tErr } = await sb.from('examenes_toxicologicos').upsert({
+        colaborador_id: colabIdToxico, fecha_examen: toxicoFecha,
+        resultado: document.getElementById('ac-toxico-resultado').value || null,
+        storage_path: storagePathTox, nombre_archivo: nombreArchivoTox,
+        actualizado_por: currentUser.userId, updated_at: new Date().toISOString()
+      }, { onConflict: 'colaborador_id' });
+      if (tErr) toast('Examen toxicológico: '+tErr.message,'error');
+      else await audit('documento', `Examen toxicológico registrado para <strong>${esc(nombre)}</strong>`, 'b');
+    }
+    tempToxicoFile = null;
+  }
+
   closeModal('modal-alta-colab');
   limpiarFormColab();
   await cargarDatosSupabase();
@@ -4743,6 +4976,15 @@ async function guardarColab(){
 }
 
 let tempColabDoc = null;
+let tempToxicoFile = null;
+function handleToxicoFile(input){
+  if (!input.files.length) return;
+  const f = input.files[0];
+  if (f.size > 10*1024*1024){ toast('Archivo excede 10 MB','error'); input.value=''; return; }
+  tempToxicoFile = f;
+  document.getElementById('ac-toxico-fn').textContent = f.name;
+}
+
 let tempBancoFile = null;
 function handleBancoFile(input){
   if (!input.files.length) return;
@@ -4781,10 +5023,18 @@ function downloadColabTempDoc(){
 }
 
 function limpiarFormColab(){
-  ['ac-nombre','ac-curp','ac-rfc','ac-tel','ac-emerg','ac-ingreso','ac-observ','ac-contrato-emision','ac-contrato-vig','ac-banco-digitos'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  ['ac-nombre','ac-curp','ac-rfc','ac-tel','ac-emerg','ac-ingreso','ac-nacimiento','ac-observ','ac-contrato-emision','ac-contrato-vig','ac-banco-digitos'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
   document.getElementById('ac-banco-tipo').value = '';
   document.getElementById('ac-banco-fn').textContent = 'Sin archivo';
   tempBancoFile = null;
+  const toxicoWrap0 = document.getElementById('ac-toxico-wrap');
+  if (toxicoWrap0){
+    toxicoWrap0.style.display = (currentUser.role==='rh'||currentUser.role==='direccion_ceo') ? 'block' : 'none';
+    document.getElementById('ac-toxico-fecha').value = '';
+    document.getElementById('ac-toxico-resultado').value = '';
+    document.getElementById('ac-toxico-fn').textContent = 'Sin archivo';
+    tempToxicoFile = null;
+  }
   const bancoWrap0 = document.getElementById('ac-banco-wrap');
   if (bancoWrap0){
     const esRh0 = currentUser.role==='rh'||currentUser.role==='direccion_ceo';
@@ -5416,6 +5666,7 @@ async function editarColab(){
   document.getElementById('ac-curp').value = c.curp||'';
   document.getElementById('ac-rfc').value = c.rfc||'';
   document.getElementById('ac-ingreso').value = c.ingreso||'';
+  document.getElementById('ac-nacimiento').value = c.fechaNacimiento||'';
   document.getElementById('ac-puesto').value = c.puesto;
   document.getElementById('ac-operador-subtipo').value = c.operadorSubtipo || '';
   document.getElementById('ac-mecanico-subtipo').value = c.mecanicoSubtipo || '';
@@ -5454,6 +5705,21 @@ async function editarColab(){
       document.getElementById('ac-banco-tipo').value = banco.tipo;
       document.getElementById('ac-banco-digitos').value = banco.digitos;
       if (banco.nombre_archivo) document.getElementById('ac-banco-fn').textContent = banco.nombre_archivo + ' (ya guardado)';
+    }
+  }
+
+  const toxicoWrap = document.getElementById('ac-toxico-wrap');
+  document.getElementById('ac-toxico-fecha').value = '';
+  document.getElementById('ac-toxico-resultado').value = '';
+  document.getElementById('ac-toxico-fn').textContent = 'Sin archivo';
+  tempToxicoFile = null;
+  toxicoWrap.style.display = esRhODireccion ? 'block' : 'none';
+  if (esRhODireccion){
+    const { data: toxico } = await sb.from('examenes_toxicologicos').select('*').eq('colaborador_id', c.id).maybeSingle();
+    if (toxico){
+      document.getElementById('ac-toxico-fecha').value = toxico.fecha_examen;
+      document.getElementById('ac-toxico-resultado').value = toxico.resultado || '';
+      if (toxico.nombre_archivo) document.getElementById('ac-toxico-fn').textContent = toxico.nombre_archivo + ' (ya guardado)';
     }
   }
   openModal('modal-alta-colab');
@@ -7160,7 +7426,9 @@ async function descargarPreNominaExcel(){
 let calMes = new Date().getMonth();
 let calAnio = new Date().getFullYear();
 
-function renderCalendario(){
+let _calNotasMes = {};
+
+async function renderCalendario(){
   const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const lblEl = document.getElementById('cal-titulo');
   if (!lblEl) return;
@@ -7180,6 +7448,16 @@ function renderCalendario(){
       eventos[dia].push(d);
     }
   });
+
+  const desde = fmtDate(primer), hasta = fmtDate(ultimo);
+  const { data: notasData } = await sb.from('calendario_notas').select('*').gte('fecha', desde).lte('fecha', hasta);
+  _calNotasMes = {};
+  (notasData||[]).forEach(n=>{
+    const dia = parseInt(n.fecha.split('-')[2], 10);
+    if (!_calNotasMes[dia]) _calNotasMes[dia] = [];
+    _calNotasMes[dia].push(n);
+  });
+
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   let html = '<div class="cal-grid">';
   ['L','M','M','J','V','S','D'].forEach(d=>html += `<div class="cal-dow">${d}</div>`);
@@ -7188,6 +7466,7 @@ function renderCalendario(){
     const fecha = new Date(calAnio, calMes, d);
     const isHoy = fecha.getTime()===hoy.getTime();
     const evs = eventos[d] || [];
+    const notas = _calNotasMes[d] || [];
     let nivel = '';
     if (evs.length){
       const dias = Math.round((fecha-hoy)/(1000*60*60*24));
@@ -7196,8 +7475,9 @@ function renderCalendario(){
       else if (dias <= DB.cfg.d2) nivel = 'w';
       else nivel = 'a';
     }
-    html += `<div class="cal-cell ${isHoy?'hoy':''} ${nivel}">
+    html += `<div class="cal-cell ${isHoy?'hoy':''} ${nivel}" onclick="abrirDiaCalendario('${fmtDate(fecha)}','${d} de ${meses[calMes]}')">
       <div class="cal-num">${d}</div>
+      ${notas.length ? '<div class="cal-nota-dot" title="'+notas.length+' nota(s)"></div>' : ''}
       ${evs.length ? `<div class="cal-events">${evs.length} doc${evs.length>1?'s':''}</div>` : ''}
     </div>`;
   }
@@ -7205,6 +7485,56 @@ function renderCalendario(){
   document.getElementById('cal-grid').innerHTML = html;
   const totMes = Object.values(eventos).reduce((s,e)=>s+e.length, 0);
   document.getElementById('cal-tot-mes').textContent = totMes;
+}
+
+/* ── Notas de calendario — Dirección, RH y Administración agregan ── */
+let _calDiaActivo = null;
+
+function abrirDiaCalendario(fechaISO, etiqueta){
+  _calDiaActivo = fechaISO;
+  document.getElementById('caldia-titulo').textContent = etiqueta;
+  const notas = (_calNotasMes[parseInt(fechaISO.split('-')[2],10)] || []).filter(n => n.fecha === fechaISO);
+  const cont = document.getElementById('caldia-notas-list');
+  cont.innerHTML = notas.length
+    ? notas.map(n => `<div class="doc-row">
+        <div style="flex:1">
+          <div class="doc-name">${esc(n.titulo)}</div>
+          ${n.descripcion ? `<div class="doc-meta">${esc(n.descripcion)}</div>` : ''}
+          <div class="doc-meta" style="color:var(--text3)">Por ${esc(n.creado_por_nombre||'—')}</div>
+        </div>
+        ${(n.creado_por===currentUser.userId || currentUser.role==='rh' || currentUser.role==='direccion_ceo') ? `<button class="btn sm danger" onclick="eliminarNotaCalendario('${n.id}')">🗑</button>` : ''}
+      </div>`).join('')
+    : '<div class="empty" style="padding:14px"><div class="empty-sub">Sin notas este día</div></div>';
+
+  const puedeAgregar = ['direccion_ceo','rh','administracion'].includes(currentUser.role);
+  document.getElementById('caldia-nueva-wrap').style.display = puedeAgregar ? 'block' : 'none';
+  document.getElementById('caldia-nota-titulo').value = '';
+  document.getElementById('caldia-nota-desc').value = '';
+  openModal('modal-dia-calendario');
+}
+
+async function guardarNotaCalendario(){
+  const titulo = document.getElementById('caldia-nota-titulo').value.trim();
+  if (!titulo){ toast('El título es obligatorio','error'); return; }
+  const descripcion = document.getElementById('caldia-nota-desc').value.trim();
+  const { error } = await sb.from('calendario_notas').insert({
+    fecha: _calDiaActivo, titulo, descripcion, creado_por: currentUser.userId, creado_por_nombre: currentUser.name
+  });
+  if (error){ toast(error.message,'error'); return; }
+  await audit('config', `Nota de calendario agregada: <strong>${esc(titulo)}</strong>`, 'b');
+  closeModal('modal-dia-calendario');
+  renderCalendario();
+  toast('Nota agregada','success');
+}
+
+function eliminarNotaCalendario(id){
+  confirmar('¿Eliminar esta nota?', 'Eliminar nota', async ()=>{
+    const { error } = await sb.from('calendario_notas').delete().eq('id', id);
+    if (error){ toast(error.message,'error'); return; }
+    closeModal('modal-dia-calendario');
+    renderCalendario();
+    toast('Nota eliminada','info');
+  });
 }
 
 function calPrev(){ calMes--; if(calMes<0){calMes=11;calAnio--;} renderCalendario(); }
@@ -7322,6 +7652,334 @@ async function renderKPIs(){
 // ═══════════════════════════════════════════════════════════════════
 // COMPLIANCE / CUMPLIMIENTO LEGAL
 // ═══════════════════════════════════════════════════════════════════
+/* ── Procesos por área — RH/Dirección ven todas; cada área ve/crea
+   solo los suyos. El área se asigna automáticamente según el rol
+   de quien crea el proceso. ── */
+const AREA_PROCESO_POR_ROL = { supervisor:'operacion', direccion_ceo:'direccion', rh:'rh', administracion:'administracion' };
+const AREA_PROCESO_LABEL = { operacion:'Operación', administracion:'Administración', rh:'RH', direccion:'Dirección' };
+let tempProcesoFile = null;
+let editingProcesoId = null;
+
+function handleProcesoFile(input){
+  if (!input.files.length) return;
+  const f = input.files[0];
+  if (f.size > 10*1024*1024){ toast('Archivo excede 10 MB','error'); input.value=''; return; }
+  tempProcesoFile = f;
+  document.getElementById('proc-fn').textContent = f.name;
+}
+
+function abrirNuevoProceso(){
+  editingProcesoId = null;
+  tempProcesoFile = null;
+  document.getElementById('modal-proceso-title').textContent = 'Nuevo proceso';
+  document.getElementById('proc-titulo').value = '';
+  document.getElementById('proc-contenido').value = '';
+  document.getElementById('proc-fn').textContent = 'Sin archivo';
+  document.getElementById('err-proceso').classList.remove('show');
+  openModal('modal-proceso');
+}
+
+async function editarProceso(id){
+  const { data: p, error } = await sb.from('procesos').select('*').eq('id', id).single();
+  if (error || !p){ toast('Proceso no encontrado','error'); return; }
+  editingProcesoId = id;
+  tempProcesoFile = null;
+  document.getElementById('modal-proceso-title').textContent = 'Editar proceso';
+  document.getElementById('proc-titulo').value = p.titulo;
+  document.getElementById('proc-contenido').value = p.contenido || '';
+  document.getElementById('proc-fn').textContent = p.nombre_archivo || 'Sin archivo';
+  document.getElementById('err-proceso').classList.remove('show');
+  openModal('modal-proceso');
+}
+
+async function guardarProceso(){
+  const titulo = document.getElementById('proc-titulo').value.trim();
+  const contenido = document.getElementById('proc-contenido').value.trim();
+  const err = document.getElementById('err-proceso');
+  if (!titulo){ err.textContent = 'El título es obligatorio'; err.classList.add('show'); return; }
+  err.classList.remove('show');
+
+  let storagePath = null, nombreArchivo = null;
+  if (tempProcesoFile){
+    try {
+      storagePath = await subirArchivoStorage('procesos', `${AREA_PROCESO_POR_ROL[currentUser.role]||'general'}/${Date.now()}_${tempProcesoFile.name}`, tempProcesoFile);
+      nombreArchivo = tempProcesoFile.name;
+    } catch(e){ err.textContent = 'Error subiendo el archivo: '+e.message; err.classList.add('show'); return; }
+  }
+
+  if (editingProcesoId){
+    const payload = { titulo, contenido, updated_at: new Date().toISOString() };
+    if (storagePath){ payload.storage_path = storagePath; payload.nombre_archivo = nombreArchivo; }
+    const { error } = await sb.from('procesos').update(payload).eq('id', editingProcesoId);
+    if (error){ err.textContent = error.message; err.classList.add('show'); return; }
+    await audit('config', `Proceso <strong>${esc(titulo)}</strong> actualizado`, 'a');
+    toast('Proceso actualizado','success');
+  } else {
+    const area = AREA_PROCESO_POR_ROL[currentUser.role];
+    if (!area){ err.textContent = 'Tu rol no puede crear procesos'; err.classList.add('show'); return; }
+    const { error } = await sb.from('procesos').insert({
+      area, titulo, contenido, storage_path: storagePath, nombre_archivo: nombreArchivo,
+      creado_por: currentUser.userId, creado_por_nombre: currentUser.name
+    });
+    if (error){ err.textContent = error.message; err.classList.add('show'); return; }
+    await audit('config', `Proceso <strong>${esc(titulo)}</strong> creado (${AREA_PROCESO_LABEL[area]})`, 'g');
+    toast('Proceso creado','success');
+  }
+  tempProcesoFile = null;
+  closeModal('modal-proceso');
+  renderProcesos();
+}
+
+function eliminarProceso(id, titulo){
+  confirmar(`¿Eliminar el proceso <strong>${esc(titulo)}</strong>?`, 'Eliminar proceso', async ()=>{
+    const { error } = await sb.from('procesos').delete().eq('id', id);
+    if (error){ toast(error.message,'error'); return; }
+    await audit('config', `Proceso <strong>${esc(titulo)}</strong> eliminado`, 'r');
+    toast('Proceso eliminado','info');
+    renderProcesos();
+  });
+}
+
+async function verProcesoArchivo(storagePath){
+  try {
+    const url = await urlFirmadaStorage('procesos', storagePath);
+    const w = window.open(url, '_blank', 'noopener');
+    if (!w) toast('El navegador bloqueó la ventana. Permite ventanas emergentes.','error');
+  } catch(e){ toast(e.message,'error'); }
+}
+
+async function renderProcesos(){
+  const cont = document.getElementById('procesos-list');
+  const { data, error } = await sb.from('procesos').select('*').order('area').order('created_at', { ascending:false });
+  if (error){ cont.innerHTML = '<div class="empty" style="padding:24px">Error al cargar procesos</div>'; return; }
+  if (!data || !data.length){
+    cont.innerHTML = '<div class="empty" style="padding:30px"><div class="empty-sub">Sin procesos registrados aún. Usa "+ Nuevo proceso" para crear el primero.</div></div>';
+    return;
+  }
+  const esRhODireccion = currentUser.role === 'rh' || currentUser.role === 'direccion_ceo';
+  cont.innerHTML = data.map(p => {
+    const puedeEditar = esRhODireccion || p.creado_por === currentUser.userId;
+    return `<div class="panel" style="padding:14px">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <span class="tag b" style="flex-shrink:0">${esc(AREA_PROCESO_LABEL[p.area]||p.area)}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--head);font-weight:800;font-size:13px">${esc(p.titulo)}</div>
+          <div style="font-size:10px;color:var(--text3);margin:2px 0 6px">Por ${esc(p.creado_por_nombre||'—')} · ${new Date(p.created_at).toLocaleDateString('es-MX')}</div>
+          ${p.contenido ? `<div style="font-size:12px;color:var(--text2);white-space:pre-wrap">${esc(p.contenido)}</div>` : ''}
+        </div>
+        <div style="flex-shrink:0;display:flex;gap:4px">
+          ${p.storage_path ? `<button class="btn sm" onclick="verProcesoArchivo('${p.storage_path}')">Ver PDF</button>` : ''}
+          ${puedeEditar ? `<button class="btn sm" onclick="editarProceso('${p.id}')">Editar</button><button class="btn sm danger" onclick="eliminarProceso('${p.id}','${esc(p.titulo)}')">🗑</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Muro de publicaciones — solo RH/Dirección publican, todos ven ── */
+function abrirNuevaPublicacion(){
+  document.getElementById('pub-categoria').value = 'Aviso';
+  document.getElementById('pub-contenido').value = '';
+  document.getElementById('pub-fijado').checked = false;
+  document.getElementById('err-publicacion').classList.remove('show');
+  openModal('modal-publicacion');
+}
+
+async function guardarPublicacion(){
+  const contenido = document.getElementById('pub-contenido').value.trim();
+  const err = document.getElementById('err-publicacion');
+  if (!contenido){ err.textContent = 'Escribe el contenido'; err.classList.add('show'); return; }
+  const { error } = await sb.from('publicaciones').insert({
+    autor_id: currentUser.userId, autor_nombre: currentUser.name,
+    categoria: document.getElementById('pub-categoria').value,
+    contenido, fijado: document.getElementById('pub-fijado').checked
+  });
+  if (error){ err.textContent = error.message; err.classList.add('show'); return; }
+  await audit('config', 'Publicación nueva en el muro', 'g');
+  closeModal('modal-publicacion');
+  renderMuro();
+  toast('Publicado','success');
+}
+
+function eliminarPublicacion(id){
+  confirmar('¿Eliminar esta publicación?', 'Eliminar publicación', async ()=>{
+    const { error } = await sb.from('publicaciones').delete().eq('id', id);
+    if (error){ toast(error.message,'error'); return; }
+    renderMuro();
+    toast('Publicación eliminada','info');
+  });
+}
+
+async function toggleReaccionMuro(pubId){
+  const { data: existente } = await sb.from('publicacion_reacciones').select('*').eq('publicacion_id', pubId).eq('usuario_id', currentUser.userId).maybeSingle();
+  if (existente){
+    await sb.from('publicacion_reacciones').delete().eq('publicacion_id', pubId).eq('usuario_id', currentUser.userId);
+  } else {
+    await sb.from('publicacion_reacciones').insert({ publicacion_id: pubId, usuario_id: currentUser.userId });
+  }
+  renderMuro();
+}
+
+async function agregarComentarioMuro(pubId){
+  const input = document.getElementById('muro-comentario-'+pubId);
+  const texto = input.value.trim();
+  if (!texto) return;
+  input.value = '';
+  const { error } = await sb.from('publicacion_comentarios').insert({
+    publicacion_id: pubId, autor_id: currentUser.userId, autor_nombre: currentUser.name, contenido: texto
+  });
+  if (error){ toast(error.message,'error'); return; }
+  renderMuro();
+}
+
+function eliminarComentarioMuro(id){
+  confirmar('¿Eliminar este comentario?', 'Eliminar comentario', async ()=>{
+    await sb.from('publicacion_comentarios').delete().eq('id', id);
+    renderMuro();
+  });
+}
+
+async function renderMuro(){
+  const esRhODireccion = currentUser.role === 'rh' || currentUser.role === 'direccion_ceo';
+  document.getElementById('muro-nueva-btn').style.display = esRhODireccion ? 'inline-flex' : 'none';
+
+  await renderCelebracionesMuro();
+
+  const [{ data: pubs }, { data: reacciones }, { data: comentarios }] = await Promise.all([
+    sb.from('publicaciones').select('*').order('fijado', { ascending:false }).order('created_at', { ascending:false }),
+    sb.from('publicacion_reacciones').select('*'),
+    sb.from('publicacion_comentarios').select('*').order('created_at')
+  ]);
+
+  const cont = document.getElementById('muro-list');
+  if (!pubs || !pubs.length){
+    cont.innerHTML = '<div class="empty" style="padding:30px"><div class="empty-sub">Sin publicaciones aún</div></div>';
+    return;
+  }
+  cont.innerHTML = pubs.map(p => {
+    const reacs = (reacciones||[]).filter(r=>r.publicacion_id===p.id);
+    const yoReaccione = reacs.some(r=>r.usuario_id===currentUser.userId);
+    const coms = (comentarios||[]).filter(c=>c.publicacion_id===p.id);
+    return `<div class="panel" style="padding:16px">
+      ${p.fijado ? '<span class="tag a" style="margin-bottom:8px;display:inline-block">📌 Fijado</span>' : ''}
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span class="tag b">${esc(p.categoria)}</span>
+        <div style="font-size:10px;color:var(--text3)">${esc(p.autor_nombre||'—')} · ${new Date(p.created_at).toLocaleDateString('es-MX')}</div>
+        ${esRhODireccion ? `<button class="btn sm danger ml" onclick="eliminarPublicacion('${p.id}')">🗑</button>` : ''}
+      </div>
+      <div style="font-size:13px;white-space:pre-wrap;margin-bottom:10px">${esc(p.contenido)}</div>
+      <div style="display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:8px">
+        <button class="btn sm ${yoReaccione?'primary':''}" onclick="toggleReaccionMuro('${p.id}')">❤️ ${reacs.length||''}</button>
+        <span style="font-size:10px;color:var(--text3)">${coms.length} comentario${coms.length!==1?'s':''}</span>
+      </div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+        ${coms.map(c=>`<div style="font-size:11px;background:var(--surface2,#2a2a2a);border-radius:8px;padding:6px 10px">
+          <strong>${esc(c.autor_nombre||'—')}:</strong> ${esc(c.contenido)}
+          ${(c.autor_id===currentUser.userId||esRhODireccion) ? ` <span onclick="eliminarComentarioMuro('${c.id}')" style="color:var(--text3);cursor:pointer;float:right">✕</span>` : ''}
+        </div>`).join('')}
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <input class="form-input" id="muro-comentario-${p.id}" placeholder="Escribe un comentario..." style="flex:1;font-size:11px;padding:6px 8px" onkeydown="if(event.key==='Enter')agregarComentarioMuro('${p.id}')">
+          <button class="btn sm" onclick="agregarComentarioMuro('${p.id}')">➤</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Celebraciones — cumpleaños/aniversario, activados por RH,
+   felicitación llega como notificación privada, no pública. ── */
+async function renderCelebracionesMuro(){
+  const cont = document.getElementById('muro-celebraciones');
+  const hoy = new Date();
+  const mesHoy = hoy.getMonth()+1, diaHoy = hoy.getDate();
+  const fechaHoyISO = fmtDate(hoy);
+  const esRhODireccion = currentUser.role === 'rh' || currentUser.role === 'direccion_ceo';
+
+  const candidatos = DB.colaboradores.filter(c=>c.estatus==='activo').map(c=>{
+    const resultados = [];
+    if (c.fechaNacimiento){
+      const fn = new Date(c.fechaNacimiento+'T00:00:00');
+      if (fn.getMonth()+1===mesHoy && fn.getDate()===diaHoy) resultados.push('cumpleanos');
+    }
+    if (c.ingreso){
+      const fi = new Date(c.ingreso+'T00:00:00');
+      if (fi.getMonth()+1===mesHoy && fi.getDate()===diaHoy && fi.getFullYear()<hoy.getFullYear()) resultados.push('aniversario');
+    }
+    return resultados.map(tipo=>({ colaborador:c, tipo }));
+  }).flat();
+
+  if (!candidatos.length){ cont.innerHTML = ''; return; }
+
+  const { data: activadas } = await sb.from('celebraciones_activadas').select('*').eq('fecha', fechaHoyISO);
+  const activadasSet = new Set((activadas||[]).map(a=>a.colaborador_id+'-'+a.tipo));
+
+  const { data: perfilesLigados } = await sb.from('profiles').select('id,colaborador_id').not('colaborador_id','is',null);
+  const mapaColabCuenta = {}; (perfilesLigados||[]).forEach(p=>mapaColabCuenta[p.colaborador_id]=p.id);
+
+  cont.innerHTML = candidatos.map(({colaborador:c, tipo})=>{
+    const yaActivada = activadasSet.has(c.id+'-'+tipo);
+    const etiqueta = tipo==='cumpleanos' ? '🎉 Hoy es el cumpleaños de' : '🏅 Hoy Aniversario laboral de';
+    const cuentaDestino = mapaColabCuenta[c.id];
+    if (!yaActivada){
+      if (!esRhODireccion) return '';
+      return `<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px;background:var(--pa)">
+        <div style="flex:1;font-size:12px">${etiqueta} <strong>${esc(c.nombre)}</strong> — sin activar (solo RH/Dirección la ven)</div>
+        <button class="btn sm primary" onclick="activarCelebracion('${c.id}','${tipo}')">Activar</button>
+      </div>`;
+    }
+    return `<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px;background:var(--ga)">
+      <div style="flex:1;font-size:12px">${etiqueta} <strong>${esc(c.nombre)}</strong></div>
+      ${cuentaDestino && cuentaDestino !== currentUser.userId ? `<button class="btn sm primary" onclick="enviarFelicitacion('${cuentaDestino}','${esc(c.nombre)}','${tipo}')">Felicitar</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function activarCelebracion(colaboradorId, tipo){
+  const fechaHoyISO = fmtDate(new Date());
+  const { error } = await sb.from('celebraciones_activadas').insert({ fecha: fechaHoyISO, colaborador_id: colaboradorId, tipo, activado_por: currentUser.userId });
+  if (error){ toast(error.message,'error'); return; }
+  await audit('config', 'Celebración del día activada', 'g');
+  renderCelebracionesMuro();
+  toast('Activado — ya pueden felicitar','success');
+}
+
+async function enviarFelicitacion(paraUsuarioId, nombreColab, tipo){
+  const { error } = await sb.from('felicitaciones').insert({
+    de_usuario_id: currentUser.userId, de_nombre: currentUser.name,
+    para_usuario_id: paraUsuarioId, tipo,
+    mensaje: tipo==='cumpleanos' ? `${currentUser.name} te felicitó por tu cumpleaños` : `${currentUser.name} te felicitó por tu aniversario laboral`
+  });
+  if (error){ toast(error.message,'error'); return; }
+  toast(`Felicitaste a ${nombreColab} 🎉`,'success');
+}
+
+/* ── Campana de notificaciones — felicitaciones/reconocimientos recibidos ── */
+let _bellWidgetAbierto = false;
+
+function toggleBellWidget(){
+  _bellWidgetAbierto = !_bellWidgetAbierto;
+  document.getElementById('bell-widget-panel').style.display = _bellWidgetAbierto ? 'block' : 'none';
+  if (_bellWidgetAbierto) renderBell(true);
+}
+
+async function renderBell(marcarLeidas){
+  const { data } = await sb.from('felicitaciones').select('*').eq('para_usuario_id', currentUser.userId).order('created_at', { ascending:false }).limit(30);
+  const cont = document.getElementById('bell-list');
+  cont.innerHTML = (data||[]).length ? data.map(f=>`<div style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px">
+      ${esc(f.mensaje)}
+      <div style="color:var(--text3);font-size:9px;margin-top:2px">${new Date(f.created_at).toLocaleString('es-MX')}</div>
+    </div>`).join('') : '<div class="empty" style="padding:16px;font-size:11px">Sin notificaciones</div>';
+
+  const noLeidas = (data||[]).filter(f=>!f.leida).length;
+  const badge = document.getElementById('bell-badge');
+  badge.style.display = noLeidas > 0 ? 'flex' : 'none';
+  badge.textContent = noLeidas;
+
+  if (marcarLeidas && noLeidas > 0){
+    await sb.from('felicitaciones').update({ leida:true }).eq('para_usuario_id', currentUser.userId).eq('leida', false);
+  }
+}
+
 async function cargarContratosVigentes(){
   const { data, error } = await sb.from('contratos').select('colaborador_id').eq('vigente', true);
   if (error){ DB.contratosVigentes = new Set(); return; }
