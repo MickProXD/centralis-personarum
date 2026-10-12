@@ -114,6 +114,7 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 .sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);cursor:pointer;font-family:var(--head);font-size:12.5px;font-weight:700;line-height:1.2;color:var(--text2);transition:all .18s;margin-bottom:2px}
 .sb-item:hover{background:var(--surface);color:var(--text)}
 .sb-item.active{background:var(--green3);color:var(--green)}
+.sb-item.tour-hl{outline:2px solid var(--green);outline-offset:-2px;border-radius:8px}
 .sb-item svg{width:14px;height:14px;flex-shrink:0;opacity:.8}
 .sb-item.active svg{opacity:1}
 
@@ -672,6 +673,10 @@ select.form-input option{background:var(--bg2)}
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="12" rx="1.5"/><path d="M1 6h14M5 2V1M11 2V1"/></svg>
       Asistencias
     </div>
+    <div class="sb-item" data-page="equipoasis" onclick="nav('equipoasis',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="6" cy="6" r="2.5"/><circle cx="11.5" cy="7" r="2"/><path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4M10.5 10.5c2 0 4 1 4 3"/></svg>
+      Asistencia del equipo
+    </div>
     <div class="sb-item" data-page="permisos" onclick="nav('permisos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M8 1l5 2v4c0 3-2 5-5 6-3-1-5-3-5-6V3l5-2z"/><path d="M6 8h4M8 6v4"/></svg>
       Permisos <span class="sb-bdg a" id="bdg-permisos">0</span>
@@ -1118,10 +1123,21 @@ select.form-input option{background:var(--bg2)}
       <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Mi asistencia</div>
     </div>
     <div class="panel" style="padding:18px" id="mia-hoy"></div>
+    <div id="mia-panel"></div>
     <div class="panel" style="margin-top:12px">
       <div class="ph"><div class="ph-title">Mis últimos registros</div></div>
       <div id="mia-historial" style="padding:6px 14px 12px"></div>
     </div>
+  </div>
+
+    <!-- ASISTENCIA DEL EQUIPO — RH y Dirección -->
+  <div id="page-equipoasis" class="page fadein">
+    <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Asistencia del equipo</div>
+      <input class="form-input" type="date" id="eq-fecha" style="width:auto;margin-left:auto" onchange="renderEquipoAsistencia()">
+    </div>
+    <div id="eq-resumen" style="margin-bottom:12px"></div>
+    <div class="panel"><div id="eq-lista" style="padding:6px 14px 12px"></div></div>
   </div>
 
     <!-- MURO — publicaciones de RH/Dirección + celebraciones del día -->
@@ -1729,11 +1745,28 @@ select.form-input option{background:var(--bg2)}
       <div class="form-err" id="err-mc" style="margin-bottom:8px">—</div>
       <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px">
         <button class="btn sm" onclick="closeModal('modal-mi-cuenta'); abrirCambiarPassword(false)">Cambiar contraseña</button>
+        <button class="btn sm" onclick="closeModal('modal-mi-cuenta'); iniciarTour()" style="margin-left:6px">Ver recorrido de la plataforma</button>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn" onclick="closeModal('modal-mi-cuenta')">Cancelar</button>
       <button class="btn primary" onclick="guardarMiCuenta()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECORRIDO DE BIENVENIDA -->
+<div class="overlay" id="modal-tour">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="tour-titulo">Bienvenido</div></div>
+    <div class="modal-body">
+      <div id="tour-texto" style="font-size:13px;line-height:1.6;color:var(--text2)"></div>
+      <div id="tour-puntos" style="display:flex;gap:6px;justify-content:center;margin-top:16px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="cerrarTour()">Omitir</button>
+      <button class="btn" id="tour-prev" onclick="tourPaso(-1)">Anterior</button>
+      <button class="btn primary" id="tour-next" onclick="tourPaso(1)">Siguiente</button>
     </div>
   </div>
 </div>
@@ -3327,7 +3360,7 @@ const CAPS = {
     reportes:'own', actas:'own_sites', firmaAsistencia:true, equipos:true
   },
   rh: {
-    pages:['dashboard','sites','personal','asistencias','reportes','compliance','kpis','calendario','procesos','miasistencia','muro'],
+    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','miasistencia','muro'],
     fleet:false, personnel:'all', editPersonnel:'all', baja:false,
     sites:'all_view', createSite:false, permisosLegales:false, permisos:false,
     config:'personnel', auditoria:false, kpis:true, compliance:true,
@@ -3349,7 +3382,7 @@ const CAPS = {
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   direccion_ceo: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','muro'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','muro'],
     fleet:true, personnel:'all', editPersonnel:'all', baja:true,
     sites:'all', createSite:true, permisosLegales:true, permisos:true,
     config:true, auditoria:true, kpis:true, compliance:true,
@@ -3939,7 +3972,7 @@ async function cargarPerfilYActivarSesion(){
   currentUser = {
     name: profile.nombre, role: profile.role, userId: profile.id,
     colaboradorId: profile.colaborador_id,
-    areaAdmin: profile.area_admin || null, gerenteId: profile.gerente_id || null,
+    areaAdmin: profile.area_admin || null, gerenteId: profile.gerente_id || null, tourCompletado: !!profile.tour_completado,
     initials: profile.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()
   };
   _sesionActiva = true; _lastActivity = Date.now();
@@ -3956,7 +3989,7 @@ async function cargarPerfilYActivarSesion(){
   await cargarDatosSupabase();
   updateBadges();
   nav(caps().pages[0] || 'dashboard', null);
-  avisoAsistenciaInicio();
+  if (!currentUser.tourCompletado) iniciarTour(); else avisoAsistenciaInicio();
   toast(`Bienvenido, ${currentUser.name.split(' ')[0]}`, 'success');
 
   // Aviso a Dirección: solicitudes de cuenta pendientes de revisar
@@ -4420,7 +4453,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { dashboard:'Dashboard', sites:'Sites', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia' };
+  const titles = { dashboard:'Dashboard', sites:'Sites', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo' };
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
   if (page === 'sites') renderSites();
@@ -4435,6 +4468,7 @@ function nav(page, el){
   if (page === 'procesos') renderProcesos();
   if (page === 'muro') renderMuro();
   if (page === 'miasistencia') renderMiAsistencia();
+  if (page === 'equipoasis') renderEquipoAsistencia();
   if (page === 'compliance') renderCompliance();
   if (page === 'auditoria') renderAuditoria();
   if (page === 'configuracion') renderConfig();
@@ -8542,7 +8576,7 @@ async function renderMiAsistencia(){
     hist.innerHTML = ''; return;
   }
   const [{ data: rows }, { data: hs }] = await Promise.all([
-    sb.from('asistencias').select('*').eq('colaborador_id', currentUser.colaboradorId).order('fecha', { ascending:false }).limit(30),
+    sb.from('asistencias').select('*').eq('colaborador_id', currentUser.colaboradorId).order('fecha', { ascending:false }).limit(150),
     sb.from('horarios_asistencia').select('*')
   ]);
   const h = (hs||[]).find(x => x.colaborador_id) || (hs||[]).find(x => !x.colaborador_id);
@@ -8563,6 +8597,7 @@ async function renderMiAsistencia(){
     </div>
     <div id="mia-msg" style="font-size:12px;margin-top:10px"></div>${nota}
     <div style="font-size:10px;color:var(--text3);margin-top:10px">El registro requiere estar en la red de la empresa y dentro de la sede.</div>`;
+  renderPanelAsistencia(rows||[], h);
   hist.innerHTML = (rows && rows.length) ? rows.slice(0,10).map(r => {
     const e = r.estado_puntualidad ? EST_ASIS[r.estado_puntualidad] : null;
     return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
@@ -8656,6 +8691,236 @@ function quitarHorario(colabId){
     await audit('config', 'Horario personalizado quitado (vuelve al horario base)', 'a');
     renderHorariosConfig();
   });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PANEL PRIVADO DE ASISTENCIA — pastel, puntaje, racha, insignias, semana y meta del equipo
+   Lenguaje positivo; sin ranking entre compañeros.
+   ═══════════════════════════════════════════════════════════════════ */
+const PUNTOS_ASIS = { puntual:10, precaucion:6, retardo:3, sin:0 };
+const META_EQUIPO_PCT = 90;
+function ymd(d){ return d.toLocaleDateString('en-CA'); }
+function fechaDe(str){ const [y,m,d] = str.split('-').map(Number); return new Date(y, m-1, d); }
+function esLaboral(str, h){ const dow = ((fechaDe(str).getDay() + 6) % 7) + 1; return !h || (h.dias||[1,2,3,4,5,6]).includes(dow); }
+function lunesDe(d){ const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); x.setHours(0,0,0,0); return x; }
+// Clasifica un día: puntual|precaucion|retardo|sin|neutro|pendiente|nolab
+function claseDia(str, mapa, h, hoy){
+  if (!esLaboral(str, h)) return 'nolab';
+  const r = mapa[str];
+  if (r?.hora_entrada) return r.estado_puntualidad || 'puntual';
+  if (r && ['V','I','FJ'].includes(r.tipo)) return 'neutro';
+  if (str >= hoy) return 'pendiente';
+  return 'sin';
+}
+function statsAsistencia(rows, h){
+  const mapa = {}; rows.forEach(r => { mapa[r.fecha] = r; });
+  const hoy = hoyLocal(), hoyD = fechaDe(hoy);
+  const cont = { puntual:0, precaucion:0, retardo:0, sin:0 };
+  const ini = new Date(hoyD.getFullYear(), hoyD.getMonth(), 1);
+  for (let d = new Date(ini); d <= hoyD; d.setDate(d.getDate()+1)){
+    const c = claseDia(ymd(d), mapa, h, hoy); if (cont[c] !== undefined) cont[c]++;
+  }
+  const dias = cont.puntual + cont.precaucion + cont.retardo + cont.sin;
+  const pts = cont.puntual*PUNTOS_ASIS.puntual + cont.precaucion*PUNTOS_ASIS.precaucion + cont.retardo*PUNTOS_ASIS.retardo;
+  const pct = dias ? Math.round(pts / (dias*10) * 100) : 0;
+  // Rachas de puntualidad (hacia atrás desde hoy; se saltan días no laborales, justificados y el día en curso)
+  let racha = 0, mejor = 0, corrida = 0;
+  const desde = new Date(hoyD); desde.setDate(desde.getDate() - 120);
+  let enRacha = true;
+  const lista = [];
+  for (let d = new Date(desde); d <= hoyD; d.setDate(d.getDate()+1)) lista.push(ymd(d));
+  lista.forEach(f => { const c = claseDia(f, mapa, h, hoy); if (c === 'puntual'){ corrida++; mejor = Math.max(mejor, corrida); } else if (['precaucion','retardo','sin'].includes(c)) corrida = 0; });
+  for (let i = lista.length - 1; i >= 0; i--){ const c = claseDia(lista[i], mapa, h, hoy); if (c === 'puntual') racha++; else if (['precaucion','retardo','sin'].includes(c)) break; }
+  // Semanas (lunes a domingo) completas
+  const semanas = {};
+  lista.forEach(f => { const k = ymd(lunesDe(fechaDe(f))); (semanas[k] = semanas[k] || []).push(claseDia(f, mapa, h, hoy)); });
+  const lunesActual = ymd(lunesDe(hoyD));
+  const claves = Object.keys(semanas).filter(k => k < lunesActual && fechaDe(k) >= lunesDe(desde)).sort();
+  const perfecta = k => { const v = semanas[k].filter(c => !['nolab','neutro'].includes(c)); return v.length > 0 && v.every(c => c === 'puntual'); };
+  let perfectas = 0, runPerf = 0, mejorRunPerf = 0;
+  claves.forEach(k => { if (perfecta(k)){ perfectas++; runPerf++; mejorRunPerf = Math.max(mejorRunPerf, runPerf); } else runPerf = 0; });
+  const ultima = claves.length ? claves[claves.length-1] : null;
+  return { cont, dias, pts, pct, racha, mejor, perfectas, mejorRunPerf, ultima, ultimaPerfecta: ultima ? perfecta(ultima) : false,
+           ultimaSem: ultima ? semanas[ultima] : null };
+}
+function pastelSvg(cont){
+  const col = { puntual:'var(--green)', precaucion:'var(--amber)', retardo:'var(--red)', sin:'var(--text3)' };
+  const tot = cont.puntual + cont.precaucion + cont.retardo + cont.sin;
+  const R = 15.9155; let off = 0, arcos = '';
+  if (!tot) arcos = `<circle cx="21" cy="21" r="${R}" fill="none" stroke="var(--border)" stroke-width="5"/>`;
+  else ['puntual','precaucion','retardo','sin'].forEach(k => {
+    if (!cont[k]) return; const l = cont[k] / tot * 100;
+    arcos += `<circle cx="21" cy="21" r="${R}" fill="none" stroke="${col[k]}" stroke-width="5" stroke-dasharray="${l} ${100-l}" stroke-dashoffset="${25-off}"/>`; off += l;
+  });
+  return `<svg viewBox="0 0 42 42" style="width:130px;height:130px;flex-shrink:0">${arcos}<text x="21" y="22.5" text-anchor="middle" font-size="7" font-weight="800" fill="var(--text)">${tot}</text><text x="21" y="27.5" text-anchor="middle" font-size="3" fill="var(--text3)">días</text></svg>`;
+}
+async function renderPanelAsistencia(rows, h){
+  const cont = document.getElementById('mia-panel'); if (!cont) return;
+  const st = statsAsistencia(rows, h);
+  const nivel = st.pct >= 90 ? 'Excelente' : st.pct >= 75 ? 'Destacado' : st.pct >= 50 ? 'Constante' : 'En camino';
+  const leyenda = [['puntual','Puntual','var(--green)'],['precaucion','Precaución','var(--amber)'],['retardo','Retardo','var(--red)'],['sin','Sin registro','var(--text3)']]
+    .map(([k,t,c]) => `<div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:9px;height:9px;border-radius:50%;background:${c}"></span>${t}<strong style="margin-left:auto">${st.cont[k]}</strong></div>`).join('');
+  const mes = new Date().toLocaleDateString('es-MX', { month:'long', timeZone:TZ_MX });
+  // Tu semana
+  let semana = '<div style="font-size:12px;color:var(--text3)">Tu primera tarjeta semanal aparecerá al cerrar tu primera semana completa.</div>';
+  if (st.ultima){
+    const v = st.ultimaSem.filter(c => !['nolab','neutro'].includes(c));
+    const ok = v.filter(c => c === 'puntual').length;
+    const msg = st.ultimaPerfecta ? '¡Semana perfecta! Todas tus entradas fueron puntuales. Gracias por tu compromiso.'
+      : ok >= v.length - 1 ? 'Casi perfecta. Tu constancia hace la diferencia en el equipo.'
+      : 'Cada semana es una nueva oportunidad. Gracias por seguir sumando.';
+    semana = `<div style="font-size:12px;color:var(--text3);margin-bottom:4px">Semana del ${fechaDe(st.ultima).toLocaleDateString('es-MX',{day:'numeric',month:'long'})}</div>
+      <div style="font-family:var(--head);font-weight:800;font-size:14px">${ok} de ${v.length} días a tiempo</div>
+      <div style="font-size:12px;color:var(--text2);margin:6px 0">${msg}</div>
+      <div style="font-size:11px;color:var(--text3);font-style:italic">— Dirección, BioAmbientalistik</div>`;
+  }
+  const ins = [
+    { ok: st.perfectas >= 1, t:'Semana perfecta', d: st.perfectas ? `Conseguida ${st.perfectas} ${st.perfectas===1?'vez':'veces'}` : 'Una semana completa con todas tus entradas puntuales' },
+    { ok: st.mejorRunPerf >= 4, t:'4 semanas de racha', d: st.mejorRunPerf >= 4 ? '¡Conseguida!' : `Llevas ${st.mejorRunPerf} semanas seguidas de 4` }
+  ].map(i => `<div style="flex:1;min-width:140px;padding:10px;border:1px solid var(--border);border-radius:var(--r);opacity:${i.ok?1:.55}">
+      <div style="font-size:18px">${i.ok?'🏅':'🔒'}</div><div style="font-family:var(--head);font-weight:800;font-size:12px">${i.t}</div><div style="font-size:11px;color:var(--text3)">${i.d}</div></div>`).join('');
+  cont.innerHTML = `
+    <div class="panel" style="margin-top:12px;padding:16px">
+      <div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:10px">Tu mes de ${mes}</div>
+      <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+        ${pastelSvg(st.cont)}
+        <div style="flex:1;min-width:150px;display:flex;flex-direction:column;gap:5px">${leyenda}</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+        <div style="flex:1;min-width:120px"><div style="font-size:11px;color:var(--text3)">Puntaje</div><div style="font-family:var(--head);font-weight:900;font-size:20px">${st.pts} <span style="font-size:11px;font-weight:600;color:var(--text3)">pts</span></div></div>
+        <div style="flex:1;min-width:120px"><div style="font-size:11px;color:var(--text3)">Nivel</div><div style="font-family:var(--head);font-weight:900;font-size:16px;color:var(--green)">${nivel}</div></div>
+        <div style="flex:1;min-width:120px"><div style="font-size:11px;color:var(--text3)">Racha de puntualidad</div><div style="font-family:var(--head);font-weight:900;font-size:20px">🔥 ${st.racha} <span style="font-size:11px;font-weight:600;color:var(--text3)">${st.racha===1?'día':'días'}</span></div><div style="font-size:10px;color:var(--text3)">Tu mejor racha: ${st.mejor}</div></div>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:3px;margin-top:12px;overflow:hidden"><div style="height:100%;width:${st.pct}%;background:var(--green)"></div></div>
+    </div>
+    <div class="panel" style="margin-top:12px;padding:16px"><div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:8px">Tu semana</div>${semana}</div>
+    <div class="panel" style="margin-top:12px;padding:16px"><div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:10px">Tus insignias <span style="font-weight:500;font-size:11px;color:var(--text3)">(solo tú las ves)</span></div><div style="display:flex;gap:10px;flex-wrap:wrap">${ins}</div></div>
+    <div class="panel" style="margin-top:12px;padding:16px" id="mia-meta"></div>`;
+  // Meta colectiva (solo cifras agregadas del equipo)
+  const hoyD = fechaDe(hoyLocal()), ini = ymd(new Date(hoyD.getFullYear(), hoyD.getMonth(), 1));
+  const { data: res } = await sb.rpc('resumen_equipo_asistencia', { p_desde: ini, p_hasta: hoyLocal() });
+  const r = res && res[0], meta = document.getElementById('mia-meta'); if (!meta) return;
+  if (!r || r.total < 5){ meta.innerHTML = '<div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:6px">Meta del equipo</div><div style="font-size:12px;color:var(--text3)">Estamos reuniendo los primeros registros del mes. ¡Cada entrada puntual suma!</div>'; return; }
+  const pctEq = Math.round(r.puntuales / r.total * 100);
+  meta.innerHTML = `<div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:6px">Meta del equipo</div>
+    <div style="font-size:13px">Este mes llegamos <strong>${pctEq}% puntuales</strong> como equipo.</div>
+    <div style="position:relative;height:8px;background:var(--border);border-radius:4px;margin:10px 0 6px"><div style="height:100%;width:${pctEq}%;background:var(--green);border-radius:4px"></div><div style="position:absolute;left:${META_EQUIPO_PCT}%;top:-3px;width:2px;height:14px;background:var(--text2)"></div></div>
+    <div style="font-size:11px;color:var(--text3)">${pctEq >= META_EQUIPO_PCT ? `¡Meta del ${META_EQUIPO_PCT}% alcanzada! Gracias, equipo.` : `Nuestra meta es ${META_EQUIPO_PCT}%. Entre todos podemos lograrlo.`}</div>`;
+}
+
+/* ── Vista de equipo (RH y Dirección ven todo) ── */
+async function renderEquipoAsistencia(){
+  if (!['rh','direccion_ceo'].includes(currentUser.role)) return;
+  const fEl = document.getElementById('eq-fecha'); if (!fEl.value) fEl.value = hoyLocal();
+  const fecha = fEl.value, hoyD = fechaDe(fecha), ini = ymd(new Date(hoyD.getFullYear(), hoyD.getMonth(), 1));
+  const [{ data: dia }, { data: mes }, { data: hs }] = await Promise.all([
+    sb.from('asistencias').select('*').eq('fecha', fecha),
+    sb.from('asistencias').select('colaborador_id,estado_puntualidad,hora_entrada').gte('fecha', ini).lte('fecha', fecha),
+    sb.from('horarios_asistencia').select('*')
+  ]);
+  const activos = DB.colaboradores.filter(c => c.estatus === 'activo');
+  const reg = activos.filter(c => (dia||[]).find(a => a.colaborador_id === c.id)?.hora_entrada).length;
+  document.getElementById('eq-resumen').innerHTML = `<div class="panel" style="padding:12px 16px;font-size:13px"><strong>${reg}</strong> de <strong>${activos.length}</strong> colaboradores registraron su entrada${fecha===hoyLocal()?' hoy':' ese día'}.</div>`;
+  const esRH = currentUser.role === 'rh';
+  document.getElementById('eq-lista').innerHTML = activos.length ? activos.map(c => {
+    const a = (dia||[]).find(x => x.colaborador_id === c.id);
+    const m = (mes||[]).filter(x => x.colaborador_id === c.id && x.hora_entrada);
+    const pct = m.length ? Math.round(m.filter(x => x.estado_puntualidad === 'puntual').length / m.length * 100) : null;
+    const e = a?.estado_puntualidad ? EST_ASIS[a.estado_puntualidad] : null;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px"><strong>${esc(c.nombre)}</strong><div style="font-size:11px;color:var(--text3)">${esc(c.puesto||'')}</div></div>
+      <div style="width:130px;color:var(--text2)">${fmtHora(a?.hora_entrada)} – ${fmtHora(a?.hora_salida)}</div>
+      <div style="width:90px">${e ? `<span class="tag ${e.cls}">${e.txt}</span>` : (a?.tipo && a.tipo!=='P' ? `<span class="tag m">${esc(TIPO_ASIS_LBL[a.tipo]||a.tipo)}</span>` : '<span class="tag m">Sin registro</span>')}</div>
+      <div style="width:90px;color:var(--text3)">${pct===null?'—':pct+'% puntual'}</div>
+      ${esRH ? `<button class="btn sm" onclick="reconocerEnMuro('${c.id}','${esc(c.nombre)}')">Reconocer en el Muro</button>` : ''}</div>`;
+  }).join('') : '<div class="empty-sub" style="padding:10px 0">Sin colaboradores activos</div>';
+}
+function reconocerEnMuro(colabId, nombre){
+  if (currentUser.role !== 'rh') return;
+  confirmar(`¿Publicar en el Muro un reconocimiento para <strong>${nombre}</strong> por su puntualidad y constancia?`, 'Reconocer en el Muro', async () => {
+    const { error } = await sb.from('publicaciones').insert({
+      autor_id: currentUser.userId, autor_nombre: currentUser.name, categoria: 'Reconocimiento', fijado: true,
+      contenido: `Reconocimiento a ${nombre} por su puntualidad y constancia. ¡Gracias por tu compromiso con el equipo!`
+    });
+    if (error){ toast(error.message, 'error'); return; }
+    await audit('config', `Reconocimiento en el Muro para ${esc(nombre)}`, 'g');
+    toast('Reconocimiento publicado en el Muro', 'success');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RECORRIDO DE BIENVENIDA — primer inicio de sesión, según perfil
+   ═══════════════════════════════════════════════════════════════════ */
+const TOUR_PASOS = {
+  _inicio: [{ t:'Bienvenido a Bio-centralis', x:'Este es el espacio de trabajo de BioAmbientalistik. En unos pasos te mostramos lo que puedes hacer según tu perfil. Puedes omitirlo y volver a verlo cuando quieras desde "Mi cuenta".' }],
+  _cierre: [
+    { t:'Muro', x:'Aquí encontrarás los avisos, felicitaciones y reconocimientos de la empresa.', pg:'muro' },
+    { t:'Tu cuenta', x:'En "Mi cuenta" puedes cambiar tu nombre para mostrar, la apariencia clara u oscura y tu contraseña. Cuida tus credenciales: son personales.' }
+  ],
+  _asis: { t:'Mi asistencia', x:'Registra tu entrada y salida desde aquí, estando en la sede y conectado a su red. También verás tu avance del mes, tu racha y tus insignias. Todo es privado.', pg:'miasistencia' },
+  chofer: [
+    { t:'Tu camión', x:'En "Flota" ves la información y los documentos de la unidad que tu Gerente Operativo te asignó.', pg:'flota' }
+  ],
+  supervisor: [
+    { t:'Tu panel', x:'El Dashboard resume el estado de tu operación.', pg:'dashboard' },
+    { t:'Personal y asistencias', x:'Consulta a tu equipo, registra o corrige su asistencia y firma el cierre semanal.', pg:'asistencias' },
+    { t:'Flota y equipos', x:'Administra unidades, documentos, TAGs y los equipos móviles. Aquí asignas el camión a cada Operativo.', pg:'flota' },
+    { t:'Permisos y procesos', x:'Da seguimiento a permisos y vigencias, y consulta los procesos de tu área.', pg:'permisos' }
+  ],
+  administracion: [
+    { t:'Calendario', x:'Agrega notas y fechas importantes para todo el equipo.', pg:'calendario' },
+    { t:'Procesos', x:'Documenta los procesos de tu área para que cualquiera de tu equipo los consulte.', pg:'procesos' }
+  ],
+  administrativo: [
+    { t:'Calendario y procesos', x:'Tu perfil es de consulta: puedes ver el calendario y los procesos de tu área.', pg:'calendario' }
+  ],
+  monitoreo: [
+    { t:'Flota, documentos y equipos', x:'Consulta y actualiza la información de unidades, sus documentos y los equipos móviles.', pg:'flota' }
+  ],
+  rh: [
+    { t:'Personal', x:'Expedientes, altas, bajas y documentos de los colaboradores.', pg:'personal' },
+    { t:'Asistencias y horarios', x:'Consulta la asistencia de todos en "Asistencia del equipo". En Configuración defines los horarios y, si lo deseas, reconoces a alguien en el Muro.', pg:'equipoasis' },
+    { t:'Muro y celebraciones', x:'Publica avisos y activa las felicitaciones del día.', pg:'muro' }
+  ],
+  direccion_ceo: [
+    { t:'Visión general', x:'El Dashboard y los KPIs concentran el estado de la empresa.', pg:'dashboard' },
+    { t:'Asistencia del equipo', x:'Consulta la asistencia de todos. Las sedes (ubicación y red) se configuran en Configuración.', pg:'equipoasis' },
+    { t:'Auditoría y configuración', x:'La auditoría registra los movimientos importantes; en Configuración administras cuentas, áreas y respaldos.', pg:'auditoria' }
+  ]
+};
+let _tourPasos = [], _tourIdx = 0;
+function iniciarTour(){
+  const rolePasos = TOUR_PASOS[currentUser.role] || [];
+  const pasos = [...TOUR_PASOS._inicio, ...rolePasos];
+  if (currentUser.role !== 'direccion_ceo' && caps().pages.includes('miasistencia')) pasos.push(TOUR_PASOS._asis);
+  TOUR_PASOS._cierre.forEach(p => { if (!p.pg || caps().pages.includes(p.pg)) pasos.push(p); });
+  _tourPasos = pasos.filter(p => !p.pg || caps().pages.includes(p.pg)); _tourIdx = 0;
+  mostrarPasoTour(); openModal('modal-tour');
+}
+function mostrarPasoTour(){
+  const p = _tourPasos[_tourIdx];
+  document.getElementById('tour-titulo').textContent = p.t;
+  document.getElementById('tour-texto').textContent = p.x;
+  document.getElementById('tour-puntos').innerHTML = _tourPasos.map((_, i) => `<span style="width:7px;height:7px;border-radius:50%;background:${i===_tourIdx?'var(--green)':'var(--border2)'}"></span>`).join('');
+  document.getElementById('tour-prev').style.display = _tourIdx ? '' : 'none';
+  document.getElementById('tour-next').textContent = _tourIdx === _tourPasos.length - 1 ? 'Finalizar' : 'Siguiente';
+  document.querySelectorAll('.sb-item.tour-hl').forEach(e => e.classList.remove('tour-hl'));
+  if (p.pg){ const it = document.querySelector(`.sb-item[data-page="${p.pg}"]`); if (it) it.classList.add('tour-hl'); }
+}
+function tourPaso(d){
+  const n = _tourIdx + d;
+  if (n >= _tourPasos.length){ cerrarTour(); return; }
+  if (n < 0) return;
+  _tourIdx = n; mostrarPasoTour();
+}
+async function cerrarTour(){
+  document.querySelectorAll('.sb-item.tour-hl').forEach(e => e.classList.remove('tour-hl'));
+  closeModal('modal-tour');
+  if (!currentUser.tourCompletado){
+    currentUser.tourCompletado = true;
+    try { await sb.rpc('marcar_tour_completado'); } catch(e){}
+    avisoAsistenciaInicio();
+  }
 }
 
 /* ── QR por sede (diseño de marca, generado localmente) ── */
