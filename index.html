@@ -685,7 +685,7 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="sb-item" data-page="sites" onclick="nav('sites',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M2 5a1 1 0 011-1h3l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V5z"/></svg>
-      Sites <span class="sb-bdg m" id="bdg-sites">0</span>
+      Sites/Sedes <span class="sb-bdg m" id="bdg-sites">0</span>
     </div>
     <div class="sb-item" data-page="personal" onclick="nav('personal',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
@@ -879,7 +879,7 @@ select.form-input option{background:var(--bg2)}
     <div id="page-sites" class="page fadein">
       <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div style="flex:1">
-          <div style="font-family:var(--head);font-size:13px;font-weight:800;color:var(--text)">Sites operativos</div>
+          <div style="font-family:var(--head);font-size:13px;font-weight:800;color:var(--text)">Sites/Sedes</div>
           <div style="font-size:11px;color:var(--text3)" id="sites-sub">Cada supervisor administra sus propias carpetas de inplant</div>
         </div>
         <button class="btn primary" data-cap="createSite" onclick="openSite()"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>Crear Site</button>
@@ -1367,8 +1367,8 @@ select.form-input option{background:var(--bg2)}
             <div id="cfg-horarios-list" style="padding:6px 14px 12px"></div>
           </div>
           <div class="panel" data-cap="config" id="panel-sedes" style="display:none">
-            <div class="ph"><div class="ph-title">Sedes de asistencia (ubicación y red)</div></div>
-            <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Para dar de alta una sede, ponte físicamente en la nave, conectado a su Wi-Fi, y usa los botones de ubicación actual y red actual. El registro de asistencia solo se acepta dentro del radio y desde las redes indicadas.</div>
+            <div class="ph"><div class="ph-title">Sites/Sedes — asistencia (ubicación, red y QR)</div></div>
+            <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada Site y cada Bio-Nave es una sede con su propio QR. Para dar de alta una sede, ponte físicamente en el lugar, conectado a su Wi-Fi, y usa los botones de ubicación actual y red actual. El registro de asistencia solo se acepta dentro del radio y desde las redes indicadas.</div>
             <div id="cfg-sedes-list" style="padding:6px 14px 12px"></div>
           </div>
           <div class="panel" data-cap="config" id="panel-solicitudes" style="display:none">
@@ -4484,7 +4484,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { dashboard:'Dashboard', sites:'Sites', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo' };
+  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo' };
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
   if (page === 'sites') renderSites();
@@ -4767,6 +4767,7 @@ function renderSites(){
         <div class="site-card-stat"><b>${personal}</b><span>Personal</span></div>
         <div class="site-card-stat"><b style="color:var(--${docsPend?'amber':'green'})">${docsPend}</b><span>Docs pend.</span></div>
       </div>
+      ${['direccion_ceo','rh'].includes(currentUser.role) ? `<button class="btn sm" style="margin-top:10px;width:100%;justify-content:center" onclick="event.stopPropagation();verQrSede('${s.id}','${esc(s.nombre)}')">QR de asistencia</button>` : ''}
     </div>`;
   }).join('');
 }
@@ -9000,14 +9001,19 @@ async function renderSedesConfig(){
   if (!panel || !cont) return;
   if (currentUser.role !== 'direccion_ceo'){ panel.style.display = 'none'; return; }
   panel.style.display = 'block';
-  const [{ data: naves }, { data: sedes }] = await Promise.all([
-    sb.from('bio_naves').select('id,nombre').order('nombre'), sb.from('sedes_asistencia').select('*')
+  const [{ data: naves }, { data: sites }, { data: sedesN }, { data: sedesS }] = await Promise.all([
+    sb.from('bio_naves').select('id,nombre').order('nombre'), sb.from('sites').select('id,nombre,lat,lng').order('nombre'),
+    sb.from('sedes_asistencia').select('*'), sb.from('sedes_asistencia_site').select('*')
   ]);
-  cont.innerHTML = (naves||[]).map(n => {
-    const s = (sedes||[]).find(x => x.bio_nave_id === n.id) || {};
-    const ok = s.lat != null && (s.ips_permitidas||[]).length;
+  const items = [
+    ...(sites||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'site', etiqueta:'Site', s:(sedesS||[]).find(y => y.site_id === x.id) || (x.lat != null ? { lat:x.lat, lng:x.lng } : {}) })),
+    ...(naves||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'nave', etiqueta:'Bio-Nave', s:(sedesN||[]).find(y => y.bio_nave_id === x.id) || {} }))
+  ];
+  cont.innerHTML = items.map(n => {
+    const s = n.s, ok = s.lat != null && (s.ips_permitidas||[]).length;
     return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><strong style="font-size:12px">${esc(n.nombre)}</strong>
+        <span class="tag m">${n.etiqueta}</span>
         <span class="tag ${ok?'g':'warn'}">${ok?'Configurada':'Pendiente'}</span></div>
       <div class="grid2">
         <div><label class="form-lbl">Latitud</label><input class="form-input" id="sa-lat-${n.id}" value="${s.lat ?? ''}"></div>
@@ -9020,9 +9026,9 @@ async function renderSedesConfig(){
         <button class="btn sm" onclick="ubicacionSede('${n.id}')">Usar mi ubicación actual</button>
         <button class="btn sm" onclick="ipSede('${n.id}')">Agregar la red actual</button>
         <button class="btn sm" onclick="verQrSede('${n.id}','${esc(n.nombre)}')">Ver QR</button>
-        <button class="btn sm primary" onclick="guardarSede('${n.id}','${esc(n.nombre)}')">Guardar</button>
+        <button class="btn sm primary" onclick="guardarSede('${n.id}','${esc(n.nombre)}','${n.tipo}')">Guardar</button>
       </div></div>`;
-  }).join('') || '<div class="empty-sub">Sin Bio-Naves registradas</div>';
+  }).join('') || '<div class="empty-sub">Sin Sites ni Bio-Naves registrados</div>';
 }
 async function ubicacionSede(id){
   try {
@@ -9042,7 +9048,7 @@ async function ipSede(id){
   ta.value = ips.join('\n');
   toast(`Red agregada: ${data.ip}. Pulsa Guardar.`, 'success');
 }
-async function guardarSede(id, nombre){
+async function guardarSede(id, nombre, tipo){
   if (currentUser.role !== 'direccion_ceo') return;
   const lat = parseFloat(document.getElementById('sa-lat-'+id).value), lng = parseFloat(document.getElementById('sa-lng-'+id).value);
   const radio_m = parseInt(document.getElementById('sa-rad-'+id).value);
@@ -9050,7 +9056,10 @@ async function guardarSede(id, nombre){
   if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180){ toast('Latitud o longitud inválida','error'); return; }
   if (!(radio_m >= 30 && radio_m <= 1000)){ toast('El radio debe estar entre 30 y 1000 metros','error'); return; }
   if (!ips.length || ips.some(x => !/^[0-9a-fA-F:.]{3,45}$/.test(x))){ toast('Indica al menos una IP válida','error'); return; }
-  const { error } = await sb.from('sedes_asistencia').upsert({ bio_nave_id:id, lat, lng, radio_m, ips_permitidas:ips, actualizado_por:currentUser.userId, actualizado_en:new Date().toISOString() }, { onConflict:'bio_nave_id' });
+  const fila = { lat, lng, radio_m, ips_permitidas:ips, actualizado_por:currentUser.userId, actualizado_en:new Date().toISOString() };
+  const { error } = tipo === 'site'
+    ? await sb.from('sedes_asistencia_site').upsert({ site_id:id, ...fila }, { onConflict:'site_id' })
+    : await sb.from('sedes_asistencia').upsert({ bio_nave_id:id, ...fila }, { onConflict:'bio_nave_id' });
   if (error){ toast(error.message,'error'); return; }
   await audit('config', `Sede de asistencia configurada: ${esc(nombre)}`, 'a');
   toast('Sede guardada','success'); renderSedesConfig();
