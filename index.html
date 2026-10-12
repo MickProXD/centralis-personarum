@@ -706,7 +706,7 @@ select.form-input option{background:var(--bg2)}
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M8 4v4l3 2"/></svg>
       Auditoría
     </div>
-    <div class="sb-item" data-page="equipos" data-cap="equipos" onclick="nav('equipos',this)">
+    <div class="sb-item" data-page="equipos" onclick="nav('equipos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="4" y="1" width="8" height="14" rx="1.5"/><line x1="6" y1="13" x2="10" y2="13"/></svg>
       Equipos CEL
     </div>
@@ -1122,7 +1122,7 @@ select.form-input option{background:var(--bg2)}
   <div id="page-procesos" class="page fadein">
     <div class="row" style="margin-bottom:14px">
       <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Procesos</div>
-      <button class="btn primary ml" onclick="abrirNuevoProceso()">+ Nuevo proceso</button>
+      <button class="btn primary ml" id="btn-nuevo-proceso" onclick="abrirNuevoProceso()">+ Nuevo proceso</button>
     </div>
     <div id="procesos-list" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
@@ -1366,7 +1366,7 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="role-sel-modal">
       <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Vista de demo para validar permisos. En producción el rol proviene del JWT de Supabase (RLS aplica del lado del servidor).</div>
-      <div class="role-card" onclick="setRole('chofer')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><div><div class="role-card-name">Chofer</div><div class="role-card-desc">Solo lectura de su propio expediente</div></div></div>
+      <div class="role-card" onclick="setRole('chofer')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><div><div class="role-card-name">Operativo</div><div class="role-card-desc">Solo su camión, su asistencia y el Muro</div></div></div>
       <div class="role-card" onclick="setRole('supervisor')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M6 9l2 2 4-4"/></svg></div><div><div class="role-card-name">Supervisor</div><div class="role-card-desc">Crea y gestiona sus Sites: personal, asistencias, flota y reportes de su jurisdicción</div></div></div>
       <div class="role-card" onclick="setRole('rh')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3"/><circle cx="4" cy="11" r="2.5"/><circle cx="14" cy="11" r="2.5"/></svg></div><div><div class="role-card-name">Recursos Humanos</div><div class="role-card-desc">Visión total del personal de todos los Sites · actas · sin acceso a flota</div></div></div>
       <div class="role-card sel" onclick="setRole('direccion_ceo')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><path d="M9 1L15 4v6c0 3-3 6-6 7-3-1-6-4-6-7V4l6-3z"/></svg></div><div><div class="role-card-name">Dirección / CEO</div><div class="role-card-desc">Acceso total: bajas, permisos legales, auditoría, reportes de todas las áreas</div></div></div>
@@ -1716,13 +1716,25 @@ select.form-input option{background:var(--bg2)}
     <div class="modal-body">
       <div style="font-size:11px;color:var(--text2);margin-bottom:12px" id="ep-resumen">—</div>
       <label class="form-lbl req">Rol</label>
-      <select class="form-input" id="ep-role" style="margin-bottom:10px">
-        <option value="supervisor">Operación</option>
+      <select class="form-input" id="ep-role" onchange="camposRol('ep')" style="margin-bottom:10px">
+        <option value="supervisor">Gerente Operativo</option>
         <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
-            <option value="administracion">Administración</option>
+            <option value="administracion">Gerente Administrativo</option>
+            <option value="administrativo">Administrativo (solo lectura)</option>
+            <option value="chofer">Operativo (campo)</option>
         <option value="rh">Recursos Humanos</option>
         <option value="direccion_ceo">Dirección / CEO</option>
       </select>
+      <div id="ep-extra" style="margin-bottom:10px">
+        <div id="ep-admtvo" style="display:none">
+          <label class="form-lbl req">Área del Administrativo</label>
+          <select class="form-input" id="ep-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración de finanzas</option><option value="operativa">Administración operativa</option></select>
+          <label class="form-lbl">Gerente Administrativo asignado</label>
+          <select class="form-input" id="ep-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
+        </div>
+        <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
+        <select class="form-input" id="ep-colab"><option value="">Sin ligar</option></select>
+      </div>
       <label class="form-lbl">Área</label>
       <select class="form-input" id="ep-area" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
       <label class="form-lbl">Bio-Nave</label>
@@ -1766,13 +1778,25 @@ select.form-input option{background:var(--bg2)}
     <div class="modal-body">
       <div style="font-size:11px;color:var(--text2);margin-bottom:12px" id="aps-resumen">—</div>
       <label class="form-lbl req">Rol de la cuenta</label>
-      <select class="form-input" id="aps-role" style="margin-bottom:10px">
-        <option value="supervisor" selected>Operación</option>
+      <select class="form-input" id="aps-role" onchange="camposRol('aps')" style="margin-bottom:10px">
+        <option value="supervisor" selected>Gerente Operativo</option>
         <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
-            <option value="administracion">Administración</option>
+            <option value="administracion">Gerente Administrativo</option>
+            <option value="administrativo">Administrativo (solo lectura)</option>
+            <option value="chofer">Operativo (campo)</option>
         <option value="rh">Recursos Humanos</option>
         <option value="direccion_ceo">Dirección / CEO</option>
       </select>
+      <div id="aps-extra" style="margin-bottom:10px">
+        <div id="aps-admtvo" style="display:none">
+          <label class="form-lbl req">Área del Administrativo</label>
+          <select class="form-input" id="aps-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración de finanzas</option><option value="operativa">Administración operativa</option></select>
+          <label class="form-lbl">Gerente Administrativo asignado</label>
+          <select class="form-input" id="aps-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
+        </div>
+        <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
+        <select class="form-input" id="aps-colab"><option value="">Sin ligar</option></select>
+      </div>
       <label class="form-lbl req">Contraseña temporal</label>
       <input class="form-input" type="password" id="aps-pass" autocomplete="new-password" style="margin-bottom:10px">
       <label class="form-lbl req">Confirmar contraseña</label>
@@ -1825,16 +1849,28 @@ select.form-input option{background:var(--bg2)}
         </div>
         <div>
           <label class="form-lbl req">Rol</label>
-          <select class="form-input" id="au-role">
-            <option value="supervisor" selected>Operación</option>
+          <select class="form-input" id="au-role" onchange="camposRol('au')">
+            <option value="supervisor" selected>Gerente Operativo</option>
             <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
-            <option value="administracion">Administración</option>
+            <option value="administracion">Gerente Administrativo</option>
+            <option value="administrativo">Administrativo (solo lectura)</option>
+            <option value="chofer">Operativo (campo)</option>
             <option value="rh">Recursos Humanos</option>
             <option value="direccion_ceo">Dirección / CEO</option>
           </select>
         </div>
       </div>
-      <div style="font-size:10px;color:var(--text3);margin:8px 0 10px;line-height:1.5">Contraseña mínima: 8 caracteres (Chofer/Supervisor) · 12 caracteres (RH/Dirección)</div>
+      <div id="au-extra" style="margin-bottom:10px">
+        <div id="au-admtvo" style="display:none">
+          <label class="form-lbl req">Área del Administrativo</label>
+          <select class="form-input" id="au-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración de finanzas</option><option value="operativa">Administración operativa</option></select>
+          <label class="form-lbl">Gerente Administrativo asignado</label>
+          <select class="form-input" id="au-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
+        </div>
+        <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
+        <select class="form-input" id="au-colab"><option value="">Sin ligar</option></select>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin:8px 0 10px;line-height:1.5">Contraseña mínima: 8 caracteres (Operativo/Gerentes/Administrativo) · 12 caracteres (RH/Dirección)</div>
       <div class="grid2">
         <div>
           <label class="form-lbl req">Contraseña</label>
@@ -3176,10 +3212,11 @@ const STORAGE_KEY = 'biocentralis_v7_data';
 
 // ─── Modelo de roles (4) ───
 const ROLES = {
-  chofer:        { label:'Chofer',        nombre:'Chofer' },
-  supervisor:    { label:'Operación',     nombre:'Operación' },
-  monitoreo:     { label:'Monitoreo',     nombre:'Monitoreo' },
-  administracion:{ label:'Administración',nombre:'Administración' },
+  chofer:        { label:'Operativo',          nombre:'Operativo' },
+  supervisor:    { label:'Gerente Operativo',  nombre:'Gerente Operativo' },
+  monitoreo:     { label:'Monitoreo',          nombre:'Monitoreo' },
+  administracion:{ label:'Gerente Administrativo', nombre:'Gerente Administrativo' },
+  administrativo:{ label:'Administrativo',     nombre:'Administrativo' },
   rh:            { label:'RH',            nombre:'Recursos Humanos' },
   direccion_ceo: { label:'Dirección/CEO', nombre:'Dirección / CEO' }
 };
@@ -3196,7 +3233,8 @@ const CAPS = {
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:true
   },
   chofer: {
-    pages:['dashboard','personal','muro'],
+    // Operativo: solo ve su camión asignado (RLS lo limita), su asistencia y el Muro
+    pages:['dashboard','flota','muro'],
     fleet:false, personnel:'self', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3217,6 +3255,14 @@ const CAPS = {
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
   administracion: {
+    pages:['dashboard','calendario','procesos','muro'],
+    fleet:false, personnel:'none', editPersonnel:'none', baja:false,
+    sites:'none', createSite:false, permisosLegales:false, permisos:false,
+    config:false, auditoria:false, kpis:false, compliance:false,
+    reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
+  },
+  administrativo: {
+    // Solo visualización. El área (finanzas/operativa) amplía las páginas en caps()
     pages:['dashboard','calendario','procesos','muro'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
@@ -3496,10 +3542,41 @@ function cargar(){
   } catch(e) { console.warn('Load falló:', e); return false; }
 }
 
+// ─── Campos extra de cuenta: área/gerente (Administrativo) y colaborador ligado ───
+async function camposRol(p, sel){
+  const role = document.getElementById(p+'-role').value;
+  const w = document.getElementById(p+'-admtvo'); if (w) w.style.display = role==='administrativo' ? 'block' : 'none';
+  const { data: gerentes } = await sb.from('profiles').select('id,nombre,role').in('role',['administracion','supervisor']).eq('activo',true).order('nombre');
+  const g = document.getElementById(p+'-gerente');
+  if (g) g.innerHTML = '<option value="">Sin asignar</option>' + (gerentes||[]).map(x=>`<option value="${x.id}">${esc(x.nombre)} — ${esc(ROLES[x.role]?.label||x.role)}</option>`).join('');
+  const c = document.getElementById(p+'-colab');
+  if (c) c.innerHTML = '<option value="">Sin ligar</option>' + DB.colaboradores.map(x=>`<option value="${x.id}">${esc(x.nombre)}</option>`).join('');
+  if (sel){
+    if (g) g.value = sel.gerente_id || '';
+    if (c) c.value = sel.colaborador_id || '';
+    const a = document.getElementById(p+'-areaadm'); if (a) a.value = sel.area_admin || 'finanzas';
+  }
+}
+function leerCamposRol(p){
+  const role = document.getElementById(p+'-role').value;
+  return {
+    area_admin: role==='administrativo' ? document.getElementById(p+'-areaadm').value : null,
+    gerente_id: role==='administrativo' ? (document.getElementById(p+'-gerente').value || null) : null,
+    colaborador_id: document.getElementById(p+'-colab').value || null
+  };
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // ROLES — modelo por capacidades
 // ═══════════════════════════════════════════════════════════════════
-function caps(){ return CAPS[currentUser.role] || CAPS.chofer; }
+function caps(){
+  const base = CAPS[currentUser.role] || CAPS.chofer;
+  // Administrativo de área operativa: ve Flota, Equipos y Documentos de unidades (solo lectura)
+  if (currentUser.role==='administrativo' && currentUser.areaAdmin==='operativa'){
+    return Object.assign({}, base, { pages:[...base.pages,'flota','documentos','equipos'] });
+  }
+  return base;
+}
 function can(cap){ return !!caps()[cap]; }
 
 // Mapa legacy: traduce los viejos data-min-role del HTML v6 al nuevo modelo
@@ -3783,6 +3860,7 @@ async function cargarPerfilYActivarSesion(){
   currentUser = {
     name: profile.nombre, role: profile.role, userId: profile.id,
     colaboradorId: profile.colaborador_id,
+    areaAdmin: profile.area_admin || null, gerenteId: profile.gerente_id || null,
     initials: profile.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()
   };
   _sesionActiva = true; _lastActivity = Date.now();
@@ -3891,6 +3969,7 @@ function abrirAltaUsuario(){
   editingUserId = null;
   ['au-nombre','au-correo','au-usuario','au-pass','au-pass2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   const rol=document.getElementById('au-role'); if(rol) rol.value='supervisor';
+  camposRol('au');
   const err=document.getElementById('err-au'); if(err) err.classList.remove('show');
   document.getElementById('modal-usuario-title').textContent = 'Nueva cuenta de acceso';
   openModal('modal-usuario');
@@ -3915,7 +3994,7 @@ async function guardarUsuario(){
 
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
-    body: { usuario, nombre, correo, role, password: pass },
+    body: { usuario, nombre, correo, role, password: pass, ...leerCamposRol('au') },
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
   if (error || data?.error) return fail(data?.error || error.message);
@@ -3949,6 +4028,7 @@ async function abrirEditarPerfil(id){
   document.getElementById('ep-bionave').innerHTML = '<option value="">Sin asignar</option>' + (bionaves||[]).map(b=>`<option value="${b.id}">${esc(b.nombre)}</option>`).join('');
 
   document.getElementById('ep-role').value = u.role;
+  await camposRol('ep', u);
   document.getElementById('ep-area').value = u.area_id || '';
   document.getElementById('ep-bionave').value = u.bio_nave_id || '';
   document.getElementById('err-ep').classList.remove('show');
@@ -3960,7 +4040,7 @@ async function guardarEdicionPerfil(){
   const role = document.getElementById('ep-role').value;
   const area_id = document.getElementById('ep-area').value || null;
   const bio_nave_id = document.getElementById('ep-bionave').value || null;
-  const { error } = await sb.from('profiles').update({ role, area_id, bio_nave_id }).eq('id', _epUsuarioId);
+  const { error } = await sb.from('profiles').update({ role, area_id, bio_nave_id, ...leerCamposRol('ep') }).eq('id', _epUsuarioId);
   if (error){ document.getElementById('err-ep').textContent = error.message; document.getElementById('err-ep').classList.add('show'); return; }
   await audit('config', `Perfil de cuenta actualizado (rol: ${role})`, 'a');
   closeModal('modal-editar-perfil');
@@ -5268,6 +5348,7 @@ async function abrirAprobarSolicitud(id){
   solicitudEnRevision = data;
   document.getElementById('aps-resumen').innerHTML = `<strong>${esc(data.nombre)}</strong> · ${esc(data.correo)} · usuario: <strong>${esc(data.usuario)}</strong>${data.funciones?'<br>'+esc(data.funciones):''}`;
   document.getElementById('aps-role').value = 'supervisor';
+  camposRol('aps');
   ['aps-pass','aps-pass2'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('err-aps').classList.remove('show');
   openModal('modal-aprobar-solicitud');
@@ -5288,7 +5369,7 @@ async function aprobarSolicitud(){
 
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
-    body: { usuario: s.usuario, nombre: s.nombre, correo: s.correo, role, password: pass },
+    body: { usuario: s.usuario, nombre: s.nombre, correo: s.correo, role, password: pass, ...leerCamposRol('aps') },
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
   if (error || data?.error) return fail(data?.error || error.message);
@@ -7655,8 +7736,8 @@ async function renderKPIs(){
 /* ── Procesos por área — RH/Dirección ven todas; cada área ve/crea
    solo los suyos. El área se asigna automáticamente según el rol
    de quien crea el proceso. ── */
-const AREA_PROCESO_POR_ROL = { supervisor:'operacion', direccion_ceo:'direccion', rh:'rh', administracion:'administracion' };
-const AREA_PROCESO_LABEL = { operacion:'Operación', administracion:'Administración', rh:'RH', direccion:'Dirección' };
+const AREA_PROCESO_POR_ROL = { supervisor:'operacion', direccion_ceo:'direccion', rh:'rh', administracion:'administracion', administrativo:'administracion' };
+const AREA_PROCESO_LABEL = { operacion:'Gerencia Operativa', administracion:'Gerencia Administrativa', rh:'RH', direccion:'Dirección' };
 let tempProcesoFile = null;
 let editingProcesoId = null;
 
@@ -7750,6 +7831,7 @@ async function verProcesoArchivo(storagePath){
 
 async function renderProcesos(){
   const cont = document.getElementById('procesos-list');
+  const bnp=document.getElementById('btn-nuevo-proceso'); if(bnp) bnp.style.display = currentUser.role==='administrativo' ? 'none' : '';
   const { data, error } = await sb.from('procesos').select('*').order('area').order('created_at', { ascending:false });
   if (error){ cont.innerHTML = '<div class="empty" style="padding:24px">Error al cargar procesos</div>'; return; }
   if (!data || !data.length){
