@@ -9146,7 +9146,7 @@ function eliminarComentarioMuro(id){
    datos de salud separados (SHE/RH/Dirección) y envío a Solicitud de gasto.
    Los permisos reales los exige el servidor (RLS); aquí solo se decide qué se muestra.
    ═══════════════════════════════════════════════════════════════════ */
-const SHE = { tab:'muro', reps:[], salud:{}, soloAbiertos:true, cat:[], pos:null };
+const SHE = { inv:{}, tab:'muro', reps:[], salud:{}, soloAbiertos:true, cat:[], pos:null };
 const SHE_TIPOS = { incidente:'Incidente', condicion_insegura:'Condición insegura', casi_accidente:'Casi accidente', accidente:'Accidente', ambiental:'Evento ambiental' };
 const SHE_SEM = { verde:['g','Verde','#2e9e5b'], amarillo:['a','Amarillo','#e0a100'], rojo:['r','Rojo','#d64545'] };
 const SHE_EST = { abierto:'Abierto', en_proceso:'En proceso', cerrado:'Cerrado' };
@@ -9210,9 +9210,10 @@ function sheCard(r){
     ${r.hubo_lesionados ? `<div style="margin-top:8px;font-size:12px"><span class="tag r">Hubo lesionados</span></div>` : ''}
     ${sal ? `<div style="margin-top:6px;font-size:11px;background:var(--surface2,#2a2a2a);border-radius:8px;padding:8px 10px"><strong>Datos de salud (confidencial)</strong><br>Lesionado: ${esc(sal.lesionado || '—')} · Lesión: ${esc(sal.lesion || '—')}<br>Atención: ${esc(sal.atencion_medica || '—')} · Días de incapacidad: ${sal.dias_incapacidad ?? '—'}</div>` : ''}
     ${r.accion_correctiva ? `<div style="margin-top:8px;font-size:12px"><strong>Acción correctiva:</strong> ${esc(r.accion_correctiva)}</div>` : ''}
+    ${sheInvHtml(r)}
     ${gasto ? `<div style="margin-top:6px"><span class="tag b">Enviada a Solicitud de gasto</span></div>` : ''}
     ${(sheGestiona() || (shePuedeGasto() && !gasto)) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
-      ${sheGestiona() ? `<button class="btn sm primary" onclick="sheGestionar('${esc(r.id)}')">Dar seguimiento</button>` : ''}
+      ${sheGestiona() ? `<button class="btn sm primary" onclick="sheGestionar('${esc(r.id)}')">Dar seguimiento</button><button class="btn sm" onclick="sheInvestigar('${esc(r.id)}')">${SHE.inv[r.id] ? 'Editar investigación' : 'Investigar causa raíz'}</button>` : ''}
       ${shePuedeGasto() && !gasto ? `<button class="btn sm" onclick="sheSolicitudGasto('${esc(r.id)}')">Enviar a solicitud de gasto</button>` : ''}</div>` : ''}
   </div>`;
 }
@@ -9225,13 +9226,15 @@ async function renderSeg(){
   const exd = document.getElementById('seg-extra');
   if (SHE.sub !== 'rep'){ cont.style.display = 'none'; exd.style.display = 'block'; return sheRenderSub(); }
   cont.style.display = 'block'; exd.style.display = 'none';
-  const [rp, av, vig, alr, sal] = await Promise.all([
+  const [rp, av, vig, alr, sal, inv] = await Promise.all([
     sb.from('she_reportes').select('*').order('created_at', { ascending:false }).limit(200),
     sb.from('she_avisos').select('*').order('created_at', { ascending:false }).limit(20),
     ges ? sb.from('she_vigencias').select('*').order('fecha_vence') : Promise.resolve({ data:[] }),
     ve ? sb.rpc('she_alertas_vigencia', { p_dias:60 }) : Promise.resolve({ data:[] }),
-    sheVeSalud() ? sb.from('she_salud').select('*') : Promise.resolve({ data:[] })
+    sheVeSalud() ? sb.from('she_salud').select('*') : Promise.resolve({ data:[] }),
+    ve ? sb.from('she_investigaciones').select('*') : Promise.resolve({ data:[] })
   ]);
+  SHE.inv = {}; (inv.data || []).forEach(x => { SHE.inv[x.reporte_id] = x; });
   SHE.reps = rp.data || [];
   SHE.salud = {}; (sal.data || []).forEach(x => { SHE.salud[x.reporte_id] = x; });
   const lista = SHE.reps.filter(r => !SHE.soloAbiertos || r.estatus !== 'cerrado').slice(0, 40);
@@ -9418,7 +9421,7 @@ function sheSub(s){ SHE.sub = s; renderSeg(); }
 function sheBarra(){
   const b = document.getElementById('seg-bar'); if (!b) return;
   if (!sheVeTodo()){ b.innerHTML = ''; return; }
-  const t = [['rep', 'Reportes'], ['epp', 'EPP'], ['cap', 'Capacitación'], ['cal', 'Calendario']];
+  const t = [['rep', 'Reportes'], ['epp', 'EPP'], ['cap', 'Capacitación'], ['cal', 'Calendario'], ['amb', 'Ambiental'], ['aud', 'Auditoría'], ['kpi', 'Indicadores']];
   b.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${t.map(([k, l]) => `<button class="btn sm ${SHE.sub === k ? 'primary' : ''}" onclick="sheSub('${k}')">${l}</button>`).join('')}</div>`;
 }
 async function sheRenderSub(){
@@ -9427,6 +9430,9 @@ async function sheRenderSub(){
   try {
     if (SHE.sub === 'epp') await sheRenderEpp(ex);
     else if (SHE.sub === 'cap') await sheRenderCap(ex);
+    else if (SHE.sub === 'amb') await sheRenderAmb(ex);
+    else if (SHE.sub === 'aud') await sheRenderAud(ex);
+    else if (SHE.sub === 'kpi') await sheRenderKpi(ex);
     else await sheRenderCal(ex);
   } catch(e){ ex.innerHTML = `<div class="empty" style="padding:24px"><div class="empty-sub">No se pudo cargar: ${esc(e.message || String(e))}</div></div>`; }
 }
@@ -9613,6 +9619,179 @@ async function sheRenderCal(ex){
     : '<div class="empty" style="padding:24px"><div class="empty-sub">No hay fechas registradas en los próximos 12 meses. Agrega vigencias, simulacros y capacitaciones desde SHE.</div></div>';
 }
 
+/* ─── SHE · Fase 3: investigación de accidentes, gestión ambiental, auditoría/NOM, proveedores SHE e indicadores ─── */
+const SHE_MET = { '5_porques':'5 porqués', ishikawa:'Ishikawa (espina de pescado)', arbol_causas:'Árbol de causas', otro:'Otro' };
+const SHE_RES_TIPO = { rp:'Residuo peligroso', rme:'Manejo especial', rsu:'Urbano', otro:'Otro' };
+const SHE_MAN_EST = { generado:'Generado', en_transito:'En tránsito', entregado:'Entregado en destino' };
+const SHE_BIT_TIPO = { agua:'Agua', energia:'Energía eléctrica', combustible:'Combustible', residuos:'Residuos', emisiones:'Emisiones', otro:'Otro' };
+const SHE_NOM_EST = { pendiente:['m','Pendiente'], cumple:['g','Cumple'], parcial:['a','Parcial'], no_cumple:['r','No cumple'], na:['b','No aplica'] };
+const SHE_NORMAS = ['NOM-002-STPS (incendios)', 'NOM-005-STPS (sustancias químicas)', 'NOM-017-STPS (equipo de protección personal)', 'NOM-019-STPS (comisión de seguridad e higiene)', 'NOM-026-STPS (colores y señales)', 'NOM-030-STPS (servicios preventivos)', 'NOM-035-STPS (factores psicosociales)', 'NOM-052-SEMARNAT (residuos peligrosos)', 'LGPGIR (residuos)'];
+
+/* ── Investigación de accidentes (causa raíz y acciones) ── */
+function sheInvestigar(id){
+  const r = SHE.reps.find(x => x.id === id); if (!r) return;
+  const v = SHE.inv[id] || {};
+  finModal('Investigación · ' + r.folio,
+    finSelect('Método', 'si-met', Object.entries(SHE_MET), v.metodo || '5_porques')
+    + finArea('Causa raíz', 'si-raiz', v.causa_raiz || '')
+    + finArea('Causas contribuyentes', 'si-contr', v.causas_contribuyentes || '')
+    + finArea('Acciones correctivas y preventivas', 'si-acc', v.acciones || '')
+    + finCampo('Responsable', 'si-resp', 'text', v.responsable || '', 'maxlength="160"')
+    + finCampo('Fecha compromiso', 'si-fec', 'date', v.fecha_compromiso || ''),
+    async () => {
+      const { error } = await sb.from('she_investigaciones').upsert({ reporte_id: id, metodo: fv('si-met'), causa_raiz: fv('si-raiz').trim() || null, causas_contribuyentes: fv('si-contr').trim() || null,
+        acciones: fv('si-acc').trim() || null, responsable: fv('si-resp').trim() || null, fecha_compromiso: fv('si-fec') || null, actualizado_por: currentUser.userId, actualizado_en: new Date().toISOString() }, { onConflict:'reporte_id' });
+      if (error) return finErr(error.message);
+      await audit('config', `SHE: investigación del reporte ${r.folio}`, 'a');
+      renderSeg();
+    }, 'Guardar investigación');
+}
+function sheInvHtml(r){
+  const v = SHE.inv[r.id]; if (!v) return '';
+  return `<div style="margin-top:8px;font-size:11px;background:var(--surface2,#2a2a2a);border-radius:8px;padding:8px 10px"><strong>Investigación (${esc(SHE_MET[v.metodo] || '—')})</strong><br>Causa raíz: ${esc(v.causa_raiz || '—')}${v.causas_contribuyentes ? '<br>Contribuyentes: ' + esc(v.causas_contribuyentes) : ''}${v.acciones ? '<br>Acciones: ' + esc(v.acciones) : ''}<br>Responsable: ${esc(v.responsable || '—')} · Compromiso: ${sheFmtF(v.fecha_compromiso)}</div>`;
+}
+
+/* ── Gestión ambiental: manifiestos y bitácora ── */
+async function sheRenderAmb(ex){
+  const [man, bit] = await Promise.all([
+    sb.from('she_manifiestos').select('*').order('fecha', { ascending:false }).limit(40),
+    sb.from('she_bitacora').select('*').order('fecha', { ascending:false }).limit(30)
+  ]);
+  SHE.man = man.data || []; SHE.bit = bit.data || [];
+  const ges = sheGestiona(), sig = { generado:'en_transito', en_transito:'entregado' };
+  const pend = SHE.man.filter(m => m.estatus !== 'entregado').length;
+  ex.innerHTML = `${ges ? '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="sheNuevoManifiesto()">Nuevo manifiesto</button><button class="btn" onclick="sheNuevaBitacora()">Registrar lectura</button></div>' : ''}
+    ${sheTit(`Manifiestos y trazabilidad de residuos${pend ? ` (${pend} sin cerrar)` : ''}`)}
+    <div style="display:flex;flex-direction:column;gap:8px">${SHE.man.length ? SHE.man.map(m => `<div class="panel" style="padding:12px 14px;margin-bottom:0">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="tag ${m.estatus === 'entregado' ? 'g' : m.estatus === 'en_transito' ? 'a' : 'b'}">${esc(SHE_MAN_EST[m.estatus])}</span><span class="tag m">${esc(SHE_RES_TIPO[m.tipo] || m.tipo)}</span><span style="font-size:10px;color:var(--text3);margin-left:auto">Manifiesto ${esc(m.folio)}</span></div>
+      <div style="font-size:13px;font-weight:700;margin-top:4px">${esc(m.residuo)} · ${Number(m.cantidad)} ${esc(m.unidad)}</div>
+      <div style="font-size:11px;color:var(--text3)">${sheFmtF(m.fecha)}${m.origen ? ' · Origen: ' + esc(m.origen) : ''}${m.transportista ? ' · Transporta: ' + esc(m.transportista) : ''}${m.destino ? ' · Destino: ' + esc(m.destino) : ''}</div>
+      ${ges && sig[m.estatus] ? `<div style="margin-top:8px"><button class="btn sm" onclick="sheAvanzarManifiesto('${esc(m.id)}','${sig[m.estatus]}')">Marcar como ${esc(SHE_MAN_EST[sig[m.estatus]].toLowerCase())}</button></div>` : ''}</div>`).join('') : '<div class="empty" style="padding:24px"><div class="empty-sub">Sin manifiestos registrados</div></div>'}</div>
+    ${sheTit('Bitácora operativa ambiental')}
+    <div class="panel" style="padding:6px 14px">${SHE.bit.length ? SHE.bit.map(b => `<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div style="flex:1;min-width:0"><div style="font-weight:700">${esc(SHE_BIT_TIPO[b.tipo] || b.tipo)}: ${Number(b.valor)} ${esc(b.unidad)}</div><div style="font-size:10px;color:var(--text3)">${sheFmtF(b.fecha)}${b.lugar ? ' · ' + esc(b.lugar) : ''}${b.nota ? ' · ' + esc(b.nota) : ''}</div></div></div>`).join('') : '<div class="empty" style="padding:18px"><div class="empty-sub">Sin lecturas registradas</div></div>'}</div>`;
+}
+function sheNuevoManifiesto(){
+  finModal('Nuevo manifiesto de residuos',
+    finCampo('Folio del manifiesto', 'sm-fol', 'text', '', 'maxlength="60"') + finCampo('Fecha', 'sm-fec', 'date', hoyLocal())
+    + finCampo('Residuo', 'sm-res', 'text', '', 'maxlength="160" placeholder="Ej. Aceite gastado, estopas contaminadas"')
+    + finSelect('Clasificación', 'sm-tip', Object.entries(SHE_RES_TIPO), 'rp')
+    + `<div class="grid2"><div>${finCampo('Cantidad', 'sm-can', 'number', '', 'min="0" step="0.01"')}</div><div>${finSelect('Unidad', 'sm-uni', [['kg', 'kg'], ['l', 'litros'], ['ton', 'toneladas'], ['pieza', 'piezas']], 'kg')}</div></div>`
+    + finCampo('Origen (bodega o site)', 'sm-ori', 'text', '', 'maxlength="160"') + finCampo('Transportista', 'sm-tra', 'text', '', 'maxlength="160"') + finCampo('Destino final', 'sm-des', 'text', '', 'maxlength="160"'),
+    async () => {
+      if (!fv('sm-fol').trim()) return finErr('Escribe el folio del manifiesto');
+      if (fv('sm-res').trim().length < 2) return finErr('Escribe el residuo');
+      if (fv('sm-can') === '') return finErr('Indica la cantidad');
+      const { error } = await sb.from('she_manifiestos').insert({ folio: fv('sm-fol').trim(), fecha: fv('sm-fec'), residuo: fv('sm-res').trim(), tipo: fv('sm-tip'), cantidad: Number(fv('sm-can')), unidad: fv('sm-uni'),
+        origen: fv('sm-ori').trim() || null, transportista: fv('sm-tra').trim() || null, destino: fv('sm-des').trim() || null });
+      if (error) return finErr(error.message);
+      renderSeg();
+    }, 'Guardar manifiesto');
+}
+async function sheAvanzarManifiesto(id, est){
+  const { error } = await sb.from('she_manifiestos').update({ estatus: est }).eq('id', id);
+  if (error){ toast(error.message, 'error'); return; }
+  renderSeg();
+}
+function sheNuevaBitacora(){
+  finModal('Registrar lectura ambiental',
+    finSelect('Tipo', 'sb-tip', Object.entries(SHE_BIT_TIPO), 'agua') + finCampo('Fecha', 'sb-fec', 'date', hoyLocal())
+    + `<div class="grid2"><div>${finCampo('Valor', 'sb-val', 'number', '', 'min="0" step="0.01"')}</div><div>${finCampo('Unidad', 'sb-uni', 'text', 'm³', 'maxlength="20"')}</div></div>`
+    + finCampo('Lugar', 'sb-lug', 'text', '', 'maxlength="160"') + finCampo('Nota', 'sb-nota', 'text', '', 'maxlength="300"'),
+    async () => {
+      if (fv('sb-val') === '') return finErr('Indica el valor');
+      if (!fv('sb-uni').trim()) return finErr('Indica la unidad');
+      const { error } = await sb.from('she_bitacora').insert({ tipo: fv('sb-tip'), fecha: fv('sb-fec'), valor: Number(fv('sb-val')), unidad: fv('sb-uni').trim(), lugar: fv('sb-lug').trim() || null, nota: fv('sb-nota').trim() || null });
+      if (error) return finErr(error.message);
+      renderSeg();
+    }, 'Guardar');
+}
+
+/* ── Auditoría: checklist normativo y proveedores SHE ── */
+async function sheRenderAud(ex){
+  const [nom, prov] = await Promise.all([ sb.from('she_nom_checklist').select('*').order('norma').order('created_at'), sb.rpc('she_proveedores_lista') ]);
+  SHE.nom = nom.data || []; SHE.prov = prov.data || [];
+  const ges = sheGestiona();
+  const apl = SHE.nom.filter(n => n.estatus !== 'na'), ok = apl.filter(n => n.estatus === 'cumple').length;
+  const por = {}; SHE.nom.forEach(n => (por[n.norma] = por[n.norma] || []).push(n));
+  ex.innerHTML = `${ges ? '<button class="btn primary" onclick="sheNuevoRequisito()">Agregar requisito</button>' : ''}
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">Los requisitos los capturas tú con base en cada norma. Conviene validarlos con tu asesor legal.</div>
+    ${sheTit(`Cumplimiento normativo${apl.length ? ` — ${Math.round(ok * 100 / apl.length)}% (${ok} de ${apl.length})` : ''}`)}
+    ${Object.keys(por).length ? Object.entries(por).map(([n, l]) => `<div class="panel" style="padding:10px 14px;margin-bottom:8px"><div style="font-size:12px;font-weight:800;margin-bottom:4px">${esc(n)}</div>
+      ${l.map(x => { const s = SHE_NOM_EST[x.estatus] || SHE_NOM_EST.pendiente; return `<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--border);font-size:12px">
+        <div style="flex:1;min-width:0">${esc(x.requisito)}<div style="font-size:10px;color:var(--text3)">${x.dependencia ? esc(x.dependencia) : ''}${x.responsable ? ' · ' + esc(x.responsable) : ''}${x.fecha_revision ? ' · rev. ' + sheFmtF(x.fecha_revision) : ''}</div></div>
+        <span class="tag ${s[0]}">${s[1]}</span>${ges ? `<button class="btn sm" onclick="sheEditarRequisito('${esc(x.id)}')">Editar</button>` : ''}</div>`; }).join('')}</div>`).join('') : '<div class="empty" style="padding:24px"><div class="empty-sub">Aún no hay requisitos. Agrega los de cada norma que apliquen a la empresa.</div></div>'}
+    ${sheTit('Proveedores de servicios SHE')}
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Los proveedores se dan de alta en Finanzas; aquí solo se etiquetan con su servicio y su autorización.</div>
+    <div class="panel" style="padding:6px 14px">${SHE.prov.length ? SHE.prov.map(p => `<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div style="flex:1;min-width:0"><div style="font-weight:700">${esc(p.razon_social)}</div><div style="font-size:10px;color:var(--text3)">${p.servicio ? esc(p.servicio) + (p.autorizacion ? ' · aut. ' + esc(p.autorizacion) : '') + (p.vence ? ' · vence ' + sheFmtF(p.vence) : '') : 'Sin etiquetar como proveedor SHE'}${p.contacto_nombre ? ' · ' + esc(p.contacto_nombre) : ''}${p.contacto_tel ? ' ' + esc(p.contacto_tel) : ''}</div></div>
+      ${ges ? `<button class="btn sm" onclick="sheEtiquetarProv('${esc(p.id)}')">${p.servicio ? 'Editar' : 'Etiquetar'}</button>` : ''}</div>`).join('') : '<div class="empty" style="padding:18px"><div class="empty-sub">No hay proveedores en Finanzas todavía</div></div>'}</div>`;
+}
+function sheFormRequisito(x){
+  return `<label class="form-lbl req">Norma</label><input class="form-input" id="sn-nor" list="sn-normas" maxlength="120" value="${esc(x.norma || '')}" style="margin-bottom:10px"><datalist id="sn-normas">${SHE_NORMAS.map(n => `<option value="${esc(n)}">`).join('')}</datalist>`
+    + finArea('Requisito a verificar', 'sn-req', x.requisito || '')
+    + finSelect('Dependencia', 'sn-dep', [['STPS', 'STPS'], ['SEMARNAT', 'SEMARNAT'], ['PROFEPA', 'PROFEPA'], ['IMSS', 'IMSS'], ['otra', 'Otra']], x.dependencia || 'STPS')
+    + finSelect('Estatus', 'sn-est', Object.entries(SHE_NOM_EST).map(([k, v]) => [k, v[1]]), x.estatus || 'pendiente')
+    + finCampo('Responsable', 'sn-resp', 'text', x.responsable || '', 'maxlength="160"') + finCampo('Fecha de revisión', 'sn-fec', 'date', x.fecha_revision || '')
+    + finCampo('Evidencia / observación', 'sn-evi', 'text', x.evidencia || '', 'maxlength="300"');
+}
+async function sheGuardarRequisito(id){
+  if (fv('sn-nor').trim().length < 3) return finErr('Escribe la norma');
+  if (fv('sn-req').trim().length < 3) return finErr('Escribe el requisito');
+  const row = { norma: fv('sn-nor').trim(), requisito: fv('sn-req').trim(), dependencia: fv('sn-dep'), estatus: fv('sn-est'), responsable: fv('sn-resp').trim() || null, fecha_revision: fv('sn-fec') || null, evidencia: fv('sn-evi').trim() || null };
+  const { error } = id ? await sb.from('she_nom_checklist').update(row).eq('id', id) : await sb.from('she_nom_checklist').insert(row);
+  if (error) return finErr(error.message);
+  renderSeg();
+}
+function sheNuevoRequisito(){ finModal('Agregar requisito', sheFormRequisito({}), () => sheGuardarRequisito(null), 'Guardar'); }
+function sheEditarRequisito(id){ const x = SHE.nom.find(n => n.id === id); if (x) finModal('Editar requisito', sheFormRequisito(x), () => sheGuardarRequisito(id), 'Guardar cambios'); }
+function sheEtiquetarProv(id){
+  const p = SHE.prov.find(x => x.id === id); if (!p) return;
+  finModal('Proveedor SHE · ' + p.razon_social,
+    finCampo('Servicio que presta', 'sp-ser', 'text', p.servicio || '', 'maxlength="160" placeholder="Ej. Recolección de residuos peligrosos, recarga de extintores"')
+    + finCampo('Número de autorización o registro', 'sp-aut', 'text', p.autorizacion || '', 'maxlength="160"')
+    + finCampo('La autorización vence el', 'sp-ven', 'date', p.vence || ''),
+    async () => {
+      if (fv('sp-ser').trim().length < 2) return finErr('Indica el servicio');
+      const { error } = await sb.from('she_proveedores_info').upsert({ proveedor_id: id, servicio: fv('sp-ser').trim(), autorizacion: fv('sp-aut').trim() || null, vence: fv('sp-ven') || null, actualizado_por: currentUser.userId, actualizado_en: new Date().toISOString() }, { onConflict:'proveedor_id' });
+      if (error) return finErr(error.message);
+      renderSeg();
+    }, 'Guardar');
+}
+
+/* ── Indicadores (KPIs verdes y de seguridad) ── */
+async function sheRenderKpi(ex){
+  const mes = hoyLocal().slice(0, 7);
+  const d6 = new Date(); d6.setMonth(d6.getMonth() - 5, 1); const desde = d6.toLocaleDateString('en-CA', { timeZone:TZ_MX }).slice(0, 7) + '-01';
+  const [rep, man, bit, nom, epp, cap, asi] = await Promise.all([
+    sb.from('she_reportes').select('tipo,semaforo,estatus,created_at'), sb.from('she_manifiestos').select('fecha,cantidad,unidad,tipo').gte('fecha', desde),
+    sb.from('she_bitacora').select('fecha,tipo,valor,unidad').gte('fecha', desde), sb.from('she_nom_checklist').select('estatus'),
+    sb.from('she_epp_entregas').select('created_at,cantidad').gte('created_at', mes + '-01'), sb.from('she_capacitaciones').select('id,fecha').gte('fecha', mes + '-01'),
+    sb.from('she_capacitacion_asistentes').select('capacitacion_id')
+  ]);
+  const R = rep.data || [], mesR = R.filter(r => (r.created_at || '').slice(0, 7) === mes);
+  const acc = R.filter(r => r.tipo === 'accidente').map(r => new Date(r.created_at).getTime()).sort((a, b) => b - a)[0];
+  const dias = acc ? Math.floor((Date.now() - acc) / 864e5) : null;
+  const cerr = R.length ? Math.round(R.filter(r => r.estatus === 'cerrado').length * 100 / R.length) : null;
+  const apl = (nom.data || []).filter(n => n.estatus !== 'na'), cumple = apl.length ? Math.round(apl.filter(n => n.estatus === 'cumple').length * 100 / apl.length) : null;
+  const kg = m => m.unidad === 'kg' ? Number(m.cantidad) : m.unidad === 'ton' ? Number(m.cantidad) * 1000 : 0;
+  const M = man.data || [], kgMes = M.filter(m => m.fecha.slice(0, 7) === mes).reduce((s, m) => s + kg(m), 0);
+  const capIds = new Set((cap.data || []).map(c => c.id)), asMes = (asi.data || []).filter(a => capIds.has(a.capacitacion_id)).length;
+  const meses = []; for (let i = 5; i >= 0; i--){ const d = new Date(); d.setMonth(d.getMonth() - i, 1); meses.push(d.toLocaleDateString('en-CA', { timeZone:TZ_MX }).slice(0, 7)); }
+  const serie = (arr, f) => meses.map(m => arr.filter(x => x.fecha.slice(0, 7) === m).reduce((s, x) => s + f(x), 0));
+  const kgS = serie(M, kg), aguaS = serie((bit.data || []).filter(b => b.tipo === 'agua'), b => Number(b.valor)), enS = serie((bit.data || []).filter(b => b.tipo === 'energia'), b => Number(b.valor));
+  const tile = (t, v, s) => `<div class="panel" style="padding:12px 14px;margin-bottom:0"><div style="font-size:10px;color:var(--text3)">${t}</div><div style="font-size:22px;font-weight:800;font-family:var(--head)">${v}</div><div style="font-size:10px;color:var(--text3)">${s}</div></div>`;
+  const barras = (t, s, u) => { const mx = Math.max(...s, 1); return `${sheTit(t)}<div class="panel" style="padding:10px 14px">${s.map((v, i) => `<div style="display:flex;gap:8px;align-items:center;font-size:11px;margin:4px 0"><span style="width:56px;color:var(--text3)">${meses[i]}</span><div style="flex:1;background:var(--surface2,#2a2a2a);border-radius:4px;height:12px"><div style="width:${Math.round(v * 100 / mx)}%;background:var(--green);height:12px;border-radius:4px"></div></div><span style="width:70px;text-align:right">${Math.round(v * 10) / 10} ${u}</span></div>`).join('')}</div>`; };
+  ex.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+    ${tile('Días sin accidente', dias === null ? '—' : dias, dias === null ? 'Sin accidentes registrados' : 'desde el último accidente')}
+    ${tile('Reportes del mes', mesR.length, `${mesR.filter(r => r.semaforo === 'rojo').length} rojos · ${mesR.filter(r => r.semaforo === 'amarillo').length} amarillos · ${mesR.filter(r => r.semaforo === 'verde').length} verdes`)}
+    ${tile('Reportes cerrados', cerr === null ? '—' : cerr + '%', 'del total registrado')}
+    ${tile('Cumplimiento normativo', cumple === null ? '—' : cumple + '%', 'requisitos que aplican')}
+    ${tile('Residuos del mes', Math.round(kgMes) + ' kg', 'manifiestos en kg o ton')}
+    ${tile('EPP entregado', (epp.data || []).reduce((s, e) => s + Number(e.cantidad), 0), 'piezas este mes')}
+    ${tile('Capacitación', asMes, `asistentes en ${(cap.data || []).length} curso(s) este mes`)}</div>
+    ${barras('Residuos por mes', kgS, 'kg')}${barras('Agua por mes', aguaS, '')}${barras('Energía por mes', enS, '')}`;
+}
 /* ── Filtro de palabras (solo Dirección): lista que el servidor usa para censurar ── */
 async function abrirFiltroPalabras(){
   if (currentUser.role !== 'direccion_ceo') return;
