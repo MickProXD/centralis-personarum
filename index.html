@@ -8367,7 +8367,8 @@ function descargarAsistenciaPDF(){
     const p = regs.filter(r=>r==='P').length;
     txt += `${c.nombre.padEnd(40)} ${c.puesto.padEnd(15)} ${regs.join(' ')} | P:${p}/7\n`;
   });
-  txt += '\n' + (DB.observaciones||{})[fmtDate(currentSemana)] ? '\nOBSERVACIONES:\n'+DB.observaciones[fmtDate(currentSemana)] : '';
+  const obsSem = (DB.observaciones||{})[fmtDate(currentSemana)];
+  if (obsSem) txt += '\nOBSERVACIONES:\n' + obsSem;
   descargarBlob(new Blob([txt],{type:'text/plain'}), `Asistencias_Sem${getNumSemana(currentSemana)}.txt`);
   toast('Reporte PDF descargado','success');
 }
