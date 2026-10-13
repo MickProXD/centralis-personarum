@@ -255,6 +255,28 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 .sb-bdg{margin-left:auto;font-family:var(--head);font-size:9px;font-weight:800;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center}
 .sb-bdg.r{background:var(--red);color:#fff}.sb-bdg.a{background:var(--amber);color:#000}.sb-bdg.g{background:var(--green);color:#000}.sb-bdg.m{background:var(--surface2);color:var(--text2)}
 .sb-foot{padding:10px;border-top:1px solid var(--border)}
+.tb-user{display:flex;align-items:center;gap:10px;padding:3px 14px 3px 4px;background:var(--surface);border:1px solid var(--border);border-radius:999px;cursor:pointer;max-width:340px;transition:border-color .15s}
+.tb-user:hover{border-color:var(--green)}
+.tb-user .sb-av{width:32px;height:32px;font-size:12px;overflow:hidden}
+.tb-user-txt{min-width:0;line-height:1.2}
+.tb-user .sb-uname,.tb-user .sb-urole{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-user .sb-uname{font-size:12.5px}
+@media(max-width:900px){.tb-user-txt{display:none}.tb-user{padding:3px}}
+#page-muro.active{display:grid;grid-template-columns:minmax(0,680px) 300px;gap:24px;justify-content:center;max-width:1040px !important}
+#page-muro .muro-col{min-width:0}
+.ct-aside{position:sticky;top:64px;align-self:start;max-height:calc(100vh - 90px);overflow:auto}
+@media(max-width:1100px){#page-muro.active{display:block}.ct-aside{display:none}}
+.ct-tit{font-family:var(--head);font-size:14px;font-weight:800;color:var(--text2);margin:2px 0 8px}
+.ct-head{display:flex;align-items:center;margin-bottom:6px}
+.ct-ico{margin-left:auto;background:transparent;border:none;color:var(--text2);cursor:pointer;width:28px;height:28px;border-radius:50%}
+.ct-ico:hover{background:var(--surface)}
+.ct-cumple{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--text);padding:2px 0 10px}
+.ct-sep{height:1px;background:var(--border);margin:0 0 12px}
+.ct-row{display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:8px;cursor:pointer}
+.ct-row:hover{background:var(--surface)}
+.ct-nom{font-size:13px;font-weight:600;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-dot{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:#31c453;border:2px solid var(--bg2,#111)}
+
 .sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--surface);border-radius:var(--r)}
 .sb-av{width:28px;height:28px;border-radius:50%;background:var(--green3);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:10px;font-weight:900;color:var(--green);flex-shrink:0}
 .sb-uname{font-family:var(--head);font-size:12px;font-weight:800;color:var(--text)}
@@ -668,8 +690,8 @@ select.form-input option{background:var(--bg2)}
 </div>
 
 <aside class="sb">
-  <div class="sb-logo">
-    <div class="sb-mark"><img alt="Bio-centralis" src="data:image/webp;base64,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"></div>
+  <div class="sb-logo" onclick="nav(paginaInicio(),null)" title="Ir al inicio" style="cursor:pointer">
+    <div class="sb-mark"><img alt="Bio-centralis" src="data:image/webp;base64,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"></div>
     <div><div class="sb-name">Bio-centralis</div><div class="sb-sub">clave · BioAmbientalistik</div></div>
   </div>
   <div class="sb-role" onclick="openRoleSel()">
@@ -683,16 +705,12 @@ select.form-input option{background:var(--bg2)}
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
       Dashboard
     </div>
-    <div class="sb-item" data-page="sites" onclick="nav('sites',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M2 5a1 1 0 011-1h3l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V5z"/></svg>
-      Sites/Sedes <span class="sb-bdg m" id="bdg-sites">0</span>
-    </div>
     <div class="sb-item" data-page="personal" onclick="nav('personal',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
       Personal <span class="sb-bdg g" id="bdg-colab">0</span>
     </div>
     <div class="sb-item" data-page="flota" onclick="nav('flota',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1" y="5" width="14" height="7" rx="1.5"/><path d="M4 5V4a2 2 0 012-2h4a2 2 0 012 2v1"/><circle cx="4.5" cy="13" r="1.5"/><circle cx="11.5" cy="13" r="1.5"/></svg>
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" viewBox="0 0 16 16"><path d="M1 4.5h8.2v6.7H1z"/><path d="M9.2 6.6h3l2.3 2.4v2.2H9.2z"/><circle cx="4.2" cy="12.2" r="1.45" fill="var(--bg2,#111)"/><circle cx="11.6" cy="12.2" r="1.45" fill="var(--bg2,#111)"/></svg>
       <span id="sb-flota-lbl">Flota</span> <span class="sb-bdg m" id="bdg-flota">0</span>
     </div>
     <div class="sb-item" data-page="rutas" onclick="nav('rutas',this)">
@@ -702,6 +720,14 @@ select.form-input option{background:var(--bg2)}
     <div class="sb-item" data-page="documentos" onclick="nav('documentos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M4 2h5l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M9 2v4h3"/></svg>
       Documentos <span class="sb-bdg r" id="bdg-docs">0</span>
+    </div>
+    <div class="sb-item" data-page="finanzas" onclick="nav('finanzas',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="9" width="2.5" height="5" rx=".6"/><rect x="6.75" y="5" width="2.5" height="9" rx=".6"/><rect x="11.5" y="2" width="2.5" height="12" rx=".6"/></svg>
+      Finanzas
+    </div>
+    <div class="sb-item" data-page="sites" onclick="nav('sites',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" viewBox="0 0 16 16"><path d="M1.8 14V2.5h2.6V7l3.4-2.2V7L11.2 4.8V7l3-2V14z"/><path d="M4.3 11h1.4M7.5 11h1.4M10.7 11h1.4"/></svg>
+      Sites/Sedes <span class="sb-bdg m" id="bdg-sites">0</span>
     </div>
     <div class="sb-item" data-page="asistencias" onclick="nav('asistencias',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="12" rx="1.5"/><path d="M1 6h14M5 2V1M11 2V1"/></svg>
@@ -719,13 +745,9 @@ select.form-input option{background:var(--bg2)}
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>
       Mi asistencia
     </div>
-    <div class="sb-item" data-page="miperfil" onclick="nav('miperfil',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="5.5" r="2.8"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>
-      Mi perfil
-    </div>
     <div class="sb-item" data-page="muro" onclick="nav('muro',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
-      Bio Muro
+      Bio-Muro
     </div>
     <div class="sb-item" data-page="procesos" onclick="nav('procesos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 8.5h6M5 11h3"/></svg>
@@ -734,10 +756,6 @@ select.form-input option{background:var(--bg2)}
     <div class="sb-item" data-page="calendario" onclick="nav('calendario',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M5 3V1M11 3V1"/></svg>
       Calendario
-    </div>
-    <div class="sb-item" data-page="finanzas" onclick="nav('finanzas',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="9" width="2.5" height="5" rx=".6"/><rect x="6.75" y="5" width="2.5" height="9" rx=".6"/><rect x="11.5" y="2" width="2.5" height="12" rx=".6"/></svg>
-      Finanzas
     </div>
     <div class="sb-sec">Estratégico</div>
     <div class="sb-item" data-page="kpis" onclick="nav('kpis',this)">
@@ -753,6 +771,10 @@ select.form-input option{background:var(--bg2)}
       Reportes
     </div>
     <div class="sb-sec">Sistema</div>
+    <div class="sb-item" data-page="miperfil" onclick="nav('miperfil',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="5.5" r="2.8"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>
+      Mi perfil
+    </div>
     <div class="sb-item" data-page="auditoria" onclick="nav('auditoria',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M8 4v4l3 2"/></svg>
       Auditoría
@@ -775,21 +797,6 @@ select.form-input option{background:var(--bg2)}
         </button>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <div class="sb-user" onclick="openRoleSel()" style="flex:1;min-width:0">
-        <div class="sb-av" id="sb-av">ML</div>
-        <div style="min-width:0"><div class="sb-uname" id="sb-uname">Marco Lucero</div><div class="sb-urole" id="sb-urole">Dirección/CEO</div></div>
-      </div>
-      <button id="btn-cambiar-pass-sidebar" onclick="abrirCambiarPassword(false)" title="Cambiar contraseña temporal" style="display:none;flex-shrink:0;width:26px;height:26px;align-items:center;justify-content:center;background:transparent;border:1px solid var(--red);border-radius:6px;color:var(--red);cursor:pointer;margin-right:2px">
-        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" style="width:13px;height:13px"><rect x="4" y="7" width="8" height="6" rx="1"/><path d="M6 7V5a2 2 0 014 0v2"/></svg>
-      </button>
-      <button onclick="abrirMiCuenta()" title="Mi cuenta" style="flex-shrink:0;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;margin-right:2px">
-        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" style="width:13px;height:13px"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
-      </button>
-      <button onclick="cerrarSesion()" title="Cerrar sesión" style="flex-shrink:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;transition:all .18s" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border2)'">
-        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 16 16" style="width:13px;height:13px"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6"/></svg>
-      </button>
-    </div>
   </div>
 </aside>
 
@@ -803,7 +810,7 @@ select.form-input option{background:var(--bg2)}
       <input type="text" placeholder="Buscar colaboradores, unidades, documentos..." id="search-input" oninput="globalSearchDebounced(this.value)" onfocus="if(this.value)document.getElementById('search-results').classList.add('open')" onblur="setTimeout(()=>document.getElementById('search-results').classList.remove('open'),200)">
       <div class="search-results" id="search-results"></div>
     </div>
-    <div class="ml" style="display:flex;gap:8px" id="tb-actions">
+    <div class="ml" style="display:flex;gap:8px;align-items:center" id="tb-actions">
       <button class="btn" onclick="exportarBackup()" title="Exportar respaldo completo (Ctrl+B)">
         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 11 11"><path d="M5.5 1v6M3 5l2.5 2.5L8 5"/><path d="M2 9h7"/></svg>
         Respaldo
@@ -812,6 +819,13 @@ select.form-input option{background:var(--bg2)}
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>
         Alta colaborador
       </button>
+      <button id="btn-cambiar-pass-sidebar" onclick="abrirCambiarPassword(false)" title="Cambiar contraseña temporal" style="display:none;flex-shrink:0;width:30px;height:30px;align-items:center;justify-content:center;background:transparent;border:1px solid var(--red);border-radius:8px;color:var(--red);cursor:pointer">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" style="width:14px;height:14px"><rect x="4" y="7" width="8" height="6" rx="1"/><path d="M6 7V5a2 2 0 014 0v2"/></svg>
+      </button>
+      <div class="tb-user" onclick="nav('miperfil',null)" title="Mi perfil">
+        <div class="sb-av" id="sb-av">ML</div>
+        <div class="tb-user-txt"><div class="sb-uname" id="sb-uname">Marco Lucero</div><div class="sb-urole" id="sb-urole">Dirección/CEO</div></div>
+      </div>
     </div>
   </div>
 
@@ -826,7 +840,7 @@ select.form-input option{background:var(--bg2)}
       <span id="chat-widget-title">Chat</span>
       <span onclick="toggleChatWidget()" style="margin-left:auto;cursor:pointer;color:var(--text3)">✕</span>
     </div>
-    <div id="chat-contactos-list" style="flex:1;overflow-y:auto"></div>
+    <div id="chat-contactos-list" class="ct-panel" style="flex:1;overflow-y:auto;padding:10px 12px"></div>
     <div id="chat-conversacion-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden">
       <div id="chat-mensajes" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;font-size:11px"></div>
       <div style="padding:8px;border-top:1px solid var(--border);display:flex;gap:6px">
@@ -1180,11 +1194,13 @@ select.form-input option{background:var(--bg2)}
       <span class="tag g" id="rt-vivo" style="display:none">● En vivo</span>
       <span style="font-size:11px;color:var(--text3)" id="rt-actualizado"></span>
       <div class="ml" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn primary" id="rt-btn-crear" style="display:none" onclick="abrirCrearRuta()">＋ Crear ruta</button>
         <input class="form-input" type="date" id="rt-fecha" style="width:auto" onchange="renderRutas()">
         <button class="btn" onclick="rtDescargarCSV()">⬇ Órdenes del día (Excel)</button>
         <button class="btn" onclick="rtImprimir()">🖨 Imprimir / PDF</button>
       </div>
     </div>
+    <div id="rt-solicitudes"></div>
     <div id="rt-resumen"></div>
     <div id="rt-unidades"></div>
   </div>
@@ -1209,8 +1225,9 @@ select.form-input option{background:var(--bg2)}
 
     <!-- MURO — publicaciones de RH/Dirección + celebraciones del día -->
   <div id="page-muro" class="page fadein" style="max-width:680px;margin:0 auto">
+    <div class="muro-col">
     <div class="row" style="margin-bottom:14px">
-      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Bio Muro</div>
+      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Bio-Muro</div>
       <button class="btn sm ml" id="muro-filtro-btn" style="display:none" onclick="abrirFiltroPalabras()">🛡 Filtro de palabras</button>
     </div>
     <div id="muro-composer" class="panel" style="display:none;padding:12px 14px">
@@ -1223,6 +1240,8 @@ select.form-input option{background:var(--bg2)}
     <div id="muro-aviso-asistencia"></div>
     <div id="muro-celebraciones" style="margin-bottom:14px"></div>
     <div id="muro-list" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+    <aside class="ct-aside"><div class="ct-panel"></div></aside>
   </div>
 
   <!-- FINANZAS -->
@@ -3884,7 +3903,7 @@ function applyRoleVisibility(){
     if (page) it.classList.toggle('hidden-by-role', !allowed.includes(page));
   });
   // Ocultar secciones del sidebar cuyos items quedaron todos ocultos
-  // Bio Muro es la pantalla inicial de todos los perfiles excepto RH y Dirección: va primero en el menú
+  // Bio-Muro es la pantalla inicial de todos los perfiles excepto RH y Dirección: va primero en el menú
   const navEl = document.querySelector('.sb-nav'), muroIt = navEl && navEl.querySelector('[data-page="muro"]');
   if (muroIt){
     if (inicioBioMuro()) navEl.querySelector('.sb-sec').after(muroIt);
@@ -3905,13 +3924,13 @@ function applyRoleVisibility(){
    (los exige el servidor) y todo se restablece al recargar. ── */
 const VISTAS = [
   { role:'direccion_ceo',  t:'Dirección / CEO',          d:'Acceso total. Vista normal de tu cuenta.' },
-  { role:'rh',             t:'Recursos Humanos',          d:'Personal, asistencia del equipo, Bio Muro (publica) y reportes de personal.' },
+  { role:'rh',             t:'Recursos Humanos',          d:'Personal, asistencia del equipo, Bio-Muro (publica) y reportes de personal.' },
   { role:'administracion', t:'Gerente Administrativo',    d:'Finanzas completas: aprueba pagos, proveedores, presupuestos y calendario.' },
   { role:'administrativo', area:'finanzas',  t:'Administrativo · Finanzas', d:'Captura facturas y solicitudes; da seguimiento a pagos. Calendario en lectura.' },
   { role:'administrativo', area:'operativa', t:'Administrativo · Operativa', d:'Consulta flota, equipos, mantenimiento e inventario en solo lectura.' },
   { role:'supervisor',     t:'Gerente Operativo',         d:'Sites, personal de sus sedes, flota, mantenimiento e inventario.' },
   { role:'monitoreo',      t:'Monitoreo',                 d:'Flota, documentos y equipos. Sin acceso a personal.' },
-  { role:'chofer',         t:'Operativo',                 d:'Mi unidad (solo consulta), su ruta, su asistencia, Mi perfil y el Bio Muro.' }
+  { role:'chofer',         t:'Operativo',                 d:'Mi unidad (solo consulta), su ruta, su asistencia, Mi perfil y el Bio-Muro.' }
 ];
 function esDireccionReal(){ return !!currentUser && (currentUser.realRole || currentUser.role) === 'direccion_ceo'; }
 function openRoleSel(){
@@ -4142,7 +4161,7 @@ async function cargarPerfilYActivarSesion(){
   applyRoleVisibility();
   const sbRol = document.querySelector('.sb-role'); if (sbRol) sbRol.style.display = esDireccionReal() ? '' : 'none';
   const rvv = document.getElementById('sb-role-val'); if (rvv) rvv.textContent = ROLES[currentUser.role]?.label || '';
-  cargarDirectorioAvatares(true);
+  cargarDirectorioAvatares(true); iniciarPresencia(); cargarCumpleanos();
   await cargarDatosSupabase();
   updateBadges();
   nav(paginaInicio(), null);
@@ -4192,6 +4211,7 @@ async function guardarCuestionarioBienvenida(){
 }
 
 function cerrarSesion(motivo){
+  try { ctDetener(); } catch(e){}
   _sesionActiva = false;
   sb.auth.signOut();
   closeAllModals();
@@ -4372,13 +4392,7 @@ function mostrarContactosChat(){
 }
 
 async function renderChat(){
-  const { data, error } = await sb.from('profiles').select('id,nombre,role').neq('id', currentUser.userId).eq('activo', true).order('nombre');
-  const cont = document.getElementById('chat-contactos-list');
-  if (error){ cont.innerHTML = '<div class="empty" style="padding:16px;font-size:11px">Error al cargar contactos</div>'; return; }
-  cont.innerHTML = (data||[]).map(p=>`<div onclick="abrirConversacionChat('${p.id}','${esc(p.nombre)}')" style="padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--border)">
-    <div style="font-size:11px;font-weight:600">${esc(p.nombre)}</div>
-    <div style="font-size:9px;color:var(--text3)">${esc(p.role)}</div>
-  </div>`).join('') || '<div class="empty" style="padding:16px;font-size:11px">Sin otros contactos aún</div>';
+  await cargarDirectorioAvatares(); iniciarPresencia(); cargarCumpleanos(); pintarContactos();
 
   if (_chatCanalRealtime) sb.removeChannel(_chatCanalRealtime);
   _chatCanalRealtime = sb.channel('chat-'+currentUser.userId)
@@ -5174,7 +5188,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio Muro', rutas:'Rutas', miperfil:'Mi perfil' };
+  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil' };
   if (currentUser.role === 'chofer'){ titles.flota = 'Mi unidad'; titles.unidad = 'Mi unidad'; }
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
@@ -5188,7 +5202,7 @@ function nav(page, el){
   if (page === 'calendario') renderCalendario();
   if (page === 'kpis') renderKPIs();
   if (page === 'procesos') renderProcesos();
-  if (page === 'muro') renderMuro();
+  if (page === 'muro'){ renderMuro(); pintarContactos(); }
   if (page === 'finanzas') renderFinanzas();
   if (page === 'miasistencia') renderMiAsistencia();
   if (page === 'rutas') renderRutas(); else rtDetener();
@@ -8739,7 +8753,7 @@ async function cargarDirectorioAvatares(force){
     AV.ts = Date.now();
   } catch(e){ /* sin foto: se muestran iniciales */ }
   finally { AV.cargando = false; }
-  refrescarAvatarPropio();
+  refrescarAvatarPropio(); pintarContactos();
   if (document.getElementById('page-muro')?.classList.contains('active')) renderMuro();
 }
 function avUrl(userId){
@@ -9824,6 +9838,7 @@ async function renderRutas(){
   RT.fecha = fEl.value;
   const t = document.getElementById('rt-titulo');
   if (t) t.textContent = rtEsOperativo() ? 'Mi ruta' : 'Cumplimiento de rutas';
+  rcActualizarBotones(); rcCargarSolicitudes();
   await rtCargar();
   rtIniciarVivo();
 }
@@ -9957,6 +9972,177 @@ function rtImprimir(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   CREAR RUTA — plantillas precargadas o ruta nueva.
+   Gerente Operativo y Dirección crean directo; Administrativo operativo envía solicitud que aprueba el Gerente Operativo o Dirección.
+   ═══════════════════════════════════════════════════════════════════ */
+const RC = { rutas:[], personal:[], clientes:[], unidades:[], items:[], base:'' };
+const RC_DIAS = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
+function rcPuedeCrear(){ return !!currentUser && (['supervisor','direccion_ceo'].includes(currentUser.role) || (currentUser.role === 'administrativo' && currentUser.areaAdmin === 'operativa')); }
+function rcEsDirecto(){ return esDireccionReal() || currentUser.role === 'supervisor'; }
+function rcDiaClave(f){ const [y, m, d] = (f || hoyLocal()).split('-').map(Number); return RC_DIAS[new Date(y, m - 1, d).getDay()]; }
+function rcActualizarBotones(){
+  const b = document.getElementById('rt-btn-crear'); if (!b) return;
+  b.style.display = rcPuedeCrear() ? '' : 'none';
+  b.textContent = rcEsDirecto() ? '＋ Crear ruta' : '＋ Solicitar ruta';
+}
+async function abrirCrearRuta(){
+  if (!rcPuedeCrear()) return;
+  const [r1, r2, r3, r4] = await Promise.all([
+    sb.from('rutas').select('id,nombre,operador_id,operador_nombre,unidad_id,unidad_bak').eq('activo', true).order('nombre'),
+    sb.from('clientes_servicio').select('id,nombre,razon_social').eq('activo', true).order('nombre').limit(500),
+    sb.rpc('rutas_catalogo_personal'),
+    sb.from('unidades').select('id,bak,estatus').order('bak')
+  ]);
+  RC.rutas = r1.data || []; RC.clientes = r2.data || []; RC.personal = r3.data || []; RC.unidades = r4.data || []; RC.items = []; RC.base = '';
+  const ops = RC.personal.filter(p => p.puesto === 'Operador').map(p => [p.id, p.nombre]);
+  const ays = RC.personal.filter(p => p.puesto === 'Ayudante general');
+  const aviso = rcEsDirecto() ? '' : '<div style="font-size:12px;color:var(--amber);margin-bottom:10px">Tu ruta se enviará como solicitud: el Gerente Operativo (o Dirección) debe aprobarla antes de que se programe.</div>';
+  const cuerpo = aviso +
+    finSelect('Ruta', 'rc-base', [['nueva', '＋ Ruta nueva (desde cero)'], ...RC.rutas.map(r => [r.id, r.nombre])], '', 'Elige una ruta precargada…').replace('<select ', '<select onchange="rcCambiarBase()" ') +
+    finCampo('Fecha', 'rc-fecha', 'date', hoyLocal(), 'onchange="rcActualizarDia()"') +
+    finCampo('Nombre de la ruta', 'rc-nombre', 'text', '', 'maxlength="120" placeholder="Ej. RUTA 11 (BAK-30)"') +
+    finSelect('Unidad', 'rc-unidad', RC.unidades.map(u => [u.id, u.bak + (u.estatus && u.estatus !== 'activo' ? ' (' + u.estatus + ')' : '')]), '', 'Sin unidad') +
+    finSelect('Titular', 'rc-titular', ops, '', 'Sin titular') +
+    `<label class="form-lbl">Ayudante(s)</label><div style="display:flex;gap:8px"><input class="form-input" id="rc-ay1" list="rc-ay-list" maxlength="80" placeholder="Ayudante 1" style="margin-bottom:10px"><input class="form-input" id="rc-ay2" list="rc-ay-list" maxlength="80" placeholder="Ayudante 2" style="margin-bottom:10px"></div><datalist id="rc-ay-list">${ays.map(a => `<option value="${esc(a.nombre)}">`).join('')}</datalist>` +
+    `<label class="form-lbl">Clientes de la ruta</label><div id="rc-clientes" style="border:1px solid var(--border);border-radius:8px;max-height:230px;overflow:auto;margin-bottom:8px"></div>` +
+    `<div style="display:flex;gap:8px;margin-bottom:6px"><select class="form-input" id="rc-add-cli" style="margin-bottom:0;flex:1"><option value="">Agregar cliente existente…</option>${RC.clientes.map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('')}</select><button class="btn sm" type="button" onclick="rcAgregarExistente()">Agregar</button></div>` +
+    `<div style="display:flex;gap:8px"><input class="form-input" id="rc-man-nom" maxlength="200" placeholder="Cliente nuevo: nombre" style="margin-bottom:0;flex:1"><input class="form-input" id="rc-man-dir" maxlength="400" placeholder="Dirección" style="margin-bottom:0;flex:1"><button class="btn sm" type="button" onclick="rcAgregarManual()">Agregar</button></div>`;
+  finModal(rcEsDirecto() ? 'Crear ruta' : 'Solicitar ruta', cuerpo, rcGuardar, rcEsDirecto() ? 'Crear ruta' : 'Enviar solicitud');
+  rcPintarItems();
+}
+async function rcCambiarBase(){
+  const v = document.getElementById('rc-base').value; RC.base = v;
+  const nom = document.getElementById('rc-nombre');
+  if (!v || v === 'nueva'){ RC.items = []; nom.value = ''; nom.readOnly = false; rcPintarItems(); return; }
+  const r = RC.rutas.find(x => x.id === v); if (!r) return;
+  nom.value = r.nombre; nom.readOnly = true;
+  document.getElementById('rc-unidad').value = r.unidad_id || '';
+  const tit = r.operador_id || (RC.personal.find(p => p.nombre.trim().toLowerCase() === (r.operador_nombre || '').trim().toLowerCase())?.id) || '';
+  document.getElementById('rc-titular').value = tit;
+  const { data } = await sb.from('ruta_clientes').select('*').eq('ruta_id', v).order('orden');
+  RC.items = (data || []).map(c => ({ sel:false, nombre:c.nombre, direccion:c.direccion || '', horario:c.horario || '', m3:c.m3, codigo:c.codigo || '', cliente_id:c.cliente_id || null, dias:c.dias || {} }));
+  rcActualizarDia();
+}
+function rcActualizarDia(){
+  const k = rcDiaClave(document.getElementById('rc-fecha')?.value);
+  RC.items.forEach(it => { if (it.dias && Object.keys(it.dias).length) it.sel = !!it.dias[k]; });
+  rcPintarItems();
+}
+function rcTipoDe(it, k){ const d = it.dias || {}; return (d[k] && d[k].tipo) || it.tipo || (Object.values(d)[0] && Object.values(d)[0].tipo) || ''; }
+function rcPintarItems(){
+  const box = document.getElementById('rc-clientes'); if (!box) return;
+  const k = rcDiaClave(document.getElementById('rc-fecha')?.value);
+  if (!RC.items.length){ box.innerHTML = '<div class="empty-sub" style="padding:12px">Elige una ruta precargada o agrega clientes para armar una nueva.</div>'; return; }
+  const n = RC.items.filter(i => i.sel).length;
+  box.innerHTML = RC.items.map((it, i) => `<label style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer">
+    <input type="checkbox" ${it.sel ? 'checked' : ''} onchange="RC.items[${i}].sel=this.checked;rcPintarItems()" style="margin-top:2px">
+    <span style="flex:1;min-width:0"><strong>${esc(it.nombre)}</strong><span style="display:block;font-size:11px;color:var(--text3)">${esc(it.horario || '')}${rcTipoDe(it, k) ? ' · ' + esc(rcTipoDe(it, k)) : ''}${it.dias && Object.keys(it.dias).length && !it.dias[k] ? ' · no le toca este día' : ''}</span></span>
+    ${it.manual ? `<button class="btn sm" type="button" onclick="event.preventDefault();RC.items.splice(${i},1);rcPintarItems()">Quitar</button>` : ''}</label>`).join('') +
+    `<div style="padding:6px 10px;font-size:11px;color:var(--text3)">${n} ${n === 1 ? 'cliente seleccionado' : 'clientes seleccionados'}</div>`;
+}
+function rcAgregarExistente(){
+  const sel = document.getElementById('rc-add-cli'); const c = RC.clientes.find(x => x.id === sel.value); if (!c) return;
+  if (RC.items.some(i => i.cliente_id === c.id)){ toast('Ese cliente ya está en la lista', 'info'); return; }
+  RC.items.push({ sel:true, manual:true, nombre:c.nombre, direccion:'', horario:'', m3:null, codigo:'', cliente_id:c.id, dias:{} }); sel.value = ''; rcPintarItems();
+}
+function rcAgregarManual(){
+  const n = document.getElementById('rc-man-nom'), d = document.getElementById('rc-man-dir');
+  if (!n.value.trim()){ toast('Escribe el nombre del cliente', 'error'); return; }
+  RC.items.push({ sel:true, manual:true, nombre:n.value.trim(), direccion:d.value.trim(), horario:'', m3:null, codigo:'', cliente_id:null, dias:{} }); n.value = ''; d.value = ''; rcPintarItems();
+}
+async function rcGuardar(){
+  const fecha = document.getElementById('rc-fecha').value, nombre = document.getElementById('rc-nombre').value.trim();
+  if (!RC.base) return finErr('Elige una ruta precargada o “Ruta nueva”');
+  if (!fecha) return finErr('Indica la fecha');
+  if (!nombre) return finErr('Escribe el nombre de la ruta');
+  const k = rcDiaClave(fecha), sel = RC.items.filter(i => i.sel);
+  if (!sel.length) return finErr('Selecciona al menos un cliente');
+  const tit = document.getElementById('rc-titular').value || null;
+  const payload = {
+    fecha, nombre, ruta_id: RC.base === 'nueva' ? null : RC.base,
+    unidad_id: document.getElementById('rc-unidad').value || null, operador_id: tit,
+    ayudante1: document.getElementById('rc-ay1').value.trim() || null, ayudante2: document.getElementById('rc-ay2').value.trim() || null,
+    clientes: sel.map(i => ({ nombre:i.nombre, direccion:i.direccion || null, horario:i.horario || null, m3:i.m3, codigo:i.codigo || null, cliente_id:i.cliente_id, tipo:rcTipoDe(i, k) || null }))
+  };
+  const directo = rcEsDirecto();
+  const { data, error } = await sb.rpc(directo ? 'crear_ruta_dia' : 'solicitar_ruta_dia', { p: payload });
+  if (error) return finErr(error.message);
+  await audit('config', directo ? `Ruta creada: ${nombre} (${fecha})` : `Solicitud de ruta enviada: ${nombre} (${fecha})`, 'b');
+  toast(directo ? `Ruta creada con ${data.ordenes} servicios` : 'Solicitud enviada al Gerente Operativo', 'success');
+  if (directo && fecha === document.getElementById('rt-fecha')?.value) rtCargar();
+  rcCargarSolicitudes();
+}
+async function rcCargarSolicitudes(){
+  const box = document.getElementById('rt-solicitudes'); if (!box) return;
+  if (!rcPuedeCrear()){ box.innerHTML = ''; return; }
+  const { data } = await sb.from('rutas_solicitudes').select('*').order('created_at', { ascending:false }).limit(30);
+  const gestor = rcEsDirecto();
+  const lista = (data || []).filter(s => gestor ? true : s.solicitante_id === currentUser.userId);
+  const pend = lista.filter(s => s.estado === 'pendiente'), res = lista.filter(s => s.estado !== 'pendiente').slice(0, 5);
+  if (!pend.length && !res.length){ box.innerHTML = ''; return; }
+  const tag = e => e === 'aprobada' ? '<span class="tag g">Aprobada</span>' : e === 'rechazada' ? '<span class="tag r">Rechazada</span>' : '<span class="tag a">Pendiente</span>';
+  const fila = s => { const p = s.payload || {}; return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:200px"><strong>${esc(p.nombre || 'Ruta')}</strong> · ${esc(p.fecha || '')}<div style="font-size:11px;color:var(--text3)">${(p.clientes || []).length} clientes · pidió ${esc(s.solicitante_nombre || '—')}${s.motivo ? ' · Motivo: ' + esc(s.motivo) : ''}</div></div>
+    ${s.estado === 'pendiente' && gestor ? `<input class="form-input" id="rc-mot-${s.id}" maxlength="300" placeholder="Motivo (si rechazas)" style="margin:0;width:170px"><button class="btn sm primary" onclick="rcResolver('${s.id}',true)">Aprobar</button><button class="btn sm danger" onclick="rcResolver('${s.id}',false)">Rechazar</button>` : tag(s.estado)}</div>`; };
+  box.innerHTML = `<div class="panel" style="padding:12px 16px;margin-bottom:12px"><div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:4px">${gestor ? 'Solicitudes de ruta' : 'Mis solicitudes de ruta'}${pend.length ? ` <span class="tag a">${pend.length} pendiente${pend.length === 1 ? '' : 's'}</span>` : ''}</div>${[...pend, ...res].map(fila).join('')}</div>`;
+}
+async function rcResolver(id, aprobar){
+  const motivo = (document.getElementById('rc-mot-' + id)?.value || '').trim();
+  const { error } = await sb.rpc('resolver_ruta_solicitud', { p_id:id, p_aprobar:aprobar, p_motivo:motivo || null });
+  if (error){ toast(error.message, 'error'); return; }
+  await audit('config', aprobar ? 'Solicitud de ruta aprobada' : 'Solicitud de ruta rechazada', aprobar ? 'g' : 'a');
+  toast(aprobar ? 'Ruta aprobada y programada' : 'Solicitud rechazada', aprobar ? 'success' : 'info');
+  rcCargarSolicitudes(); rtCargar();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONTACTOS — panel estilo red social: cumpleaños del día (solo si hay), personas en línea y chat
+   ═══════════════════════════════════════════════════════════════════ */
+const CT = { online:new Set(), canal:null, cumple:[], q:'', buscando:false };
+async function iniciarPresencia(){
+  if (CT.canal || !currentUser?.userId) return;
+  try {
+    CT.canal = sb.channel('presencia-bio', { config:{ presence:{ key: currentUser.userId } } });
+    CT.canal.on('presence', { event:'sync' }, () => { CT.online = new Set(Object.keys(CT.canal.presenceState())); pintarContactos(); })
+      .subscribe(async st => { if (st === 'SUBSCRIBED'){ try { await CT.canal.track({ t:Date.now() }); } catch(e){} } });
+  } catch(e){ /* sin presencia: se ven los contactos sin punto verde */ }
+}
+function ctDetener(){ if (CT.canal){ try { sb.removeChannel(CT.canal); } catch(e){} CT.canal = null; } CT.online = new Set(); }
+async function cargarCumpleanos(){
+  try { const { data } = await sb.rpc('cumpleanos_hoy'); CT.cumple = data || []; } catch(e){ CT.cumple = []; }
+  pintarContactos();
+}
+function ctCumpleHtml(){
+  const n = CT.cumple.length; if (!n) return '';
+  const primero = esc(CT.cumple[0].nombre);
+  const txt = n === 1 ? `Hoy es el cumpleaños de <strong>${primero}</strong>.` : `Hoy es el cumpleaños de <strong>${primero}</strong> y <strong>${n - 1} ${n - 1 === 1 ? 'persona más' : 'personas más'}</strong>.`;
+  return `<div class="ct-tit">Cumpleaños</div>
+    <div class="ct-cumple"><svg viewBox="0 0 24 24" fill="none" stroke="#4aa3ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;flex-shrink:0"><rect x="3" y="9" width="18" height="12" rx="1.5" fill="rgba(74,163,255,.15)"/><path d="M12 9v12M3 13h18"/><path d="M12 9c-1.5-4-5-4-5-1.5S10.5 9 12 9zM12 9c1.5-4 5-4 5-1.5S13.5 9 12 9z"/></svg><div>${txt}</div></div><div class="ct-sep"></div>`;
+}
+function ctContactosHtml(){
+  const q = CT.q.trim().toLowerCase();
+  const lista = Object.values(AV.dir).filter(u => u.id !== currentUser.userId && (!q || (u.nombre || '').toLowerCase().includes(q)))
+    .sort((a, b) => (CT.online.has(b.id) - CT.online.has(a.id)) || (a.nombre || '').localeCompare(b.nombre || '', 'es'));
+  const filas = lista.map(u => `<div class="ct-row" onclick="abrirChatCon('${u.id}','${esc((u.nombre || '').replace(/'/g, ''))}')">
+      <span style="position:relative;display:inline-flex">${avatarHtml(u.id, u.nombre, 36)}${CT.online.has(u.id) ? '<span class="ct-dot"></span>' : ''}</span>
+      <span class="ct-nom">${esc(u.nombre || '')}</span></div>`).join('');
+  return `<div class="ct-head"><div class="ct-tit" style="margin:0">Contactos</div>
+      <button class="ct-ico" title="Buscar" onclick="CT.buscando=!CT.buscando;pintarContactos()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="width:15px;height:15px"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg></button></div>
+    ${CT.buscando ? `<input class="form-input" id="ct-q" placeholder="Buscar contacto" value="${esc(CT.q)}" oninput="CT.q=this.value;ctRefrescarLista()" style="margin:0 0 8px">` : ''}
+    <div id="ct-lista">${filas || '<div class="empty-sub" style="padding:10px 4px">Sin otros contactos aún</div>'}</div>`;
+}
+function ctRefrescarLista(){ pintarContactos(true); }
+function pintarContactos(conservarFoco){
+  const html = ctCumpleHtml() + ctContactosHtml();
+  document.querySelectorAll('.ct-panel').forEach(el => { el.innerHTML = html; });
+  if (conservarFoco){ const i = [...document.querySelectorAll('#ct-q')].find(x => x.offsetParent !== null); if (i){ i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }
+}
+function abrirChatCon(id, nombre){
+  if (!_chatWidgetAbierto) toggleChatWidget();
+  abrirConversacionChat(id, nombre);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    MI PERFIL — datos personales, progreso de asistencia, cumplimiento de rutas (operativos)
    y Bio-Bono (solo Gerente Operativo, RH y Dirección; nunca lo ve el operativo)
    ═══════════════════════════════════════════════════════════════════ */
@@ -9973,8 +10159,9 @@ async function renderMiPerfil(){
       <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(perfil?.usuario || '')}${perfil?.correo_contacto ? ' · ' + esc(perfil.correo_contacto) : ''}</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn primary" onclick="abrirMiCuenta()">Editar mi perfil</button>
+      <button class="btn primary" onclick="abrirMiCuenta()">Mi cuenta</button>
       <button class="btn" onclick="abrirCambiarPassword()">Cambiar contraseña</button>
+      <button class="btn danger" onclick="cerrarSesion()">Cerrar sesión</button>
     </div></div>`;
   // Progreso de asistencia
   const asisBox = document.getElementById('mp-asistencia');
