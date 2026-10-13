@@ -1289,7 +1289,7 @@ select.form-input option{background:var(--bg2)}
     <div id="muro-celebraciones" style="margin-bottom:14px"></div>
     <div id="muro-list" style="display:flex;flex-direction:column;gap:12px"></div>
     </div>
-    <div id="muro-seg" style="display:none"><div id="seg-body"></div></div>
+    <div id="muro-seg" style="display:none"><div id="seg-bar"></div><div id="seg-body"></div><div id="seg-extra" style="display:none"></div></div>
     </div>
     <aside class="ct-aside"><div class="ct-panel"></div></aside>
   </div>
@@ -9220,6 +9220,11 @@ function sheCard(r){
 async function renderSeg(){
   const cont = document.getElementById('seg-body'); if (!cont) return;
   const ve = sheVeTodo(), ges = sheGestiona();
+  if (!ve) SHE.sub = 'rep';
+  sheBarra();
+  const exd = document.getElementById('seg-extra');
+  if (SHE.sub !== 'rep'){ cont.style.display = 'none'; exd.style.display = 'block'; return sheRenderSub(); }
+  cont.style.display = 'block'; exd.style.display = 'none';
   const [rp, av, vig, alr, sal] = await Promise.all([
     sb.from('she_reportes').select('*').order('created_at', { ascending:false }).limit(200),
     sb.from('she_avisos').select('*').order('created_at', { ascending:false }).limit(20),
@@ -9405,6 +9410,207 @@ function sheQuitarVigencia(id){
     if (error){ toast(error.message, 'error'); return; }
     renderSeg();
   });
+}
+
+/* ─── SHE · Fase 2: EPP con firma y stock, capacitaciones DC-3 y calendario regulatorio ─── */
+SHE.sub = 'rep';
+function sheSub(s){ SHE.sub = s; renderSeg(); }
+function sheBarra(){
+  const b = document.getElementById('seg-bar'); if (!b) return;
+  if (!sheVeTodo()){ b.innerHTML = ''; return; }
+  const t = [['rep', 'Reportes'], ['epp', 'EPP'], ['cap', 'Capacitación'], ['cal', 'Calendario']];
+  b.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${t.map(([k, l]) => `<button class="btn sm ${SHE.sub === k ? 'primary' : ''}" onclick="sheSub('${k}')">${l}</button>`).join('')}</div>`;
+}
+async function sheRenderSub(){
+  const ex = document.getElementById('seg-extra');
+  ex.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">Cargando…</div></div>';
+  try {
+    if (SHE.sub === 'epp') await sheRenderEpp(ex);
+    else if (SHE.sub === 'cap') await sheRenderCap(ex);
+    else await sheRenderCal(ex);
+  } catch(e){ ex.innerHTML = `<div class="empty" style="padding:24px"><div class="empty-sub">No se pudo cargar: ${esc(e.message || String(e))}</div></div>`; }
+}
+const sheTit = t => `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">${t}</div>`;
+const sheFmtF = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' }) : '—';
+
+/* ── Firma en pantalla (dedo o mouse) ── */
+function sheFirmaInit(id){
+  const c = document.getElementById(id); if (!c) return;
+  const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+  g.lineWidth = 3; g.lineCap = 'round'; g.strokeStyle = '#111';
+  c.style.touchAction = 'none'; c._firmado = false; let dib = false;
+  const pt = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; };
+  c.onpointerdown = e => { dib = true; c.setPointerCapture(e.pointerId); const [x, y] = pt(e); g.beginPath(); g.moveTo(x, y); e.preventDefault(); };
+  c.onpointermove = e => { if (!dib) return; const [x, y] = pt(e); g.lineTo(x, y); g.stroke(); c._firmado = true; };
+  c.onpointerup = c.onpointercancel = () => { dib = false; };
+}
+function sheFirmaLimpiar(id){ sheFirmaInit(id); }
+const sheFirmaBlob = id => new Promise(res => document.getElementById(id).toBlob(res, 'image/png'));
+
+/* ── EPP ── */
+async function sheRenderEpp(ex){
+  const [art, ent, col] = await Promise.all([
+    sb.rpc('she_epp_articulos'),
+    sb.from('she_epp_entregas').select('*').order('created_at', { ascending:false }).limit(30),
+    sb.rpc('she_colaboradores')
+  ]);
+  SHE.epp = art.data || []; SHE.colabs = col.data || [];
+  const nom = Object.fromEntries(SHE.colabs.map(c => [c.id, c.nombre]));
+  const anom = Object.fromEntries(SHE.epp.map(a => [a.id, a.nombre]));
+  const ges = sheGestiona();
+  const bajos = SHE.epp.filter(a => Number(a.existencias) <= Number(a.stock_minimo));
+  const entregas = ent.data || [];
+  ex.innerHTML = `
+    ${ges ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="sheEntregarEpp()">Entregar EPP</button><button class="btn" onclick="sheEntradaEpp()">Registrar compra</button><button class="btn" onclick="sheNuevoArticuloEpp()">Nuevo artículo</button></div>` : ''}
+    ${bajos.length ? `<div class="panel" style="margin-top:12px;padding:10px 14px;border-left:5px solid #d64545"><strong style="font-size:12px">Existencias bajas:</strong> <span style="font-size:12px">${bajos.map(a => esc(a.nombre) + ' (' + Number(a.existencias) + ')').join(', ')}</span>
+      ${shePuedeGasto() ? `<div style="margin-top:6px"><button class="btn sm" onclick="sheReposicionEpp()">Solicitar reposición a Finanzas</button></div>` : ''}</div>` : ''}
+    ${sheTit('Inventario de EPP')}
+    <div class="panel" style="padding:6px 14px">${SHE.epp.length ? SHE.epp.map(a => `<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div style="flex:1;min-width:0"><div style="font-weight:700">${esc(a.nombre)}</div><div style="font-size:10px;color:var(--text3)">Mínimo ${Number(a.stock_minimo)} ${esc(a.unidad_medida || '')}</div></div>
+      <span class="tag ${Number(a.existencias) <= Number(a.stock_minimo) ? 'r' : 'g'}">${Number(a.existencias)} ${esc(a.unidad_medida || '')}</span></div>`).join('') : '<div class="empty" style="padding:18px"><div class="empty-sub">Aún no hay artículos de EPP</div></div>'}</div>
+    ${sheTit('Últimas entregas')}
+    <div class="panel" style="padding:6px 14px">${entregas.length ? entregas.map(e => `<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div style="flex:1;min-width:0"><div style="font-weight:700">${esc(nom[e.colaborador_id] || 'Colaborador')}</div><div style="font-size:10px;color:var(--text3)">${Number(e.cantidad)} × ${esc(anom[e.articulo_id] || 'EPP')}${e.talla ? ' · talla ' + esc(e.talla) : ''} · ${tiempoRel(e.created_at)} · entregó ${esc(e.entregado_por_nombre || '—')}</div></div>
+      ${e.firma_path ? `<button class="btn sm" onclick="sheVerFirma('${esc(e.firma_path)}')">Ver firma</button>` : ''}</div>`).join('') : '<div class="empty" style="padding:18px"><div class="empty-sub">Sin entregas registradas</div></div>'}</div>`;
+}
+async function sheVerFirma(p){
+  const u = await avBlob('she', p); if (!u){ toast('No se pudo abrir la firma', 'error'); return; }
+  verImagenMuro(u);
+}
+function sheNuevoArticuloEpp(){
+  finModal('Nuevo artículo de EPP', finCampo('Nombre', 'ea-nom', 'text', '', 'maxlength="120" placeholder="Ej. Casco, guantes, botas, lentes"')
+    + finCampo('Unidad', 'ea-uni', 'text', 'pieza', 'maxlength="20"')
+    + finCampo('Existencia mínima (alerta)', 'ea-min', 'number', '5', 'min="0"')
+    + finCampo('Costo unitario (MXN)', 'ea-cos', 'number', '', 'min="0" step="0.01"'),
+    async () => {
+      const { error } = await sb.rpc('she_epp_crear_articulo', { p_nombre: fv('ea-nom'), p_unidad: fv('ea-uni'), p_minimo: Number(fv('ea-min') || 0), p_costo: Number(fv('ea-cos') || 0) });
+      if (error) return finErr(error.message);
+      renderSeg();
+    }, 'Crear artículo');
+}
+function sheEntradaEpp(){
+  if (!SHE.epp.length){ toast('Primero crea un artículo de EPP', 'info'); return; }
+  finModal('Registrar compra de EPP', finSelect('Artículo', 'ee-art', SHE.epp.map(a => [a.id, a.nombre]), '')
+    + finCampo('Cantidad recibida', 'ee-can', 'number', '', 'min="1" step="1"')
+    + finCampo('Costo unitario (MXN)', 'ee-cos', 'number', '', 'min="0" step="0.01"')
+    + finArea('Nota (factura, proveedor)', 'ee-nota', ''),
+    async () => {
+      const { error } = await sb.rpc('she_epp_entrada', { p_articulo: fv('ee-art'), p_cantidad: Number(fv('ee-can')), p_costo: fv('ee-cos') === '' ? null : Number(fv('ee-cos')), p_nota: fv('ee-nota') });
+      if (error) return finErr(error.message);
+      renderSeg();
+    }, 'Registrar entrada');
+}
+function sheEntregarEpp(){
+  if (!SHE.epp.length){ toast('Primero crea un artículo de EPP', 'info'); return; }
+  finModal('Entregar EPP',
+    finSelect('Colaborador', 'en-col', SHE.colabs.map(c => [c.id, c.nombre + (c.puesto ? ' — ' + c.puesto : '')]), '', 'Elige…')
+    + finSelect('Artículo', 'en-art', SHE.epp.map(a => [a.id, a.nombre + ' (disp. ' + Number(a.existencias) + ')']), '')
+    + `<div class="grid2"><div>${finCampo('Cantidad', 'en-can', 'number', '1', 'min="1" step="1"')}</div><div>${finCampo('Talla', 'en-tal', 'text', '', 'maxlength="20"')}</div></div>`
+    + `<label class="form-lbl req">Firma de quien recibe</label><canvas id="en-firma" width="600" height="200" style="width:100%;height:130px;border:1px solid var(--border);border-radius:8px;background:#fff;display:block"></canvas>
+       <div style="margin:4px 0 10px"><button class="btn sm" type="button" onclick="sheFirmaLimpiar('en-firma')">Borrar firma</button></div>`
+    + finArea('Nota', 'en-nota', ''),
+    async () => {
+      if (!fv('en-col')) return finErr('Elige al colaborador');
+      const c = document.getElementById('en-firma'); if (!c._firmado) return finErr('Pide la firma de quien recibe');
+      const blob = await sheFirmaBlob('en-firma');
+      const p = `${currentUser.userId}/epp/${crypto.randomUUID()}.png`;
+      const up = await sb.storage.from('she').upload(p, blob, { contentType:'image/png' });
+      if (up.error) return finErr(up.error.message);
+      const { error } = await sb.rpc('she_epp_entregar', { p_colaborador: fv('en-col'), p_articulo: fv('en-art'), p_cantidad: Number(fv('en-can')), p_talla: fv('en-tal'), p_firma: p, p_nota: fv('en-nota') });
+      if (error){ await sb.storage.from('she').remove([p]); return finErr(error.message); }
+      await audit('config', 'SHE: entrega de EPP registrada', 'a');
+      toast('Entrega registrada', 'success');
+      renderSeg();
+    }, 'Registrar entrega');
+  setTimeout(() => sheFirmaInit('en-firma'), 0);
+}
+function sheReposicionEpp(){
+  const bajos = (SHE.epp || []).filter(a => Number(a.existencias) <= Number(a.stock_minimo));
+  finModal('Solicitar reposición de EPP', `<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Llegará a Finanzas como solicitud pendiente.</div>`
+    + finCampo('Título', 'sgs-tit', 'text', 'Reposición de EPP', 'maxlength="120"')
+    + finCampo('Monto estimado (MXN, opcional)', 'sgs-monto', 'number', '', 'min="0" step="0.01"')
+    + finArea('Qué se necesita', 'sgs-desc', bajos.map(a => `${a.nombre}: quedan ${Number(a.existencias)} (mínimo ${Number(a.stock_minimo)})`).join('\n')),
+    async () => {
+      const m = fv('sgs-monto');
+      const { error } = await sb.rpc('she_enviar_solicitud_gasto', { p_reporte: null, p_titulo: fv('sgs-tit').trim(), p_descripcion: fv('sgs-desc').trim(), p_monto: m === '' ? null : Number(m) });
+      if (error) return finErr(error.message);
+      toast('Enviada a Solicitudes de gasto', 'success');
+    }, 'Enviar a Finanzas');
+}
+
+/* ── Capacitaciones / DC-3 ── */
+async function sheRenderCap(ex){
+  const [cap, asi, col] = await Promise.all([
+    sb.from('she_capacitaciones').select('*').order('fecha', { ascending:false }).limit(50),
+    sb.from('she_capacitacion_asistentes').select('*'),
+    sb.rpc('she_colaboradores')
+  ]);
+  SHE.caps = cap.data || []; SHE.asis = asi.data || []; SHE.colabs = col.data || [];
+  const ges = sheGestiona();
+  ex.innerHTML = `${ges ? '<button class="btn primary" onclick="sheNuevaCap()">Nueva capacitación</button>' : ''}
+    ${sheTit('Capacitaciones (constancias DC-3)')}
+    <div style="display:flex;flex-direction:column;gap:10px">${SHE.caps.length ? SHE.caps.map(k => {
+      const a = SHE.asis.filter(x => x.capacitacion_id === k.id);
+      return `<div class="panel" style="padding:14px;margin-bottom:0">
+        <div style="font-size:13px;font-weight:700">${esc(k.tema)}</div>
+        <div style="font-size:11px;color:var(--text3)">${sheFmtF(k.fecha)}${k.duracion_h ? ' · ' + Number(k.duracion_h) + ' h' : ''}${k.instructor ? ' · ' + esc(k.instructor) : ''}${k.lugar ? ' · ' + esc(k.lugar) : ''}</div>
+        <div style="margin-top:6px"><span class="tag b">${a.length} asistente${a.length !== 1 ? 's' : ''}</span></div>
+        ${a.length ? `<div style="font-size:11px;color:var(--text2);margin-top:6px">${a.map(x => esc((SHE.colabs.find(c => c.id === x.colaborador_id) || {}).nombre || '—') + (x.vence ? ' (vence ' + sheFmtF(x.vence) + ')' : '')).join(' · ')}</div>` : ''}
+        ${ges ? `<div style="margin-top:8px"><button class="btn sm" onclick="sheAsistentes('${esc(k.id)}')">Registrar asistentes</button></div>` : ''}</div>`;
+    }).join('') : '<div class="empty" style="padding:24px"><div class="empty-sub">Sin capacitaciones registradas</div></div>'}</div>`;
+}
+function sheNuevaCap(){
+  finModal('Nueva capacitación', finCampo('Tema', 'sc-tema', 'text', '', 'maxlength="200" placeholder="Ej. Uso y manejo de extintores"')
+    + finCampo('Fecha', 'sc-fec', 'date', hoyLocal())
+    + finCampo('Duración (horas)', 'sc-dur', 'number', '', 'min="0" step="0.5"')
+    + finCampo('Instructor / agente capacitador', 'sc-ins', 'text', '', 'maxlength="160"')
+    + finCampo('Lugar', 'sc-lug', 'text', '', 'maxlength="160"'),
+    async () => {
+      if (fv('sc-tema').trim().length < 3) return finErr('Escribe el tema');
+      if (!fv('sc-fec')) return finErr('Indica la fecha');
+      const { error } = await sb.from('she_capacitaciones').insert({ tema: fv('sc-tema').trim(), fecha: fv('sc-fec'), duracion_h: fv('sc-dur') === '' ? null : Number(fv('sc-dur')), instructor: fv('sc-ins').trim() || null, lugar: fv('sc-lug').trim() || null });
+      if (error) return finErr(error.message);
+      renderSeg();
+    }, 'Guardar');
+}
+function sheAsistentes(id){
+  const ya = new Set(SHE.asis.filter(x => x.capacitacion_id === id).map(x => x.colaborador_id));
+  finModal('Registrar asistentes',
+    `<div style="max-height:260px;overflow:auto;border:1px solid var(--border);border-radius:8px;padding:6px 10px;margin-bottom:10px">${SHE.colabs.map(c => `<label style="display:flex;gap:8px;align-items:center;font-size:12px;padding:4px 0"><input type="checkbox" class="sa-chk" value="${esc(c.id)}" ${ya.has(c.id) ? 'checked disabled' : ''}> ${esc(c.nombre)}${c.puesto ? ' <span style="color:var(--text3)">— ' + esc(c.puesto) + '</span>' : ''}</label>`).join('')}</div>`
+    + finCampo('La constancia vence el (opcional)', 'sa-vence', 'date', ''),
+    async () => {
+      const ids = [...document.querySelectorAll('.sa-chk:checked:not(:disabled)')].map(x => x.value);
+      if (!ids.length) return finErr('Marca al menos un asistente nuevo');
+      const { error } = await sb.from('she_capacitacion_asistentes').insert(ids.map(c => ({ capacitacion_id: id, colaborador_id: c, vence: fv('sa-vence') || null })));
+      if (error) return finErr(error.message);
+      renderSeg();
+    }, 'Guardar asistentes');
+}
+
+/* ── Calendario regulatorio: vigencias SHE, constancias y capacitaciones, próximos 12 meses ── */
+async function sheRenderCal(ex){
+  const hoy = hoyLocal();
+  const [vig, cap, asi, col] = await Promise.all([
+    sb.from('she_vigencias').select('*').order('fecha_vence'),
+    sb.from('she_capacitaciones').select('*').gte('fecha', hoy),
+    sb.from('she_capacitacion_asistentes').select('*').not('vence', 'is', null),
+    sb.rpc('she_colaboradores')
+  ]);
+  const nom = Object.fromEntries((col.data || []).map(c => [c.id, c.nombre])), tem = Object.fromEntries(((await sb.from('she_capacitaciones').select('id,tema')).data || []).map(k => [k.id, k.tema]));
+  const lim = new Date(); lim.setFullYear(lim.getFullYear() + 1); const limS = lim.toLocaleDateString('en-CA', { timeZone:TZ_MX });
+  const ev = [
+    ...(vig.data || []).map(v => ({ f: v.fecha_vence, t: v.concepto, d: (SHE_VIG_CAT[v.categoria] || v.categoria) + (v.lugar ? ' · ' + v.lugar : ''), k: 'Vigencia' })),
+    ...(cap.data || []).map(k => ({ f: k.fecha, t: 'Capacitación: ' + k.tema, d: k.lugar || '', k: 'Capacitación' })),
+    ...(asi.data || []).map(a => ({ f: a.vence, t: 'DC-3: ' + (tem[a.capacitacion_id] || ''), d: nom[a.colaborador_id] || '', k: 'Constancia' }))
+  ].filter(e => e.f && e.f <= limS).sort((a, b) => a.f.localeCompare(b.f));
+  const meses = {};
+  ev.forEach(e => { const m = e.f.slice(0, 7); (meses[m] = meses[m] || []).push(e); });
+  const hoyD = new Date(hoy + 'T12:00:00');
+  ex.innerHTML = Object.keys(meses).length ? Object.entries(meses).map(([m, lst]) => `${sheTit(new Date(m + '-15T12:00:00').toLocaleDateString('es-MX', { month:'long', year:'numeric' }))}
+    <div class="panel" style="padding:6px 14px">${lst.map(e => { const d = Math.round((new Date(e.f + 'T12:00:00') - hoyD) / 864e5);
+      return `<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="width:52px;font-weight:800">${sheFmtF(e.f).replace(/ de /g, ' ').slice(0, 6)}</div>
+      <div style="flex:1;min-width:0"><div style="font-weight:700">${esc(e.t)}</div><div style="font-size:10px;color:var(--text3)">${esc(e.k)}${e.d ? ' · ' + esc(e.d) : ''}</div></div>${sheDias(d)}</div>`; }).join('')}</div>`).join('')
+    : '<div class="empty" style="padding:24px"><div class="empty-sub">No hay fechas registradas en los próximos 12 meses. Agrega vigencias, simulacros y capacitaciones desde SHE.</div></div>';
 }
 
 /* ── Filtro de palabras (solo Dirección): lista que el servidor usa para censurar ── */
