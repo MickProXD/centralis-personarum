@@ -693,7 +693,11 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="sb-item" data-page="flota" onclick="nav('flota',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1" y="5" width="14" height="7" rx="1.5"/><path d="M4 5V4a2 2 0 012-2h4a2 2 0 012 2v1"/><circle cx="4.5" cy="13" r="1.5"/><circle cx="11.5" cy="13" r="1.5"/></svg>
-      Flota <span class="sb-bdg m" id="bdg-flota">0</span>
+      <span id="sb-flota-lbl">Flota</span> <span class="sb-bdg m" id="bdg-flota">0</span>
+    </div>
+    <div class="sb-item" data-page="rutas" onclick="nav('rutas',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="4" cy="12" r="1.8"/><circle cx="12" cy="4" r="1.8"/><path d="M5.5 11C8 10 5 6 8 6s1.5 1 2.5-.5"/></svg>
+      Rutas
     </div>
     <div class="sb-item" data-page="documentos" onclick="nav('documentos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M4 2h5l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M9 2v4h3"/></svg>
@@ -714,6 +718,10 @@ select.form-input option{background:var(--bg2)}
     <div class="sb-item" data-page="miasistencia" onclick="nav('miasistencia',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>
       Mi asistencia
+    </div>
+    <div class="sb-item" data-page="miperfil" onclick="nav('miperfil',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="5.5" r="2.8"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>
+      Mi perfil
     </div>
     <div class="sb-item" data-page="muro" onclick="nav('muro',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
@@ -1049,7 +1057,7 @@ select.form-input option{background:var(--bg2)}
 
     <!-- FLOTA -->
     <div id="page-flota" class="page fadein">
-      <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div class="row" id="flota-toolbar" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <input id="search-unidad" type="text" placeholder="Buscar por BAK, marca o modelo..." oninput="renderFlotaDebounced()" style="flex:1;max-width:240px;padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--body);font-size:12px;outline:none">
         <select id="filter-estatus-flota" onchange="renderFlota()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-family:var(--head);font-size:11px;font-weight:700;outline:none"><option value="">Todos</option><option value="activo">Activo</option><option value="taller">En taller</option><option value="baja">Baja temporal</option></select>
         <select id="filter-tipo-flota" onchange="renderFlota()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-family:var(--head);font-size:11px;font-weight:700;outline:none"><option value="">Todos los tipos</option><option>Recolector</option><option>Hooklift</option><option>Skiploader</option><option>Compactador</option></select>
@@ -1078,7 +1086,7 @@ select.form-input option{background:var(--bg2)}
           <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap" id="unidad-tags"></div>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn" onclick="descargarUnidadZip()">⬇ ZIP</button>
+          <button class="btn" id="btn-unidad-zip" onclick="descargarUnidadZip()">⬇ ZIP</button>
           <button class="btn" data-min-role="supervisor" onclick="editarUnidad()">Editar</button>
         </div>
       </div>
@@ -1163,6 +1171,30 @@ select.form-input option{background:var(--bg2)}
       <div class="ph"><div class="ph-title">Mis últimos registros</div></div>
       <div id="mia-historial" style="padding:6px 14px 12px"></div>
     </div>
+  </div>
+
+    <!-- RUTAS — cumplimiento en tiempo real -->
+  <div id="page-rutas" class="page fadein">
+    <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px;align-items:center">
+      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)" id="rt-titulo">Cumplimiento de rutas</div>
+      <span class="tag g" id="rt-vivo" style="display:none">● En vivo</span>
+      <span style="font-size:11px;color:var(--text3)" id="rt-actualizado"></span>
+      <div class="ml" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input class="form-input" type="date" id="rt-fecha" style="width:auto" onchange="renderRutas()">
+        <button class="btn" onclick="rtDescargarCSV()">⬇ Órdenes del día (Excel)</button>
+        <button class="btn" onclick="rtImprimir()">🖨 Imprimir / PDF</button>
+      </div>
+    </div>
+    <div id="rt-resumen"></div>
+    <div id="rt-unidades"></div>
+  </div>
+
+  <!-- MI PERFIL -->
+  <div id="page-miperfil" class="page fadein" style="max-width:720px;margin:0 auto">
+    <div class="panel" style="padding:18px" id="mp-cabecera"></div>
+    <div id="mp-asistencia"></div>
+    <div id="mp-rutas"></div>
+    <div id="mp-bono" style="display:none"></div>
   </div>
 
     <!-- ASISTENCIA DEL EQUIPO — RH y Dirección -->
@@ -3435,7 +3467,7 @@ const ROLES = {
 //   sites: 'none'|'own'|'all_view'|'all'   ·   reportes: 'none'|'own'|'personnel'|'all'
 const CAPS = {
   monitoreo: {
-    pages:['dashboard','flota','documentos','equipos','miasistencia','muro'],
+    pages:['dashboard','flota','documentos','equipos','miasistencia','miperfil','muro'],
     fleet:true, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3443,28 +3475,28 @@ const CAPS = {
   },
   chofer: {
     // Operativo: solo ve su camión asignado (RLS lo limita), su asistencia y el Muro
-    pages:['dashboard','flota','miasistencia','muro'],
+    pages:['dashboard','flota','rutas','miasistencia','miperfil','muro'],
     fleet:false, personnel:'self', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   supervisor: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','finanzas','miasistencia','muro'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','finanzas','rutas','miasistencia','miperfil','muro'],
     fleet:true, personnel:'own_sites', editPersonnel:'own_sites', baja:false,
     sites:'own', createSite:true, permisosLegales:false, permisos:true,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'own', actas:'own_sites', firmaAsistencia:true, equipos:true
   },
   rh: {
-    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','miasistencia','muro'],
+    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','miasistencia','miperfil','muro'],
     fleet:false, personnel:'all', editPersonnel:'all', baja:false,
     sites:'all_view', createSite:false, permisosLegales:false, permisos:false,
     config:'personnel', auditoria:false, kpis:true, compliance:true,
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
   administracion: {
-    pages:['dashboard','calendario','procesos','finanzas','miasistencia','muro'],
+    pages:['dashboard','calendario','procesos','finanzas','miasistencia','miperfil','muro'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3472,14 +3504,14 @@ const CAPS = {
   },
   administrativo: {
     // El área (finanzas/operativa) amplía las páginas en caps(); en Finanzas el Administrativo de finanzas captura
-    pages:['dashboard','calendario','procesos','finanzas','miasistencia','muro'],
+    pages:['dashboard','calendario','procesos','finanzas','miasistencia','miperfil','muro'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   direccion_ceo: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','muro'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','rutas','miperfil','muro'],
     fleet:true, personnel:'all', editPersonnel:'all', baja:true,
     sites:'all', createSite:true, permisosLegales:true, permisos:true,
     config:true, auditoria:true, kpis:true, compliance:true,
@@ -3782,7 +3814,7 @@ function caps(){
   const base = CAPS[currentUser.role] || CAPS.chofer;
   // Administrativo de área operativa: ve Flota, Equipos y Documentos de unidades (solo lectura)
   if (currentUser.role==='administrativo' && currentUser.areaAdmin==='operativa'){
-    return Object.assign({}, base, { pages:[...base.pages,'flota','documentos','equipos'] });
+    return Object.assign({}, base, { pages:[...base.pages,'flota','rutas','documentos','equipos'] });
   }
   return base;
 }
@@ -3858,6 +3890,7 @@ function applyRoleVisibility(){
     if (inicioBioMuro()) navEl.querySelector('.sb-sec').after(muroIt);
     else { const ref = navEl.querySelector('[data-page="procesos"]'); if (ref) ref.before(muroIt); }
   }
+  const fl = document.getElementById('sb-flota-lbl'); if (fl) fl.textContent = currentUser.role === 'chofer' ? 'Mi unidad' : 'Flota';
   document.querySelectorAll('.sb-sec').forEach(sec=>{
     let n = sec.nextElementSibling, vis = false;
     while(n && n.classList.contains('sb-item')){ if(!n.classList.contains('hidden-by-role')) vis = true; n = n.nextElementSibling; }
@@ -3878,7 +3911,7 @@ const VISTAS = [
   { role:'administrativo', area:'operativa', t:'Administrativo · Operativa', d:'Consulta flota, equipos, mantenimiento e inventario en solo lectura.' },
   { role:'supervisor',     t:'Gerente Operativo',         d:'Sites, personal de sus sedes, flota, mantenimiento e inventario.' },
   { role:'monitoreo',      t:'Monitoreo',                 d:'Flota, documentos y equipos. Sin acceso a personal.' },
-  { role:'chofer',         t:'Operativo',                 d:'Solo su unidad asignada, su asistencia y el Bio Muro.' }
+  { role:'chofer',         t:'Operativo',                 d:'Mi unidad (solo consulta), su ruta, su asistencia, Mi perfil y el Bio Muro.' }
 ];
 function esDireccionReal(){ return !!currentUser && (currentUser.realRole || currentUser.role) === 'direccion_ceo'; }
 function openRoleSel(){
@@ -5141,7 +5174,8 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio Muro' };
+  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio Muro', rutas:'Rutas', miperfil:'Mi perfil' };
+  if (currentUser.role === 'chofer'){ titles.flota = 'Mi unidad'; titles.unidad = 'Mi unidad'; }
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
   if (page === 'sites') renderSites();
@@ -5157,6 +5191,8 @@ function nav(page, el){
   if (page === 'muro') renderMuro();
   if (page === 'finanzas') renderFinanzas();
   if (page === 'miasistencia') renderMiAsistencia();
+  if (page === 'rutas') renderRutas(); else rtDetener();
+  if (page === 'miperfil') renderMiPerfil();
   if (page === 'equipoasis') renderEquipoAsistencia();
   if (page === 'compliance') renderCompliance();
   if (page === 'auditoria') renderAuditoria();
@@ -6834,17 +6870,19 @@ function renderFlota(){
     if (ft && u.tipo!==ft) return false;
     return true;
   });
+  const esOp = currentUser.role === 'chofer';
+  const tb = document.getElementById('flota-toolbar'); if (tb) tb.style.display = esOp ? 'none' : '';
   const body = document.getElementById('flota-body');
   if (!body) return;
   if (list.length===0){
-    body.innerHTML = '<div class="empty" style="padding:36px"><svg fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 32 32" style="width:28px;height:28px"><rect x="2" y="10" width="28" height="14" rx="3"/><path d="M8 10V8a4 4 0 014-4h8a4 4 0 014 4v2"/></svg><div class="empty-title" style="font-size:12px">Sin unidades registradas</div><div class="empty-sub">Usa "Alta unidad" para agregar la primera unidad.</div></div>';
+    body.innerHTML = '<div class="empty" style="padding:36px"><svg fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 32 32" style="width:28px;height:28px"><rect x="2" y="10" width="28" height="14" rx="3"/><path d="M8 10V8a4 4 0 014-4h8a4 4 0 014 4v2"/></svg><div class="empty-title" style="font-size:12px">Sin unidades registradas</div><div class="empty-sub">' + (esOp ? 'Todavía no tienes una unidad asignada.' : 'Usa "Alta unidad" para agregar la primera unidad.') + '</div></div>';
     return;
   }
   body.innerHTML = list.map(u=>{
     const chofer = DB.colaboradores.find(c=>c.unidadId===u.id && c.estatus==='activo');
     const p1 = getDocPip(u,'Póliza de seguro'), p2 = getDocPip(u,'Verificación vehicular'), p3 = getDocPip(u,'Tarjeta de circulación');
     return `<div class="ftbl-row" onclick="abrirExpedienteUnidad('${u.id}')">
-      <div class="dot3" onclick="event.stopPropagation()">
+      ${esOp ? '<div></div>' : `<div class="dot3" onclick="event.stopPropagation()">
         <button class="dot3-btn" onclick="toggleDot3('d3u-${u.id}')"><svg fill="currentColor" viewBox="0 0 16 16"><circle cx="8" cy="3" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="8" cy="13" r="1.3"/></svg></button>
         <div class="dot3-menu" id="d3u-${u.id}">
           <div class="dot3-item" onclick="abrirExpedienteUnidad('${u.id}')">Ver expediente</div>
@@ -6853,7 +6891,7 @@ function renderFlota(){
           <div class="dot3-item" onclick="openReasignarUnidad('${u.id}')" data-min-role="supervisor">Reasignar chofer</div>
           <div class="dot3-item" onclick="descargarUnidadZip('${u.id}')">Descargar expediente</div>
         </div>
-      </div>
+      </div>`}
       <div class="bak-lbl">${esc(u.bak)}</div>
       <div><div class="cname">${esc(u.marca)||''} ${esc(u.modelo)||''}</div><div class="cnum">${u.anio||'—'} · NIV ${u.niv?u.niv.substring(0,8)+'...':'—'}</div></div>
       <div class="ccell"><div>${esc(u.tipo)||'—'}</div>${u.jurisdiccion?`<div style="font-size:9px;color:var(--${u.jurisdiccion==='Federal'?'blue':'amber'});font-family:var(--head);font-weight:700;margin-top:1px">${u.jurisdiccion}</div>`:''}</div>
@@ -6884,6 +6922,7 @@ function abrirExpedienteUnidad(id){
   currentUnidadId = String(id);
   const u = DB.unidades.find(u=>String(u.id)===currentUnidadId);
   if (!u) return;
+  const zipB = document.getElementById('btn-unidad-zip'); if (zipB) zipB.style.display = currentUser.role === 'chofer' ? 'none' : '';
   document.getElementById('unidad-bak-ico').textContent = u.bak.replace('BAK-','');
   document.getElementById('unidad-nombre').textContent = `${u.marca||''} ${u.modelo||''} — ${u.anio||'—'}`;
   document.getElementById('unidad-meta').textContent = `NIV ${u.niv||'—'} · Placas ${u.placas||'—'} · ${u.tipo||'—'}`;
@@ -6913,12 +6952,13 @@ async function renderUnidadDocs(){
   const u = DB.unidades.find(u=>String(u.id)===currentUnidadId);
   if (!u) return;
   await cargarDocumentosEntidad('unidad', u.id);
+  const esOp = currentUser.role === 'chofer';
   const tipos = ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia','Revista de transporte'];
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   document.getElementById('unidad-docs').innerHTML = tipos.map(tipo=>{
     const key = `unidad-${u.id}-${tipo}`;
     const doc = DB.documentos[key];
-    if (!doc) return `<div class="doc-row"><div class="doc-ico m"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><path d="M4 1h4l2 2v9a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z"/></svg></div><div style="flex:1"><div class="doc-name">${tipo}</div><div class="doc-meta" style="color:var(--red)">Sin documento — obligatorio</div></div><button class="btn sm" onclick="openSubirDocEspecifico('unidad','${u.id}','${tipo}')" data-min-role="supervisor">Subir</button></div>`;
+    if (!doc) return `<div class="doc-row"><div class="doc-ico m"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><path d="M4 1h4l2 2v9a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z"/></svg></div><div style="flex:1"><div class="doc-name">${tipo}</div><div class="doc-meta" style="color:var(--red)">${esOp ? 'Sin documento cargado' : 'Sin documento — obligatorio'}</div></div><button class="btn sm" onclick="openSubirDocEspecifico('unidad','${u.id}','${tipo}')" data-min-role="supervisor">Subir</button></div>`;
     let cls='ok', diasStr='Sin vigencia', diasColor='ok';
     if (doc.vigencia){
       const vig = parseFecha(doc.vigencia);
@@ -6929,7 +6969,7 @@ async function renderUnidadDocs(){
       else if (dias<=DB.cfg.d2){cls='warn'; diasStr=dias+'d'; diasColor='w';}
       else {diasStr=dias+'d';}
     }
-    return `<div class="doc-row"><div class="doc-ico ${cls}"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><path d="M4 1h4l2 2v9a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z"/></svg></div><div style="flex:1"><div class="doc-name">${tipo}</div><div class="doc-meta">${doc.emision?'Emitido: '+esc(doc.emision):''}${doc.vigencia?' · Vence: '+doc.vigencia:''}${doc.costo?' · $'+Number(doc.costo).toLocaleString('es-MX'):''}</div></div><div style="text-align:right;margin-right:8px"><div class="doc-dias ${diasColor}">${diasStr}</div></div><button class="btn sm" onclick="verDoc('${key}')" title="Vista previa en nueva ventana">Ver PDF</button><button class="btn sm" onclick="descargarDoc('${key}')" title="Descargar archivo" style="margin-left:4px">⬇</button></div>`;
+    return `<div class="doc-row"><div class="doc-ico ${cls}"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><path d="M4 1h4l2 2v9a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z"/></svg></div><div style="flex:1"><div class="doc-name">${tipo}</div><div class="doc-meta">${doc.emision?'Emitido: '+esc(doc.emision):''}${doc.vigencia?' · Vence: '+doc.vigencia:''}${doc.costo?' · $'+Number(doc.costo).toLocaleString('es-MX'):''}</div></div><div style="text-align:right;margin-right:8px"><div class="doc-dias ${diasColor}">${diasStr}</div></div>${esOp ? '' : `<button class="btn sm" onclick="verDoc('${key}')" title="Vista previa en nueva ventana">Ver PDF</button><button class="btn sm" onclick="descargarDoc('${key}')" title="Descargar archivo" style="margin-left:4px">⬇</button>`}</div>`;
   }).join('');
   applyRoleVisibility();
 }
@@ -6977,7 +7017,7 @@ async function renderUnidadTags(){
         <div class="doc-meta">${tieneDoc ? `📄 ${esc(info.nombre || 'TAG subido')}${codigo ? ' · Cód: <strong style="color:var(--text2)">' + esc(codigo) + '</strong>' : ''}` : '<span style="color:var(--text3)">Sin documento — opcional si la unidad no tiene TAG</span>'}</div>
       </div>
       <div class="doc-dias ${tieneDoc ? 'ok' : 'm'}" style="white-space:nowrap;font-size:10px">${tieneDoc ? '✓ Cargado' : 'Sin TAG'}</div>
-      ${tieneDoc ? `<button class="btn sm" onclick="verDoc('${key}')" title="Ver PDF">Ver PDF</button><button class="btn sm" onclick="descargarDoc('${key}')" style="margin-left:4px">⬇</button>` : ''}
+      ${tieneDoc && currentUser.role !== 'chofer' ? `<button class="btn sm" onclick="verDoc('${key}')" title="Ver PDF">Ver PDF</button><button class="btn sm" onclick="descargarDoc('${key}')" style="margin-left:4px">⬇</button>` : ''}
       ${editable ? `<button class="btn sm ${tieneDoc ? '' : 'primary'}" data-cap="fleet" onclick="openTag('${slot}')">
         ${tieneDoc ? 'Actualizar' : '+ Subir'}
       </button>` : ''}
@@ -7423,6 +7463,7 @@ function editarUnidad(){
 }
 
 function descargarUnidadZip(id){
+  if (currentUser.role === 'chofer'){ toast('Tu perfil solo consulta la vigencia de los documentos','info'); return; }
   const u = DB.unidades.find(u=>String(u.id)===String(id||currentUnidadId));
   if (!u) return;
   const lines = [`EXPEDIENTE DE UNIDAD ${u.bak}`, `Generado: ${new Date().toLocaleString('es-MX')}`,'','--- DATOS ---'];
@@ -7810,6 +7851,7 @@ async function cargarDocumentosEntidad(entidadTipo, id){
 }
 
 async function descargarDoc(key){
+  if (currentUser.role === 'chofer'){ toast('Tu perfil solo consulta la vigencia de los documentos','info'); return; }
   const doc = DB.documentos[key];
   if (!doc || !doc.storagePath){ toast('No hay archivo disponible para descargar','error'); return; }
   const bucket = key.startsWith('colab-') ? 'personal' : 'flota';
@@ -7822,6 +7864,7 @@ async function descargarDoc(key){
 }
 
 async function verDoc(key){
+  if (currentUser.role === 'chofer'){ toast('Tu perfil solo consulta la vigencia de los documentos','info'); return; }
   const doc = DB.documentos[key];
   if (!doc || !doc.storagePath){ toast('No hay archivo cargado para previsualizar','error'); return; }
   const bucket = key.startsWith('colab-') ? 'personal' : 'flota';
@@ -9712,8 +9755,8 @@ function pastelSvg(cont){
   });
   return `<svg viewBox="0 0 42 42" style="width:130px;height:130px;flex-shrink:0">${arcos}<text x="21" y="22.5" text-anchor="middle" font-size="7" font-weight="800" fill="var(--text)">${tot}</text><text x="21" y="27.5" text-anchor="middle" font-size="3" fill="var(--text3)">días</text></svg>`;
 }
-async function renderPanelAsistencia(rows, h){
-  const cont = document.getElementById('mia-panel'); if (!cont) return;
+async function renderPanelAsistencia(rows, h, contId){
+  const cont = document.getElementById(contId || 'mia-panel'); if (!cont) return;
   const st = statsAsistencia(rows, h);
   const nivel = st.pct >= 90 ? 'Excelente' : st.pct >= 75 ? 'Destacado' : st.pct >= 50 ? 'Constante' : 'En camino';
   const leyenda = [['puntual','Puntual','var(--green)'],['precaucion','Precaución','var(--amber)'],['retardo','Retardo','var(--red)'],['sin','Sin registro','var(--text3)']]
@@ -9757,13 +9800,257 @@ async function renderPanelAsistencia(rows, h){
   // Meta colectiva (solo cifras agregadas del equipo)
   const hoyD = fechaDe(hoyLocal()), ini = ymd(new Date(hoyD.getFullYear(), hoyD.getMonth(), 1));
   const { data: res } = await sb.rpc('resumen_equipo_asistencia', { p_desde: ini, p_hasta: hoyLocal() });
-  const r = res && res[0], meta = document.getElementById('mia-meta'); if (!meta) return;
+  const r = res && res[0], meta = cont.querySelector('#mia-meta'); if (!meta) return;
   if (!r || r.total < 5){ meta.innerHTML = '<div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:6px">Meta del equipo</div><div style="font-size:12px;color:var(--text3)">Estamos reuniendo los primeros registros del mes. ¡Cada entrada puntual suma!</div>'; return; }
   const pctEq = Math.round(r.puntuales / r.total * 100);
   meta.innerHTML = `<div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:6px">Meta del equipo</div>
     <div style="font-size:13px">Este mes llegamos <strong>${pctEq}% puntuales</strong> como equipo.</div>
     <div style="position:relative;height:8px;background:var(--border);border-radius:4px;margin:10px 0 6px"><div style="height:100%;width:${pctEq}%;background:var(--green);border-radius:4px"></div><div style="position:absolute;left:${META_EQUIPO_PCT}%;top:-3px;width:2px;height:14px;background:var(--text2)"></div></div>
     <div style="font-size:11px;color:var(--text3)">${pctEq >= META_EQUIPO_PCT ? `¡Meta del ${META_EQUIPO_PCT}% alcanzada! Gracias, equipo.` : `Nuestra meta es ${META_EQUIPO_PCT}%. Entre todos podemos lograrlo.`}</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RUTAS — cumplimiento en tiempo real por unidad + descarga de órdenes del día
+   Operativo (solo lo suyo, lo limita el servidor), Gerente Operativo, Administrativo operativo y Dirección.
+   ═══════════════════════════════════════════════════════════════════ */
+const RT = { fecha:null, filas:[], canal:null, timer:null, espera:null, abiertas:{} };
+const EST_ORD = { completada:{ t:'Completada', c:'g' }, en_sitio:{ t:'En sitio', c:'b' }, programada:{ t:'Pendiente', c:'a' }, no_realizada:{ t:'No realizada', c:'r' } };
+function rtEsOperativo(){ return currentUser && currentUser.role === 'chofer'; }
+function rtPendiente(e){ return e === 'programada' || e === 'en_sitio' || e === 'no_realizada'; }
+
+async function renderRutas(){
+  const fEl = document.getElementById('rt-fecha'); if (!fEl) return;
+  if (!fEl.value) fEl.value = hoyLocal();
+  RT.fecha = fEl.value;
+  const t = document.getElementById('rt-titulo');
+  if (t) t.textContent = rtEsOperativo() ? 'Mi ruta' : 'Cumplimiento de rutas';
+  await rtCargar();
+  rtIniciarVivo();
+}
+async function rtCargar(){
+  if (!RT.fecha) return;
+  const { data, error } = await sb.from('ordenes_servicio')
+    .select('id,folio,estado,fecha,hora,hora_llegada,hora_fin,completada_at,cliente_nombre,direccion,ruta_id,ruta_nombre,operador_id,operador_nombre,ayudante1,ayudante2,unidad_id,unidad_bak,motivo_no_realizada,tipos,volumen')
+    .eq('fecha', RT.fecha).neq('estado', 'anulada').order('hora', { ascending:true }).limit(2000);
+  if (error){ document.getElementById('rt-unidades').innerHTML = `<div class="empty-sub" style="padding:14px">No se pudieron cargar las rutas: ${esc(error.message)}</div>`; return; }
+  RT.filas = data || [];
+  rtPintar();
+  const u = document.getElementById('rt-actualizado'); if (u) u.textContent = 'Actualizado ' + fmtHora(new Date().toISOString());
+}
+function rtIniciarVivo(){
+  rtDetener();
+  // Tiempo real: cualquier cambio en las órdenes refresca el panel (el servidor solo envía lo que cada rol puede ver)
+  try {
+    RT.canal = sb.channel('rutas-vivo').on('postgres_changes', { event:'*', schema:'public', table:'ordenes_servicio' }, () => {
+      clearTimeout(RT.espera); RT.espera = setTimeout(rtCargar, 600);
+    }).subscribe();
+  } catch(e){ /* sin tiempo real: queda la actualización periódica */ }
+  RT.timer = setInterval(() => { if (document.getElementById('page-rutas')?.classList.contains('active')) rtCargar(); }, 30000);
+  const pt = document.getElementById('rt-vivo'); if (pt) pt.style.display = '';
+}
+function rtDetener(){
+  clearInterval(RT.timer); RT.timer = null; clearTimeout(RT.espera);
+  if (RT.canal){ try { sb.removeChannel(RT.canal); } catch(e){} RT.canal = null; }
+}
+function rtAyudantes(filas){
+  const s = new Set(); filas.forEach(o => { [o.ayudante1, o.ayudante2].forEach(a => { if (a && a.trim()) s.add(a.trim()); }); });
+  return [...s];
+}
+function rtGrupos(){
+  const mapa = {};
+  RT.filas.forEach(o => {
+    const unidad = o.unidad_bak || (DB.unidades.find(u => u.id === o.unidad_id)?.bak) || 'Sin unidad';
+    const k = unidad + '|' + (o.ruta_nombre || '');
+    (mapa[k] = mapa[k] || { unidad, ruta:o.ruta_nombre || 'Sin ruta', filas:[] }).filas.push(o);
+  });
+  return Object.values(mapa).sort((a, b) => a.unidad.localeCompare(b.unidad, 'es', { numeric:true }) || a.ruta.localeCompare(b.ruta, 'es'));
+}
+function rtPintar(){
+  const cont = document.getElementById('rt-unidades'), res = document.getElementById('rt-resumen');
+  if (!cont) return;
+  const hoy = hoyLocal(), esHoy = RT.fecha === hoy, pasado = RT.fecha < hoy;
+  const filas = RT.filas, tot = filas.length;
+  const comp = filas.filter(o => o.estado === 'completada').length;
+  const pend = filas.filter(o => o.estado === 'programada' || o.estado === 'en_sitio').length;
+  const nor = filas.filter(o => o.estado === 'no_realizada').length;
+  const pct = tot ? Math.round(comp / tot * 100) : 0;
+  const grupos = rtGrupos();
+  const cumplidas = grupos.filter(g => g.filas.every(o => o.estado === 'completada')).length;
+  res.innerHTML = `<div class="metrics c4">
+    <div class="mcard g"><div class="mcard-lbl">Cumplimiento del día</div><div class="mcard-val">${pct}%</div><div class="mcard-sub">${comp} de ${tot} servicios</div></div>
+    <div class="mcard b"><div class="mcard-lbl">Rutas cumplidas</div><div class="mcard-val">${cumplidas}<span style="font-size:14px;color:var(--text3)"> / ${grupos.length}</span></div><div class="mcard-sub">Todos sus servicios completos</div></div>
+    <div class="mcard a"><div class="mcard-lbl">Pendientes</div><div class="mcard-val">${pend}</div><div class="mcard-sub">${esHoy ? 'En curso hoy' : 'Sin completar'}</div></div>
+    <div class="mcard r"><div class="mcard-lbl">No realizados</div><div class="mcard-val">${nor}</div><div class="mcard-sub">Con motivo registrado</div></div>
+  </div>`;
+  if (!grupos.length){
+    cont.innerHTML = `<div class="panel"><div class="empty" style="padding:30px"><div class="empty-title" style="font-size:12px">Sin servicios programados</div><div class="empty-sub">No hay órdenes de servicio para este día.</div></div></div>`;
+    return;
+  }
+  cont.innerHTML = grupos.map((g, i) => {
+    const t = g.filas.length, c = g.filas.filter(o => o.estado === 'completada').length;
+    const p = g.filas.filter(o => o.estado === 'programada' || o.estado === 'en_sitio').length;
+    const n = g.filas.filter(o => o.estado === 'no_realizada').length;
+    const pc = t ? Math.round(c / t * 100) : 0;
+    let tag;
+    if (c === t) tag = '<span class="tag g">Ruta cumplida</span>';
+    else if (n > 0 || (pasado && p > 0)) tag = '<span class="tag r">Con pendientes</span>';
+    else tag = '<span class="tag b">En curso</span>';
+    const titulares = [...new Set(g.filas.map(o => o.operador_nombre).filter(Boolean))];
+    const ayud = rtAyudantes(g.filas);
+    const abierta = !!RT.abiertas[i + '|' + g.unidad + g.ruta];
+    const lista = g.filas.map(o => {
+      const e = EST_ORD[o.estado] || { t:o.estado, c:'m' };
+      return `<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--border);font-size:12px;flex-wrap:wrap">
+        <div style="width:54px;color:var(--text3)">${esc(o.hora || '—')}</div>
+        <div style="flex:1;min-width:160px"><strong>${esc(o.cliente_nombre || 'Cliente')}</strong><div style="font-size:11px;color:var(--text3)">${esc(o.folio || '')}${o.direccion ? ' · ' + esc(o.direccion) : ''}</div>${o.estado === 'no_realizada' && o.motivo_no_realizada ? `<div style="font-size:11px;color:var(--red)">Motivo: ${esc(o.motivo_no_realizada)}</div>` : ''}</div>
+        <span class="tag ${e.c}">${e.t}</span></div>`;
+    }).join('');
+    return `<div class="panel" style="margin-bottom:12px;padding:14px 16px">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div class="bak-lbl">${esc(g.unidad)}</div>
+        <div style="flex:1;min-width:180px">
+          <div style="font-family:var(--head);font-weight:800;font-size:14px">${esc(g.ruta)}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">Titular: <strong>${esc(titulares.join(', ') || 'Sin asignar')}</strong></div>
+          <div style="font-size:12px;color:var(--text2)">${ayud.length === 1 ? 'Ayudante' : 'Ayudantes'}: ${ayud.length ? esc(ayud.join(', ')) : '<span style="color:var(--text3)">Sin ayudante</span>'}</div>
+        </div>
+        <div style="text-align:right">${tag}<div style="font-size:11px;color:var(--text3);margin-top:4px">${c} de ${t} · ${p} pendientes${n ? ' · ' + n + ' no realizados' : ''}</div></div>
+      </div>
+      <div style="height:7px;background:var(--border);border-radius:4px;margin:10px 0 6px;overflow:hidden"><div style="height:100%;width:${pc}%;background:${c === t ? 'var(--green)' : 'var(--blue)'}"></div></div>
+      <button class="btn sm" onclick="rtAlternar(${i})">${abierta ? 'Ocultar servicios' : 'Ver servicios'}</button>
+      <div style="display:${abierta ? 'block' : 'none'};margin-top:8px">${lista}</div>
+    </div>`;
+  }).join('');
+}
+function rtAlternar(i){
+  const g = rtGrupos()[i]; if (!g) return;
+  const k = i + '|' + g.unidad + g.ruta; RT.abiertas[k] = !RT.abiertas[k]; rtPintar();
+}
+function rtCompletadas(){ return RT.filas.filter(o => o.estado === 'completada'); }
+function rtFilaExport(o){
+  return [o.folio, o.fecha, o.hora, o.cliente_nombre, o.direccion, o.ruta_nombre, o.unidad_bak || (DB.unidades.find(u => u.id === o.unidad_id)?.bak) || '',
+    o.operador_nombre, o.ayudante1, o.ayudante2, EST_ORD[o.estado]?.t || o.estado,
+    o.hora_llegada ? fmtHora(o.hora_llegada) : '', (o.hora_fin || o.completada_at) ? fmtHora(o.hora_fin || o.completada_at) : '',
+    (o.tipos || []).join(' / '), o.volumen];
+}
+const RT_COLS = ['Folio','Fecha','Hora programada','Cliente','Dirección','Ruta','Unidad','Titular','Ayudante 1','Ayudante 2','Estado','Llegada','Fin','Tipo de servicio','Volumen'];
+function rtDescargarCSV(){
+  const lista = rtCompletadas();
+  if (!lista.length){ toast('No hay órdenes completadas en este día para descargar', 'info'); return; }
+  descargarCSV(`ordenes_servicio_${RT.fecha}.csv`, csvRows(RT_COLS, lista.map(rtFilaExport)));
+  audit('descarga', `Descarga de órdenes de servicio completadas del ${RT.fecha}`, 'b');
+}
+function rtImprimir(){
+  const lista = rtCompletadas();
+  if (!lista.length){ toast('No hay órdenes completadas en este día para imprimir', 'info'); return; }
+  const filas = lista.map(o => { const f = rtFilaExport(o); return `<tr><td>${esc(f[0])}</td><td>${esc(f[2])}</td><td>${esc(f[3])}</td><td>${esc(f[4])}</td><td>${esc(f[5])}</td><td>${esc(f[6])}</td><td>${esc(f[7])}</td><td>${esc([f[8], f[9]].filter(Boolean).join(', '))}</td><td>${esc(f[11])} – ${esc(f[12])}</td></tr>`; }).join('');
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Órdenes de servicio ${esc(RT.fecha)}</title><style>
+    body{font-family:Arial,sans-serif;font-size:11px;margin:24px;color:#111}h1{font-size:16px;margin:0 0 4px}p{margin:0 0 12px;color:#555}
+    table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}
+    @media print{body{margin:8mm}}</style></head><body>
+    <h1>Órdenes de servicio completadas — ${esc(RT.fecha)}</h1><p>BioAmbientalistik S.A. de C.V. · ${lista.length} servicios</p>
+    <table><thead><tr><th>Folio</th><th>Hora</th><th>Cliente</th><th>Dirección</th><th>Ruta</th><th>Unidad</th><th>Titular</th><th>Ayudante(s)</th><th>Llegada – Fin</th></tr></thead><tbody>${filas}</tbody></table></body></html>`;
+  const url = URL.createObjectURL(new Blob([html], { type:'text/html;charset=utf-8' }));
+  const w = window.open(url, '_blank', 'noopener');
+  if (!w){ toast('El navegador bloqueó la ventana. Permite ventanas emergentes para este sitio.', 'error'); return; }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  audit('descarga', `Impresión de órdenes de servicio completadas del ${RT.fecha}`, 'b');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MI PERFIL — datos personales, progreso de asistencia, cumplimiento de rutas (operativos)
+   y Bio-Bono (solo Gerente Operativo, RH y Dirección; nunca lo ve el operativo)
+   ═══════════════════════════════════════════════════════════════════ */
+const MP = { mes:null };
+function mpPuedeVerBono(){ return !!currentUser && ['supervisor','rh','direccion_ceo'].includes(currentUser.role); }
+async function renderMiPerfil(){
+  const { data: perfil } = await sb.from('profiles').select('usuario,correo_contacto').eq('id', currentUser.userId).single();
+  const rol = (ROLES[currentUser.role] || {}).label || currentUser.role;
+  document.getElementById('mp-cabecera').innerHTML = `<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    ${avatarHtml(currentUser.userId, currentUser.name, 72)}
+    <div style="flex:1;min-width:180px">
+      <div style="font-family:var(--head);font-weight:900;font-size:18px">${esc(currentUser.name)}</div>
+      <div style="font-size:12px;color:var(--text2)">${esc(rol)}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(perfil?.usuario || '')}${perfil?.correo_contacto ? ' · ' + esc(perfil.correo_contacto) : ''}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn primary" onclick="abrirMiCuenta()">Editar mi perfil</button>
+      <button class="btn" onclick="abrirCambiarPassword()">Cambiar contraseña</button>
+    </div></div>`;
+  // Progreso de asistencia
+  const asisBox = document.getElementById('mp-asistencia');
+  if (!currentUser.colaboradorId){
+    asisBox.innerHTML = '<div class="panel" style="padding:14px;margin-top:12px"><div class="empty-sub">Tu cuenta todavía no está ligada a tu expediente de Personal. Pide a RH que la vincule para ver tu progreso de asistencia.</div></div>';
+  } else {
+    const [{ data: rows }, { data: hs }] = await Promise.all([
+      sb.from('asistencias').select('*').eq('colaborador_id', currentUser.colaboradorId).order('fecha', { ascending:false }).limit(150),
+      sb.from('horarios_asistencia').select('*')
+    ]);
+    const h = (hs || []).find(x => x.colaborador_id) || (hs || []).find(x => !x.colaborador_id);
+    asisBox.innerHTML = '<div id="mp-asis-panel"></div>';
+    renderPanelAsistencia(rows || [], h, 'mp-asis-panel');
+  }
+  // Cumplimiento de rutas propio (solo operativos)
+  const rutaBox = document.getElementById('mp-rutas');
+  if (rtEsOperativo()) await mpRutasPropias(rutaBox); else rutaBox.innerHTML = '';
+  // Bio-Bono (confidencial)
+  const bonoBox = document.getElementById('mp-bono');
+  if (mpPuedeVerBono()){
+    if (!MP.mes) MP.mes = hoyLocal().slice(0, 7);
+    bonoBox.style.display = '';
+    mpBono();
+  } else { bonoBox.style.display = 'none'; bonoBox.innerHTML = ''; }
+}
+async function mpRutasPropias(box){
+  const hoy = hoyLocal(), ini = hoy.slice(0, 7) + '-01';
+  const { data, error } = await sb.from('ordenes_servicio').select('fecha,estado,ruta_id,ruta_nombre').gte('fecha', ini).lte('fecha', hoy).neq('estado', 'anulada').limit(3000);
+  if (error){ box.innerHTML = ''; return; }
+  const filas = data || [], dias = {};
+  filas.forEach(o => { (dias[o.fecha] = dias[o.fecha] || []).push(o); });
+  const lista = Object.keys(dias).sort().reverse();
+  const tot = filas.length, comp = filas.filter(o => o.estado === 'completada').length;
+  const pct = tot ? Math.round(comp / tot * 100) : 0;
+  const diasOk = lista.filter(f => dias[f].every(o => o.estado === 'completada')).length;
+  const mes = new Date().toLocaleDateString('es-MX', { month:'long', timeZone:TZ_MX });
+  box.innerHTML = `<div class="panel" style="margin-top:12px;padding:16px">
+    <div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:10px">Mis rutas de ${mes}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px"><div style="font-size:11px;color:var(--text3)">Servicios completados</div><div style="font-family:var(--head);font-weight:900;font-size:20px">${comp} <span style="font-size:11px;color:var(--text3);font-weight:600">de ${tot}</span></div></div>
+      <div style="flex:1;min-width:120px"><div style="font-size:11px;color:var(--text3)">Cumplimiento</div><div style="font-family:var(--head);font-weight:900;font-size:20px;color:var(--green)">${pct}%</div></div>
+      <div style="flex:1;min-width:120px"><div style="font-size:11px;color:var(--text3)">Días de ruta completa</div><div style="font-family:var(--head);font-weight:900;font-size:20px">${diasOk} <span style="font-size:11px;color:var(--text3);font-weight:600">de ${lista.length}</span></div></div>
+    </div>
+    <div style="height:6px;background:var(--border);border-radius:3px;margin:12px 0 8px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--green)"></div></div>
+    ${lista.slice(0, 7).map(f => { const d = dias[f], c = d.filter(o => o.estado === 'completada').length;
+      return `<div style="display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--border);font-size:12px"><div style="width:110px;text-transform:capitalize">${fmtFechaCorta(f)}</div><div style="flex:1;color:var(--text2)">${c} de ${d.length} servicios</div><span class="tag ${c === d.length ? 'g' : (f < hoy ? 'r' : 'b')}">${c === d.length ? 'Completa' : (f < hoy ? 'Con pendientes' : 'En curso')}</span></div>`; }).join('')}
+  </div>`;
+}
+async function mpBono(){
+  const box = document.getElementById('mp-bono'); if (!box || !mpPuedeVerBono()) return;
+  const [y, m] = MP.mes.split('-').map(Number);
+  const desde = `${MP.mes}-01`, hasta = ymd(new Date(y, m, 0));
+  box.innerHTML = `<div class="panel" style="margin-top:12px;padding:16px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+      <div style="font-family:var(--head);font-weight:800;font-size:13px">Bio-Bono del personal operativo</div>
+      <input class="form-input" type="month" id="mp-mes" value="${esc(MP.mes)}" style="width:auto;margin-left:auto" onchange="MP.mes=this.value||MP.mes;mpBono()">
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Confidencial: el personal operativo no ve esta información. Requiere asistencia completa y todas las rutas completadas; si queda un servicio pendiente (por la causa que sea), la ruta del día se pierde.</div>
+    <div id="mp-bono-lista" class="empty-sub">Calculando…</div></div>`;
+  const { data, error } = await sb.rpc('bio_bono_resumen', { p_desde:desde, p_hasta:hasta });
+  const lista = document.getElementById('mp-bono-lista'); if (!lista) return;
+  if (error){ lista.textContent = 'No se pudo calcular: ' + error.message; return; }
+  if (!data.length){ lista.textContent = 'No hay personal operativo activo en tu alcance.'; return; }
+  lista.className = '';
+  const ok = data.filter(r => r.califica).length;
+  lista.innerHTML = `<div style="font-size:12px;margin-bottom:8px"><strong>${ok}</strong> de <strong>${data.length}</strong> con derecho al Bio-Bono este periodo.</div>` + data.map(r => {
+    const motivos = [];
+    if (r.faltas) motivos.push(`${r.faltas} ${r.faltas === 1 ? 'falta' : 'faltas'}`);
+    if (r.rutas_perdidas) motivos.push(`${r.rutas_perdidas} ${r.rutas_perdidas === 1 ? 'ruta perdida' : 'rutas perdidas'}`);
+    if (!r.dias_laborales) motivos.push('sin días laborales en el periodo');
+    return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:170px"><strong>${esc(r.nombre)}</strong><div style="font-size:11px;color:var(--text3)">${esc(r.puesto)}</div></div>
+      <div style="min-width:150px;color:var(--text2)">Asistencia: ${r.dias_asistidos + r.dias_justificados} de ${r.dias_laborales} días${r.retardos ? ` · ${r.retardos} retardos` : ''}</div>
+      <div style="min-width:150px;color:var(--text2)">Servicios: ${r.servicios_completados} de ${r.servicios_total}${r.rutas_en_curso ? ' · ruta de hoy en curso' : ''}</div>
+      <div style="min-width:130px;text-align:right">${r.califica ? '<span class="tag g">Califica</span>' : `<span class="tag r">No califica</span><div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(motivos.join(' · '))}</div>`}</div></div>`;
+  }).join('');
 }
 
 /* ── Vista de equipo (RH y Dirección ven todo) ── */
