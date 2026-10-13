@@ -673,7 +673,7 @@ select.form-input option{background:var(--bg2)}
     <div><div class="sb-name">Bio-centralis</div><div class="sb-sub">clave · BioAmbientalistik</div></div>
   </div>
   <div class="sb-role" onclick="openRoleSel()">
-    <div class="sb-role-lbl">Rol</div>
+    <div class="sb-role-lbl">Vista</div>
     <div class="sb-role-val" id="sb-role-val">Dirección/CEO</div>
     <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 12 12"><path d="M3 5l3 3 3-3"/></svg>
   </div>
@@ -717,7 +717,7 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="sb-item" data-page="muro" onclick="nav('muro',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
-      Muro
+      Bio Muro
     </div>
     <div class="sb-item" data-page="procesos" onclick="nav('procesos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 8.5h6M5 11h3"/></svg>
@@ -726,6 +726,10 @@ select.form-input option{background:var(--bg2)}
     <div class="sb-item" data-page="calendario" onclick="nav('calendario',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M5 3V1M11 3V1"/></svg>
       Calendario
+    </div>
+    <div class="sb-item" data-page="finanzas" onclick="nav('finanzas',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="9" width="2.5" height="5" rx=".6"/><rect x="6.75" y="5" width="2.5" height="9" rx=".6"/><rect x="11.5" y="2" width="2.5" height="12" rx=".6"/></svg>
+      Finanzas
     </div>
     <div class="sb-sec">Estratégico</div>
     <div class="sb-item" data-page="kpis" onclick="nav('kpis',this)">
@@ -1172,14 +1176,29 @@ select.form-input option{background:var(--bg2)}
   </div>
 
     <!-- MURO — publicaciones de RH/Dirección + celebraciones del día -->
-  <div id="page-muro" class="page fadein" style="max-width:620px;margin:0 auto">
+  <div id="page-muro" class="page fadein" style="max-width:680px;margin:0 auto">
     <div class="row" style="margin-bottom:14px">
-      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Muro BioAmbientalistik</div>
-      <button class="btn primary ml" id="muro-nueva-btn" style="display:none" onclick="abrirNuevaPublicacion()">+ Publicar</button>
+      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Bio Muro</div>
+    </div>
+    <div id="muro-composer" class="panel" style="display:none;padding:12px 14px">
+      <div style="display:flex;gap:10px;align-items:center">
+        <span id="muro-comp-av"></span>
+        <button onclick="abrirNuevaPublicacion()" id="muro-comp-txt" style="flex:1;text-align:left;background:var(--surface2,#2a2a2a);border:none;border-radius:999px;padding:10px 16px;color:var(--text3);font-size:13px;cursor:pointer">¿Qué quieres compartir?</button>
+        <button class="btn sm" onclick="abrirNuevaPublicacion(true)" title="Agregar fotos">🖼 Foto</button>
+      </div>
     </div>
     <div id="muro-aviso-asistencia"></div>
     <div id="muro-celebraciones" style="margin-bottom:14px"></div>
     <div id="muro-list" style="display:flex;flex-direction:column;gap:12px"></div>
+  </div>
+
+  <!-- FINANZAS -->
+  <div id="page-finanzas" class="page fadein">
+    <div class="row" style="margin-bottom:14px">
+      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Finanzas</div>
+    </div>
+    <div id="fin-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <div id="fin-body"></div>
   </div>
 
   <!-- PROCESOS -->
@@ -1435,16 +1454,29 @@ select.form-input option{background:var(--bg2)}
 <div class="overlay" id="modal-role" onclick="if(event.target===this)closeModal('modal-role')">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title">Cambiar rol de usuario (demo)</div>
+      <div class="modal-title">Vista de perfiles</div>
       <button class="modal-close" onclick="closeModal('modal-role')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </div>
     <div class="role-sel-modal">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Vista de demo para validar permisos. En producción el rol proviene del JWT de Supabase (RLS aplica del lado del servidor).</div>
-      <div class="role-card" onclick="setRole('chofer')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><div><div class="role-card-name">Operativo</div><div class="role-card-desc">Solo su camión, su asistencia y el Muro</div></div></div>
-      <div class="role-card" onclick="setRole('supervisor')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M6 9l2 2 4-4"/></svg></div><div><div class="role-card-name">Supervisor</div><div class="role-card-desc">Crea y gestiona sus Sites: personal, asistencias, flota y reportes de su jurisdicción</div></div></div>
-      <div class="role-card" onclick="setRole('rh')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3"/><circle cx="4" cy="11" r="2.5"/><circle cx="14" cy="11" r="2.5"/></svg></div><div><div class="role-card-name">Recursos Humanos</div><div class="role-card-desc">Visión total del personal de todos los Sites · actas · sin acceso a flota</div></div></div>
-      <div class="role-card sel" onclick="setRole('direccion_ceo')"><div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><path d="M9 1L15 4v6c0 3-3 6-6 7-3-1-6-4-6-7V4l6-3z"/></svg></div><div><div class="role-card-name">Dirección / CEO</div><div class="role-card-desc">Acceso total: bajas, permisos legales, auditoría, reportes de todas las áreas</div></div></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Elige un perfil para ver la plataforma como la ve esa persona: menús, secciones y botones. Es solo para revisar la estructura de jerarquías: tus permisos y los datos reales siguen siendo los de Dirección, y todo se restablece al recargar.</div>
+      <div id="vista-cards"></div>
     </div>
+  </div>
+</div>
+
+<!-- AVISO DE VISTA ACTIVA -->
+<div id="vista-banner" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9000;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--green);border-radius:999px;padding:8px 8px 8px 16px;box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:12px">
+  <span>👁 <strong id="vista-banner-txt">Vista</strong></span>
+  <button class="btn sm primary" onclick="volverVistaDireccion()">Volver a Dirección</button>
+</div>
+
+<!-- FINANZAS: formulario genérico -->
+<div class="overlay" id="modal-fin" onclick="if(event.target===this)closeModal('modal-fin')">
+  <div class="modal" style="width:560px">
+    <div class="modal-head"><div class="modal-title" id="fin-m-title"></div>
+      <button class="modal-close" onclick="closeModal('modal-fin')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+    <div class="modal-body" id="fin-m-body"></div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-fin')">Cancelar</button><button class="btn primary" id="fin-m-ok">Guardar</button></div>
   </div>
 </div>
 
@@ -1628,10 +1660,11 @@ select.form-input option{background:var(--bg2)}
 <div class="overlay" id="modal-publicacion" onclick="if(event.target===this)closeModal('modal-publicacion')">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title">Nueva publicación</div>
+      <div class="modal-title">Crear publicación</div>
       <button class="modal-close" onclick="closeModal('modal-publicacion')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </div>
     <div class="modal-body">
+      <div id="pub-autor" style="display:flex;align-items:center;gap:10px;margin-bottom:12px"></div>
       <label class="form-lbl">Categoría</label>
       <select class="form-input" id="pub-categoria" style="margin-bottom:10px">
         <option value="Aviso">Aviso</option>
@@ -1639,8 +1672,10 @@ select.form-input option{background:var(--bg2)}
         <option value="Reconocimiento">Reconocimiento</option>
         <option value="Recordatorio">Recordatorio</option>
       </select>
-      <label class="form-lbl req">Contenido</label>
+      <label class="form-lbl">Contenido</label>
       <textarea class="form-input" id="pub-contenido" rows="5" placeholder="Escribe el comunicado..."></textarea>
+      <div id="pub-imgs-prev" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div>
+      <label class="btn sm" style="margin-top:10px;cursor:pointer;display:inline-flex;align-items:center">🖼 Agregar fotos (hasta 4)<input id="pub-imgs-input" type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="agregarImagenesPub(this)"></label>
       <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--text2)">
         <input type="checkbox" id="pub-fijado"> Fijar arriba del muro
       </label>
@@ -1648,7 +1683,7 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="modal-foot">
       <button class="btn" onclick="closeModal('modal-publicacion')">Cancelar</button>
-      <button class="btn primary" onclick="guardarPublicacion()">Publicar</button>
+      <button class="btn primary" id="pub-guardar" onclick="guardarPublicacion()">Publicar</button>
     </div>
   </div>
 </div>
@@ -1762,6 +1797,14 @@ select.form-input option{background:var(--bg2)}
       <button class="modal-close" onclick="closeModal('modal-mi-cuenta')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </div>
     <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <div id="mc-foto" style="width:64px;height:64px;flex-shrink:0"></div>
+        <div>
+          <label class="btn sm" style="cursor:pointer;display:inline-flex;align-items:center">Cambiar foto<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="elegirFotoPerfil(this)"></label>
+          <button class="btn sm" onclick="quitarFotoPerfil()" style="margin-left:6px">Quitar</button>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px">Foto de rostro, de preferencia con fondo claro. Se recorta en círculo.</div>
+        </div>
+      </div>
       <label class="form-lbl req">Nombre para mostrar</label>
       <input class="form-input" id="mc-nombre" style="margin-bottom:10px">
       <label class="form-lbl req">Usuario</label>
@@ -3384,7 +3427,7 @@ const CAPS = {
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   supervisor: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','miasistencia','muro'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','finanzas','miasistencia','muro'],
     fleet:true, personnel:'own_sites', editPersonnel:'own_sites', baja:false,
     sites:'own', createSite:true, permisosLegales:false, permisos:true,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3398,22 +3441,22 @@ const CAPS = {
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
   administracion: {
-    pages:['dashboard','calendario','procesos','miasistencia','muro'],
+    pages:['dashboard','calendario','procesos','finanzas','miasistencia','muro'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   administrativo: {
-    // Solo visualización. El área (finanzas/operativa) amplía las páginas en caps()
-    pages:['dashboard','calendario','procesos','miasistencia','muro'],
+    // El área (finanzas/operativa) amplía las páginas en caps(); en Finanzas el Administrativo de finanzas captura
+    pages:['dashboard','calendario','procesos','finanzas','miasistencia','muro'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   direccion_ceo: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','muro'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','muro'],
     fleet:true, personnel:'all', editPersonnel:'all', baja:true,
     sites:'all', createSite:true, permisosLegales:true, permisos:true,
     config:true, auditoria:true, kpis:true, compliance:true,
@@ -3786,6 +3829,12 @@ function applyRoleVisibility(){
     if (page) it.classList.toggle('hidden-by-role', !allowed.includes(page));
   });
   // Ocultar secciones del sidebar cuyos items quedaron todos ocultos
+  // Bio Muro es la pantalla inicial de todos los perfiles excepto RH y Dirección: va primero en el menú
+  const navEl = document.querySelector('.sb-nav'), muroIt = navEl && navEl.querySelector('[data-page="muro"]');
+  if (muroIt){
+    if (inicioBioMuro()) navEl.querySelector('.sb-sec').after(muroIt);
+    else { const ref = navEl.querySelector('[data-page="procesos"]'); if (ref) ref.before(muroIt); }
+  }
   document.querySelectorAll('.sb-sec').forEach(sec=>{
     let n = sec.nextElementSibling, vis = false;
     while(n && n.classList.contains('sb-item')){ if(!n.classList.contains('hidden-by-role')) vis = true; n = n.nextElementSibling; }
@@ -3793,37 +3842,54 @@ function applyRoleVisibility(){
   });
 }
 
+
+/* ── Vista de perfiles — exclusiva de Dirección ──
+   Cambia solo lo que se VE (menús, secciones y botones) para revisar la estructura de
+   jerarquías. Los permisos reales y los datos siguen siendo los de la cuenta de Dirección
+   (los exige el servidor) y todo se restablece al recargar. ── */
+const VISTAS = [
+  { role:'direccion_ceo',  t:'Dirección / CEO',          d:'Acceso total. Vista normal de tu cuenta.' },
+  { role:'rh',             t:'Recursos Humanos',          d:'Personal, asistencia del equipo, Bio Muro (publica) y reportes de personal.' },
+  { role:'administracion', t:'Gerente Administrativo',    d:'Finanzas completas: aprueba pagos, proveedores, presupuestos y calendario.' },
+  { role:'administrativo', area:'finanzas',  t:'Administrativo · Finanzas', d:'Captura facturas y solicitudes; da seguimiento a pagos. Calendario en lectura.' },
+  { role:'administrativo', area:'operativa', t:'Administrativo · Operativa', d:'Consulta flota, equipos, mantenimiento e inventario en solo lectura.' },
+  { role:'supervisor',     t:'Gerente Operativo',         d:'Sites, personal de sus sedes, flota, mantenimiento e inventario.' },
+  { role:'monitoreo',      t:'Monitoreo',                 d:'Flota, documentos y equipos. Sin acceso a personal.' },
+  { role:'chofer',         t:'Operativo',                 d:'Solo su unidad asignada, su asistencia y el Bio Muro.' }
+];
+function esDireccionReal(){ return !!currentUser && (currentUser.realRole || currentUser.role) === 'direccion_ceo'; }
 function openRoleSel(){
-  // Vista previa de roles: herramienta de demo exclusiva de Dirección.
-  // El rol REAL viene de la cuenta; esta vista es temporal y se restaura al recargar.
-  const cuentaReal = DB.usuarios.find(u=>u.id===currentUser.userId);
-  if (!cuentaReal || cuentaReal.role !== 'direccion_ceo'){ return; }
+  if (!esDireccionReal()) return;
+  const act = currentUser.role + '|' + (currentUser.role === 'administrativo' ? (currentUser.areaAdmin || 'finanzas') : '');
+  document.getElementById('vista-cards').innerHTML = VISTAS.map((v, i) => {
+    const sel = act === v.role + '|' + (v.area || '');
+    return `<div class="role-card ${sel ? 'sel' : ''}" onclick="setVista(${i})">
+      <div class="role-card-ico"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+      <div><div class="role-card-name">${esc(v.t)}</div><div class="role-card-desc">${esc(v.d)}</div></div></div>`;
+  }).join('');
   openModal('modal-role');
 }
-function setRole(role){
-  if (!CAPS[role]) return;
-  currentUser.role = role;
-  const nombres = { direccion_ceo:'Dirección / CEO', rh:'Recursos Humanos', supervisor:'Carlos Méndez (Supervisor)', chofer:'Juan Hernández (Chofer)' };
-  currentUser.name = nombres[role] || ROLES[role].nombre;
-  currentUser.initials = currentUser.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-  document.getElementById('sb-uname').textContent = currentUser.name;
-  document.getElementById('sb-urole').textContent = ROLES[role].label;
-  const rv = document.getElementById('sb-role-val'); if (rv) rv.textContent = ROLES[role].label;
-  document.getElementById('sb-av').textContent = currentUser.initials;
-  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
-  applyRoleVisibility();
+function setVista(i){
+  const v = VISTAS[i]; if (!v || !CAPS[v.role] || !esDireccionReal()) return;
+  currentUser.role = v.role;
+  currentUser.areaAdmin = v.role === 'administrativo' ? v.area : currentUser.realAreaAdmin;
+  const etiqueta = v.t;
+  const enVista = v.role !== 'direccion_ceo';
+  document.getElementById('sb-urole').textContent = enVista ? 'Vista: ' + etiqueta : ROLES.direccion_ceo.label;
+  const rv = document.getElementById('sb-role-val'); if (rv) rv.textContent = etiqueta;
+  const b = document.getElementById('vista-banner');
+  if (b){ b.style.display = enVista ? 'flex' : 'none'; document.getElementById('vista-banner-txt').textContent = 'Vista: ' + etiqueta; }
   closeModal('modal-role');
-  audit('rol_cambio', `Cambio de rol a ${ROLES[role].label}`, 'a');
-  const currentPage = document.querySelector('.page.active')?.id?.replace('page-','');
-  if (currentPage && !caps().pages.includes(currentPage) && !['expediente','unidad','sitedetail'].includes(currentPage)) {
-    nav(caps().pages[0] || 'dashboard', null);
-  } else if (currentPage) {
-    nav(currentPage, null);
-  }
+  applyRoleVisibility();
+  nav(paginaInicio(), null);
   updateBadges();
-  // NOTA: no se persiste — es vista previa temporal; al recargar vuelve el rol real de la cuenta
-  toast(`Vista previa de rol: ${ROLES[role].label} (temporal — recarga para volver a tu rol real)`, 'info');
+  audit('rol_cambio', enVista ? `Dirección activó la vista de ${etiqueta}` : 'Dirección volvió a su vista normal', 'a');
+  toast(enVista ? `Vista de ${etiqueta}: solo cambia lo que ves; tus permisos reales siguen siendo los de Dirección` : 'Vista de Dirección restablecida', 'info');
 }
+function volverVistaDireccion(){ setVista(0); }
+
+function inicioBioMuro(){ return !!currentUser && currentUser.role !== 'rh' && currentUser.role !== 'direccion_ceo' && caps().pages.includes('muro'); }
+function paginaInicio(){ return inicioBioMuro() ? 'muro' : (caps().pages[0] || 'dashboard'); }
 
 // ═══════════════════════════════════════════════════════════════════
 // AUDITORÍA
@@ -4003,6 +4069,7 @@ async function cargarPerfilYActivarSesion(){
   currentUser = {
     name: profile.nombre, role: profile.role, userId: profile.id,
     colaboradorId: profile.colaborador_id,
+    realRole: profile.role, realAreaAdmin: profile.area_admin || null,
     areaAdmin: profile.area_admin || null, gerenteId: profile.gerente_id || null, tourCompletado: !!profile.tour_completado,
     initials: profile.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()
   };
@@ -4017,9 +4084,12 @@ async function cargarPerfilYActivarSesion(){
   const ur=document.getElementById('sb-urole'); if(ur) ur.textContent = ROLES[currentUser.role]?.label || currentUser.role;
   const av=document.getElementById('sb-av'); if(av) av.textContent = currentUser.initials;
   applyRoleVisibility();
+  const sbRol = document.querySelector('.sb-role'); if (sbRol) sbRol.style.display = esDireccionReal() ? '' : 'none';
+  const rvv = document.getElementById('sb-role-val'); if (rvv) rvv.textContent = ROLES[currentUser.role]?.label || '';
+  cargarDirectorioAvatares(true);
   await cargarDatosSupabase();
   updateBadges();
-  nav(caps().pages[0] || 'dashboard', null);
+  nav(paginaInicio(), null);
   if (!currentUser.tourCompletado) iniciarTour(); else avisoAsistenciaInicio();
   toast(`Bienvenido, ${currentUser.name.split(' ')[0]}`, 'success');
 
@@ -4308,6 +4378,7 @@ async function abrirMiCuenta(){
   document.getElementById('mc-correo').value = perfil?.correo_contacto || '';
   document.getElementById('err-mc').classList.remove('show');
   marcarTemaActivoUI();
+  actualizarFotoMiCuenta();
   openModal('modal-mi-cuenta');
 }
 
@@ -4430,7 +4501,7 @@ async function audit(tipo, descripcion, color){
   if (!currentUser?.userId) return;
   await sb.from('auditoria').insert({
     tipo, descripcion, color: color || 'g',
-    usuario_id: currentUser.userId, usuario_nombre: currentUser.name, rol: currentUser.role
+    usuario_id: currentUser.userId, usuario_nombre: currentUser.name, rol: currentUser.realRole || currentUser.role
   });
 }
 
@@ -4468,6 +4539,569 @@ async function ejecutarVerificacionAuditoria(){
 
 // ═══════════════════════════════════════════════════════════════════
 // NAV
+/* ═══════════════════════════════════════════════════════════════════
+   FINANZAS — Cuentas por pagar, mantenimiento, inventario, calendario y presupuestos.
+   Dirección y Gerente Administrativo tienen jurisdicción total; el Administrativo captura;
+   el Gerente Operativo registra mantenimiento e inventario. Todo lo exige el servidor (RLS).
+   ═══════════════════════════════════════════════════════════════════ */
+const FIN = { tab:'resumen', d:null, f:{ estatus:'', prov:'', urg:'' }, unidad:'' };
+const FIN_MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const finMXN  = n => (Number(n)||0).toLocaleString('es-MX', { style:'currency', currency:'MXN', maximumFractionDigits:0 });
+const finMXN2 = n => (Number(n)||0).toLocaleString('es-MX', { style:'currency', currency:'MXN' });
+const finCorto = n => n >= 1e6 ? (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n/1e3) + 'k' : String(Math.round(n));
+const finHoy = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const finSum = (a, k) => a.reduce((s, x) => s + Number(x[k||'monto'] || 0), 0);
+const fv = id => (document.getElementById(id) || {}).value || '';
+const FIN_TIPOS_SOL = { pago:'Solicitud de pago', cambio:'Solicitud de cambio', compra:'Orden de compra / insumos', mantenimiento:'Mantenimiento' };
+const FIN_ESTATUS_TAG = { pendiente:'a', aprobado:'b', programado:'b', pagado:'g', rechazado:'r', aprobada:'g', rechazada:'r' };
+
+function finRol(){
+  const r = currentUser.role;
+  return {
+    admin: r === 'administracion' || r === 'direccion_ceo',
+    captura: r === 'administrativo' && (currentUser.areaAdmin || 'finanzas') === 'finanzas',
+    oper: r === 'supervisor',
+    admOper: r === 'administrativo' && currentUser.areaAdmin === 'operativa'
+  };
+}
+function finTabs(){
+  const R = finRol(); const t = [['resumen','Resumen']];
+  if (R.admin || R.captura) t.push(['cxp','Cuentas por pagar']);
+  if (R.admin || R.captura || R.oper) t.push(['sol','Solicitudes']);
+  if (R.admin || R.oper || R.admOper) t.push(['mant','Mantenimiento'], ['inv','Inventario']);
+  t.push(['cal','Calendario'], ['prov','Proveedores']);
+  if (R.admin) t.push(['pres','Presupuestos']);
+  return t;
+}
+async function finCargar(){
+  const [prov, fact, sol, gas, art, pre, rec, uni, nav_] = await Promise.all([
+    sb.from('fin_proveedores').select('*').order('razon_social'),
+    sb.from('fin_facturas').select('*').order('fecha_vencimiento', { nullsFirst:false }),
+    sb.from('fin_solicitudes').select('*').order('created_at', { ascending:false }),
+    sb.from('fin_gastos_mantenimiento').select('*').order('fecha', { ascending:false }),
+    sb.from('fin_inventario_articulos').select('*').order('nombre'),
+    sb.from('fin_presupuestos').select('*'),
+    sb.from('fin_recordatorios').select('*').order('fecha'),
+    sb.from('unidades').select('id,bak,bio_nave_id').order('bak'),
+    sb.from('bio_naves').select('id,nombre').order('nombre')
+  ]);
+  const fallo = [prov, fact, sol, gas, art, pre, rec].find(r => r.error);
+  if (fallo) toast('No se pudo cargar Finanzas: ' + fallo.error.message, 'error');
+  FIN.d = { prov:prov.data||[], fact:fact.data||[], sol:sol.data||[], gas:gas.data||[], art:art.data||[],
+            pre:pre.data||[], rec:rec.data||[], uni:uni.data||[], naves:nav_.data||[] };
+}
+async function renderFinanzas(){
+  const tabs = finTabs();
+  if (!tabs.some(t => t[0] === FIN.tab)) FIN.tab = 'resumen';
+  document.getElementById('fin-tabs').innerHTML = tabs.map(([k, l]) => `<button class="btn ${FIN.tab === k ? 'primary' : ''}" onclick="finIr('${k}')">${l}</button>`).join('');
+  document.getElementById('fin-body').innerHTML = '<div class="empty-sub" style="padding:20px">Cargando…</div>';
+  await finCargar();
+  finPintar();
+  const R = finRol();
+  if (R.admin || R.oper){
+    const rojas = finAlertasPres().filter(a => a.pct >= 100);
+    if (rojas.length) toast(`⚠ ${rojas.length} presupuesto${rojas.length>1?'s':''} de mantenimiento superado${rojas.length>1?'s':''} este mes`, 'error');
+  }
+}
+function finIr(k){ FIN.tab = k; renderFinanzas(); }
+function finPintar(){
+  const f = { resumen:finResumen, cxp:finCxP, sol:finSolicitudes, mant:finMant, inv:finInv, cal:finCal, prov:finProv, pres:finPres }[FIN.tab];
+  document.getElementById('fin-body').innerHTML = f();
+}
+const finNave = id => (FIN.d.naves.find(n => n.id === id) || {}).nombre || '—';
+const finUnidad = id => (FIN.d.uni.find(u => u.id === id) || {}).bak || '—';
+const finProvNom = id => (FIN.d.prov.find(p => p.id === id) || {}).razon_social || '—';
+const finTag = (t, c) => `<span class="tag ${c || 'm'}">${esc(t)}</span>`;
+
+/* ── Gráficas de barras ── */
+function finPanelGraf(titulo, cuerpo){
+  return `<div class="panel" style="padding:16px;margin-bottom:0"><div style="font-family:var(--head);font-size:11px;font-weight:800;margin-bottom:8px;color:var(--text)">${esc(titulo)}</div>${cuerpo}</div>`;
+}
+function finBarrasH(titulo, items, fmt){
+  const max = Math.max(1, ...items.map(i => i.valor));
+  const filas = items.length ? items.map(i => `<div style="display:grid;grid-template-columns:minmax(70px,34%) 1fr auto;gap:10px;align-items:center;margin:7px 0">
+    <div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(i.label)}">${esc(i.label)}</div>
+    <div style="background:var(--surface2,#2a2a2a);border-radius:4px;height:14px;overflow:hidden"><div style="width:${Math.max(2, i.valor / max * 100)}%;height:100%;background:${i.color || 'var(--green)'};border-radius:4px"></div></div>
+    <div style="font-size:11px;font-variant-numeric:tabular-nums;color:var(--text);min-width:76px;text-align:right">${fmt ? fmt(i.valor) : finMXN(i.valor)}</div></div>`).join('')
+    : '<div class="empty-sub" style="padding:14px 0">Sin datos todavía</div>';
+  return finPanelGraf(titulo, filas);
+}
+function finBarrasV(titulo, items){
+  const W = 560, H = 190, pl = 8, pb = 24, pt = 18, n = items.length;
+  const max = Math.max(1, ...items.map(i => i.valor)); const bw = (W - pl * 2) / n;
+  const bars = items.map((i, k) => {
+    const h = (H - pb - pt) * (i.valor / max), x = pl + k * bw + bw * .18, w = bw * .64, y = H - pb - h;
+    return `<rect x="${x}" y="${y}" width="${w}" height="${i.valor > 0 ? Math.max(h, 2) : 0}" rx="3" style="fill:${i.color || 'var(--green)'}"/>` +
+      (i.valor > 0 ? `<text x="${x + w/2}" y="${y - 4}" text-anchor="middle" font-size="9" style="fill:var(--text2)">${finCorto(i.valor)}</text>` : '') +
+      `<text x="${x + w/2}" y="${H - 8}" text-anchor="middle" font-size="9" style="fill:var(--text3)">${esc(i.label)}</text>`;
+  }).join('');
+  return finPanelGraf(titulo, `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="${esc(titulo)}"><line x1="${pl}" y1="${H-pb}" x2="${W-pl}" y2="${H-pb}" style="stroke:var(--border2)"/>${bars}</svg>`);
+}
+function finTile(label, valor, sub, color){
+  return `<div class="panel" style="padding:14px 16px;margin-bottom:0"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px">${esc(label)}</div>
+    <div style="font-family:var(--head);font-size:22px;font-weight:900;margin-top:4px;color:${color || 'var(--text)'};font-variant-numeric:tabular-nums">${valor}</div>
+    ${sub ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(sub)}</div>` : ''}</div>`;
+}
+function finAgrupar(arr, keyFn, valFn){
+  const m = {}; arr.forEach(x => { const k = keyFn(x); m[k] = (m[k] || 0) + valFn(x); });
+  return Object.entries(m).map(([label, valor]) => ({ label, valor })).sort((a, b) => b.valor - a.valor);
+}
+function finStock(a){
+  const ex = Number(a.existencias), mn = Number(a.stock_minimo), pr = Number(a.punto_reorden);
+  if (mn > 0 && ex <= mn) return { t:'Bajo mínimo', c:'r' };
+  if (pr > 0 && ex <= pr) return { t:'Reordenar', c:'a' };
+  return { t:'En existencia', c:'g' };
+}
+function finAlertasPres(){
+  const hoy = finHoy(), y = +hoy.slice(0,4), m = +hoy.slice(5,7), d = FIN.d;
+  return d.pre.filter(p => p.anio === y && p.mes === m).map(p => {
+    const gasto = finSum(d.gas.filter(g => +g.fecha.slice(0,4) === y && +g.fecha.slice(5,7) === m &&
+      ((p.bio_nave_id && g.bio_nave_id === p.bio_nave_id) || (p.unidad_id && g.unidad_id === p.unidad_id))), 'monto');
+    const tope = Number(p.monto_tope);
+    return { id:p.id, nombre: p.unidad_id ? 'Unidad ' + finUnidad(p.unidad_id) : finNave(p.bio_nave_id), gasto, tope, pct: tope > 0 ? gasto / tope * 100 : (gasto > 0 ? 999 : 0) };
+  });
+}
+function finBannerPres(){
+  const al = finAlertasPres().filter(a => a.pct >= 80).sort((a, b) => b.pct - a.pct);
+  if (!al.length) return '';
+  return al.map(a => `<div class="banner ${a.pct >= 100 ? 'bl-red' : 'bl-amber'}" style="margin-bottom:8px"><div class="banner-txt"><strong>${a.pct >= 100 ? '⚠ Presupuesto superado' : 'Presupuesto al ' + Math.round(a.pct) + '%'}</strong> — ${esc(a.nombre)}: ${finMXN(a.gasto)} de ${finMXN(a.tope)} este mes.</div></div>`).join('');
+}
+
+/* ── Resumen ── */
+function finResumen(){
+  const R = finRol(), d = FIN.d, hoy = finHoy(), ym = hoy.slice(0, 7), y = hoy.slice(0, 4);
+  const abiertas = d.fact.filter(f => ['pendiente','aprobado','programado'].includes(f.estatus));
+  const venc = abiertas.filter(f => f.fecha_vencimiento && f.fecha_vencimiento < hoy);
+  const pagMes = d.fact.filter(f => f.estatus === 'pagado' && (f.pagado_en || '').slice(0, 7) === ym);
+  const gasMes = d.gas.filter(g => g.fecha.slice(0, 7) === ym);
+  const gasAnio = d.gas.filter(g => g.fecha.slice(0, 4) === y);
+  const valInv = d.art.reduce((s, a) => s + Number(a.existencias) * Number(a.costo_unitario), 0);
+  const bajos = d.art.filter(a => a.activo && finStock(a).c !== 'g').length;
+  const verCxP = R.admin || R.captura, verMant = R.admin || R.oper || R.admOper;
+  let h = finBannerPres() ;
+  h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">';
+  if (verCxP){
+    h += finTile('Por pagar', finMXN(finSum(abiertas)), abiertas.length + ' factura' + (abiertas.length !== 1 ? 's' : ''));
+    h += finTile('Vencido', finMXN(finSum(venc)), venc.length + ' factura' + (venc.length !== 1 ? 's' : ''), venc.length ? 'var(--red)' : '');
+    h += finTile('Pagado este mes', finMXN(finSum(pagMes)), pagMes.length + ' factura' + (pagMes.length !== 1 ? 's' : ''), 'var(--green)');
+    const sp = d.sol.filter(s => s.estatus === 'pendiente').length;
+    h += finTile(R.admin ? 'Solicitudes por resolver' : 'Mis solicitudes pendientes', String(sp), '', sp && R.admin ? 'var(--amber)' : '');
+  }
+  if (verMant){
+    h += finTile('Mantenimiento del mes', finMXN(finSum(gasMes)), gasMes.length + ' registro' + (gasMes.length !== 1 ? 's' : ''));
+    h += finTile('Valor del inventario', finMXN(valInv), d.art.length + ' artículo' + (d.art.length !== 1 ? 's' : ''));
+    h += finTile('Stock por atender', String(bajos), 'bajo mínimo o por reordenar', bajos ? 'var(--amber)' : '');
+  }
+  h += '</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px">';
+  if (verCxP){
+    h += finBarrasH('Cuentas por pagar por estatus', ['pendiente','aprobado','programado','pagado'].map(e => ({ label: e[0].toUpperCase() + e.slice(1), valor: finSum(d.fact.filter(f => f.estatus === e)) })));
+    h += finBarrasH('Por pagar por proveedor (top 8)', finAgrupar(abiertas, f => finProvNom(f.proveedor_id), f => Number(f.monto)).slice(0, 8));
+    const meses = []; const base = new Date(); base.setDate(1);
+    for (let i = 0; i < 6; i++){ const dt = new Date(base.getFullYear(), base.getMonth() + i, 1); meses.push({ k: `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`, label: FIN_MESES[dt.getMonth()] }); }
+    h += finBarrasV('Vencimientos de los próximos 6 meses', meses.map(m => ({ label:m.label, valor: finSum(abiertas.filter(f => (f.fecha_vencimiento || '').slice(0, 7) === m.k)) })));
+  }
+  if (verMant){
+    h += finBarrasV(`Gasto de mantenimiento por mes (${y})`, FIN_MESES.map((l, i) => ({ label:l, valor: finSum(gasAnio.filter(g => +g.fecha.slice(5, 7) === i + 1)) })));
+    h += finBarrasH('Mantenimiento por unidad (top 8, año)', finAgrupar(gasAnio.filter(g => g.unidad_id), g => finUnidad(g.unidad_id), g => Number(g.monto)).slice(0, 8));
+    h += finBarrasH('Mantenimiento por categoría (año)', finAgrupar(gasAnio, g => ({ refaccion:'Refacciones', diesel:'Diésel', taller:'Taller', insumo:'Insumos', otro:'Otros' }[g.categoria]), g => Number(g.monto)));
+    h += finBarrasH('Valor de inventario por categoría', finAgrupar(d.art, a => a.categoria[0].toUpperCase() + a.categoria.slice(1), a => Number(a.existencias) * Number(a.costo_unitario)));
+  }
+  return h + '</div>';
+}
+
+/* ── Modal genérico ── */
+function finModal(titulo, cuerpo, onOk, etiqueta){
+  document.getElementById('fin-m-title').textContent = titulo;
+  document.getElementById('fin-m-body').innerHTML = cuerpo + '<div class="form-err" id="fin-m-err" style="margin-top:8px">—</div>';
+  const ok = document.getElementById('fin-m-ok'); ok.textContent = etiqueta || 'Guardar'; ok.disabled = false;
+  ok.onclick = async () => {
+    ok.disabled = true;
+    try { const r = await onOk(); if (r !== false) closeModal('modal-fin'); }
+    catch(e){ finErr(e.message || String(e)); }
+    finally { ok.disabled = false; }
+  };
+  openModal('modal-fin');
+}
+function finErr(m){ const e = document.getElementById('fin-m-err'); if (e){ e.textContent = m; e.classList.add('show'); } return false; }
+function finCampo(l, id, tipo, v, extra){ return `<label class="form-lbl">${l}</label><input class="form-input" id="${id}" type="${tipo}" value="${esc(String(v ?? ''))}" ${extra || ''} style="margin-bottom:10px">`; }
+function finArea(l, id, v){ return `<label class="form-lbl">${l}</label><textarea class="form-input" id="${id}" rows="3" style="margin-bottom:10px">${esc(String(v ?? ''))}</textarea>`; }
+function finSelect(l, id, opts, sel, vacio){
+  return `<label class="form-lbl">${l}</label><select class="form-input" id="${id}" style="margin-bottom:10px">${vacio !== undefined ? `<option value="">${esc(vacio)}</option>` : ''}${opts.map(([v, t]) => `<option value="${esc(v)}" ${v === sel ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
+}
+const finOptProv = () => FIN.d.prov.filter(p => p.activo).map(p => [p.id, p.razon_social]);
+const finOptNave = () => FIN.d.naves.map(n => [n.id, n.nombre]);
+const finOptUni = () => FIN.d.uni.map(u => [u.id, u.bak]);
+const FIN_MIME = { 'application/pdf':'pdf', 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp' };
+async function finSubir(carpeta, file){
+  if (!FIN_MIME[file.type]) throw new Error('El archivo debe ser PDF, JPG, PNG o WebP');
+  if (file.size > 10 * 1024 * 1024) throw new Error('El archivo no debe pasar de 10 MB');
+  const path = `${carpeta}/${crypto.randomUUID()}.${FIN_MIME[file.type]}`;
+  const { error } = await sb.storage.from('finanzas').upload(path, file, { contentType: file.type });
+  if (error) throw error;
+  return path;
+}
+async function finVerArchivo(path){
+  try {
+    const { data, error } = await sb.storage.from('finanzas').download(path);
+    if (error) throw error;
+    const u = URL.createObjectURL(data);
+    if (data.type.startsWith('image/')) verImagenMuro(u); else window.open(u, '_blank');
+  } catch(e){ toast('No se pudo abrir el archivo: ' + (e.message || e), 'error'); }
+}
+async function finRecargar(){ await finCargar(); finPintar(); }
+
+/* ── Cuentas por pagar ── */
+function finCxP(){
+  const R = finRol(), d = FIN.d, f = FIN.f, hoy = finHoy();
+  const rows = d.fact.filter(x => (!f.estatus || x.estatus === f.estatus) && (!f.prov || x.proveedor_id === f.prov) && (!f.urg || x.urgencia === f.urg));
+  const filtros = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+    <select class="form-input" style="width:auto" onchange="FIN.f.estatus=this.value;finPintar()"><option value="">Todos los estatus</option>${['pendiente','aprobado','programado','pagado','rechazado'].map(e => `<option value="${e}" ${f.estatus === e ? 'selected' : ''}>${e[0].toUpperCase() + e.slice(1)}</option>`).join('')}</select>
+    <select class="form-input" style="width:auto" onchange="FIN.f.prov=this.value;finPintar()"><option value="">Todos los proveedores</option>${d.prov.map(p => `<option value="${p.id}" ${f.prov === p.id ? 'selected' : ''}>${esc(p.razon_social)}</option>`).join('')}</select>
+    <select class="form-input" style="width:auto" onchange="FIN.f.urg=this.value;finPintar()"><option value="">Toda urgencia</option>${['normal','alta','critica'].map(e => `<option value="${e}" ${f.urg === e ? 'selected' : ''}>${e[0].toUpperCase() + e.slice(1)}</option>`).join('')}</select>
+    <button class="btn primary ml" onclick="finNuevaFactura()">+ Nueva factura</button></div>`;
+  const lista = rows.length ? rows.map(x => {
+    const vencida = ['pendiente','aprobado','programado'].includes(x.estatus) && x.fecha_vencimiento && x.fecha_vencimiento < hoy;
+    const acc = [`<button class="btn sm" onclick="finVerArchivo('${esc(x.archivo_path)}')">Ver archivo</button>`];
+    if (R.admin){
+      if (x.estatus === 'pendiente') acc.push(`<button class="btn sm primary" onclick="finAprobar('${x.id}')">Aprobar</button>`, `<button class="btn sm danger" onclick="finRechazar('${x.id}')">Rechazar</button>`);
+      if (x.estatus === 'aprobado') acc.push(`<button class="btn sm" onclick="finProgramar('${x.id}')">Programar</button>`, `<button class="btn sm primary" onclick="finPagar('${x.id}')">Marcar pagada</button>`);
+      if (x.estatus === 'programado') acc.push(`<button class="btn sm primary" onclick="finPagar('${x.id}')">Marcar pagada</button>`);
+      acc.push(`<button class="btn sm danger" title="Eliminar" onclick="finEliminarFactura('${x.id}')">🗑</button>`);
+    } else if (R.captura && x.estatus !== 'pagado'){
+      acc.push(`<button class="btn sm" onclick="finNuevaSolicitud('cambio','${x.id}')">Solicitar cambio</button>`);
+    }
+    return `<div class="panel" style="padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="flex:2;min-width:200px"><div style="font-size:13px;font-weight:700">${esc(finProvNom(x.proveedor_id))}${x.folio ? ' · ' + esc(x.folio) : ''}</div>
+        <div style="font-size:11px;color:var(--text3)">${esc(x.concepto)}${x.bio_nave_id ? ' · ' + esc(finNave(x.bio_nave_id)) : ''}</div>
+        <div style="font-size:10px;color:var(--text3)">Captura: ${esc(x.capturado_por_nombre || '—')}${x.aprobado_en ? ' · ' + (x.estatus === 'rechazado' ? 'Rechazó' : 'Aprobó') + ' el ' + new Date(x.aprobado_en).toLocaleDateString('es-MX') : ''}${x.estatus === 'rechazado' && x.motivo_rechazo ? ' — ' + esc(x.motivo_rechazo) : ''}</div></div>
+      <div style="min-width:110px;text-align:right"><div style="font-size:15px;font-weight:900;font-variant-numeric:tabular-nums">${finMXN2(x.monto)}</div>
+        <div style="font-size:10px;color:${vencida ? 'var(--red)' : 'var(--text3)'}">${x.fecha_vencimiento ? (vencida ? 'Vencida ' : 'Vence ') + new Date(x.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-MX') : 'Sin vencimiento'}${x.estatus === 'programado' && x.fecha_programada ? ' · Pago ' + new Date(x.fecha_programada + 'T00:00:00').toLocaleDateString('es-MX') : ''}</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;min-width:130px">${finTag(x.estatus[0].toUpperCase() + x.estatus.slice(1), FIN_ESTATUS_TAG[x.estatus])}${x.urgencia !== 'normal' ? finTag(x.urgencia === 'critica' ? 'Crítica' : 'Alta', x.urgencia === 'critica' ? 'r' : 'a') : ''}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${acc.join('')}</div></div>`;
+  }).join('') : '<div class="empty" style="padding:30px"><div class="empty-sub">No hay facturas con esos filtros</div></div>';
+  return filtros + lista;
+}
+function finNuevaFactura(){
+  if (!FIN.d.prov.some(p => p.activo)){ toast('Primero da de alta un proveedor (pestaña Proveedores)', 'info'); return; }
+  finModal('Nueva factura / comprobante',
+    finSelect('Proveedor *', 'ff-prov', finOptProv(), '', 'Selecciona…') + finCampo('Folio de la factura', 'ff-folio', 'text', '') +
+    finCampo('Concepto *', 'ff-concepto', 'text', '') + finCampo('Monto total (MXN) *', 'ff-monto', 'number', '', 'min="0.01" step="0.01"') +
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${finCampo('Fecha de emisión', 'ff-emision', 'date', finHoy(), 'onchange="finAutoVence()"')}${finCampo('Fecha de vencimiento', 'ff-vence', 'date', '')}</div>` +
+    finSelect('Nave / sede', 'ff-nave', finOptNave(), '', 'Sin asignar') +
+    finSelect('Urgencia', 'ff-urg', [['normal','Normal'],['alta','Alta'],['critica','Crítica']], 'normal') +
+    `<label class="form-lbl req">Factura o comprobante (PDF o imagen, máx. 10 MB)</label><input class="form-input" type="file" id="ff-file" accept="application/pdf,image/jpeg,image/png,image/webp">`,
+    finGuardarFactura, 'Registrar');
+  document.getElementById('ff-prov').onchange = finAutoVence;
+}
+function finAutoVence(){
+  const p = FIN.d.prov.find(x => x.id === fv('ff-prov')), e = fv('ff-emision');
+  if (!p || !e) return;
+  const dt = new Date(e + 'T00:00:00'); dt.setDate(dt.getDate() + (p.dias_credito || 0));
+  document.getElementById('ff-vence').value = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+async function finGuardarFactura(){
+  const prov = fv('ff-prov'), concepto = fv('ff-concepto').trim(), monto = parseFloat(fv('ff-monto')), file = document.getElementById('ff-file').files[0];
+  if (!prov) return finErr('Selecciona el proveedor');
+  if (!concepto) return finErr('Escribe el concepto');
+  if (!(monto > 0)) return finErr('Captura un monto mayor a cero');
+  if (!file) return finErr('Adjunta la factura o comprobante (es obligatorio)');
+  const path = await finSubir('facturas', file);
+  const { error } = await sb.from('fin_facturas').insert({ proveedor_id: prov, folio: fv('ff-folio').trim() || null, concepto, monto,
+    fecha_emision: fv('ff-emision') || null, fecha_vencimiento: fv('ff-vence') || null, bio_nave_id: fv('ff-nave') || null,
+    urgencia: fv('ff-urg'), archivo_path: path, archivo_nombre: file.name, estatus: 'pendiente' });
+  if (error){ await sb.storage.from('finanzas').remove([path]); return finErr(error.message); }
+  toast('Factura registrada: queda pendiente de aprobación', 'success'); await finRecargar();
+}
+async function finCambiarEstatus(id, estatus, extra){
+  const { error } = await sb.from('fin_facturas').update({ estatus, ...(extra || {}) }).eq('id', id);
+  if (error){ toast(error.message, 'error'); return false; }
+  toast('Estatus actualizado', 'success'); await finRecargar();
+}
+function finAprobar(id){ confirmar('¿Aprobar esta factura para pago?', 'Aprobar factura', () => finCambiarEstatus(id, 'aprobado')); }
+function finPagar(id){ confirmar('¿Marcar esta factura como pagada?', 'Marcar pagada', () => finCambiarEstatus(id, 'pagado')); }
+function finRechazar(id){
+  finModal('Rechazar factura', finArea('Motivo del rechazo *', 'fr-motivo', ''), async () => {
+    const m = fv('fr-motivo').trim(); if (!m) return finErr('Indica el motivo');
+    return (await finCambiarEstatus(id, 'rechazado', { motivo_rechazo: m })) === false ? false : undefined;
+  }, 'Rechazar');
+}
+function finProgramar(id){
+  finModal('Programar pago', finCampo('Fecha de pago *', 'fp-fecha', 'date', finHoy()), async () => {
+    const dt = fv('fp-fecha'); if (!dt) return finErr('Elige la fecha');
+    return (await finCambiarEstatus(id, 'programado', { fecha_programada: dt })) === false ? false : undefined;
+  }, 'Programar');
+}
+function finEliminarFactura(id){
+  confirmar('¿Eliminar esta factura y su archivo? Esta acción no se puede deshacer.', 'Eliminar factura', async () => {
+    const f = FIN.d.fact.find(x => x.id === id);
+    const { error } = await sb.from('fin_facturas').delete().eq('id', id);
+    if (error){ toast(error.message, 'error'); return; }
+    if (f?.archivo_path) sb.storage.from('finanzas').remove([f.archivo_path]);
+    toast('Factura eliminada', 'info'); await finRecargar();
+  });
+}
+
+/* ── Solicitudes ── */
+function finSolicitudes(){
+  const R = finRol(), d = FIN.d;
+  const lista = d.sol.length ? d.sol.map(s => `<div class="panel" style="padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <div style="flex:2;min-width:200px"><div style="font-size:13px;font-weight:700">${esc(s.titulo)}</div>
+      <div style="font-size:11px;color:var(--text3)">${esc(FIN_TIPOS_SOL[s.tipo])}${s.proveedor_id ? ' · ' + esc(finProvNom(s.proveedor_id)) : ''} · ${esc(s.solicitado_por_nombre || '—')} · ${tiempoRel(s.created_at)}</div>
+      ${s.descripcion ? `<div style="font-size:11px;color:var(--text2);margin-top:2px;white-space:pre-wrap">${esc(s.descripcion)}</div>` : ''}
+      ${s.motivo ? `<div style="font-size:10px;color:var(--text3)">Respuesta: ${esc(s.motivo)}</div>` : ''}</div>
+    <div style="min-width:100px;text-align:right;font-weight:900;font-variant-numeric:tabular-nums">${s.monto != null ? finMXN2(s.monto) : '—'}</div>
+    <div>${finTag(s.estatus[0].toUpperCase() + s.estatus.slice(1), FIN_ESTATUS_TAG[s.estatus])}</div>
+    <div style="display:flex;gap:6px">${R.admin && s.estatus === 'pendiente' ? `<button class="btn sm primary" onclick="finResolverSol('${s.id}','aprobada')">Aprobar</button><button class="btn sm danger" onclick="finResolverSol('${s.id}','rechazada')">Rechazar</button>` : ''}${R.admin ? `<button class="btn sm danger" title="Eliminar" onclick="finEliminarSol('${s.id}')">🗑</button>` : ''}</div></div>`).join('')
+    : `<div class="empty" style="padding:30px"><div class="empty-sub">${R.admin ? 'No hay solicitudes' : 'Aún no has hecho solicitudes'}</div></div>`;
+  return `<div style="display:flex;margin-bottom:12px"><button class="btn primary ml" onclick="finNuevaSolicitud()">+ Nueva solicitud</button></div>` + lista;
+}
+function finNuevaSolicitud(tipo, facturaId){
+  const R = finRol(); const t = [];
+  if (R.admin || R.captura) t.push(['pago', FIN_TIPOS_SOL.pago], ['cambio', FIN_TIPOS_SOL.cambio]);
+  if (R.admin || R.oper) t.push(['compra', FIN_TIPOS_SOL.compra], ['mantenimiento', FIN_TIPOS_SOL.mantenimiento]);
+  finModal('Nueva solicitud',
+    finSelect('Tipo *', 'fs-tipo', t, tipo || t[0][0]) + finCampo('Título *', 'fs-titulo', 'text', '') + finArea('Descripción / justificación', 'fs-desc', '') +
+    finCampo('Monto estimado (MXN)', 'fs-monto', 'number', '', 'min="0" step="0.01"') + finSelect('Proveedor', 'fs-prov', finOptProv(), '', 'Sin proveedor') +
+    (R.admin || R.captura ? finSelect('Factura relacionada', 'fs-fact', FIN.d.fact.map(f => [f.id, `${finProvNom(f.proveedor_id)} · ${f.folio || f.concepto} · ${finMXN(f.monto)}`]), facturaId || '', 'Ninguna') : ''),
+    async () => {
+      const titulo = fv('fs-titulo').trim(); if (!titulo) return finErr('Escribe el título');
+      const m = fv('fs-monto');
+      const { error } = await sb.from('fin_solicitudes').insert({ tipo: fv('fs-tipo'), titulo, descripcion: fv('fs-desc').trim() || null,
+        monto: m === '' ? null : parseFloat(m), proveedor_id: fv('fs-prov') || null, factura_id: fv('fs-fact') || null, estatus: 'pendiente' });
+      if (error) return finErr(error.message);
+      toast('Solicitud enviada al Gerente Administrativo', 'success'); FIN.tab = 'sol'; await renderFinanzas();
+    }, 'Enviar');
+}
+function finResolverSol(id, estatus){
+  finModal(estatus === 'aprobada' ? 'Aprobar solicitud' : 'Rechazar solicitud', finArea(estatus === 'aprobada' ? 'Comentario (opcional)' : 'Motivo (opcional)', 'fsr-motivo', ''), async () => {
+    const { error } = await sb.from('fin_solicitudes').update({ estatus, motivo: fv('fsr-motivo').trim() || null }).eq('id', id);
+    if (error) return finErr(error.message);
+    toast('Solicitud ' + estatus, 'success'); await finRecargar();
+  }, estatus === 'aprobada' ? 'Aprobar' : 'Rechazar');
+}
+function finEliminarSol(id){
+  confirmar('¿Eliminar esta solicitud?', 'Eliminar solicitud', async () => {
+    const { error } = await sb.from('fin_solicitudes').delete().eq('id', id);
+    if (error){ toast(error.message, 'error'); return; } await finRecargar();
+  });
+}
+
+/* ── Mantenimiento ── */
+function finMant(){
+  const R = finRol(), d = FIN.d, y = finHoy().slice(0, 4);
+  const lista = d.gas.filter(g => !FIN.unidad || g.unidad_id === FIN.unidad);
+  const anio = d.gas.filter(g => g.fecha.slice(0, 4) === y);
+  const prev = finSum(anio.filter(g => g.tipo === 'preventivo')), corr = finSum(anio.filter(g => g.tipo === 'correctivo'));
+  let h = finBannerPres();
+  h += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">${finTile('Total del año', finMXN(prev + corr), y)}${finTile('Preventivo', finMXN(prev))}${finTile('Correctivo', finMXN(corr), '', corr > prev ? 'var(--amber)' : '')}</div>`;
+  h += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-bottom:14px">` +
+    finBarrasH('Histórico acumulado por unidad (año)', finAgrupar(anio.filter(g => g.unidad_id), g => finUnidad(g.unidad_id), g => Number(g.monto)).slice(0, 10)) +
+    finBarrasH('Preventivo vs correctivo (año)', [{ label:'Preventivo', valor:prev }, { label:'Correctivo', valor:corr, color:'var(--amber)' }]) + '</div>';
+  h += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center"><select class="form-input" style="width:auto" onchange="FIN.unidad=this.value;finPintar()"><option value="">Todas las unidades</option>${d.uni.map(u => `<option value="${u.id}" ${FIN.unidad === u.id ? 'selected' : ''}>${esc(u.bak)}</option>`).join('')}</select>
+    ${R.admin || R.oper ? '<button class="btn primary ml" onclick="finNuevoGasto()">+ Registrar gasto</button>' : ''}</div>`;
+  h += lista.length ? lista.slice(0, 80).map(g => `<div class="panel" style="padding:10px 14px;margin-bottom:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <div style="flex:2;min-width:200px"><div style="font-size:13px;font-weight:700">${g.unidad_id ? esc(finUnidad(g.unidad_id)) : esc(finNave(g.bio_nave_id))} · ${esc({ refaccion:'Refacción', diesel:'Diésel', taller:'Taller', insumo:'Insumo', otro:'Otro' }[g.categoria])}</div>
+      <div style="font-size:11px;color:var(--text3)">${new Date(g.fecha + 'T00:00:00').toLocaleDateString('es-MX')} · ${esc(g.registrado_por_nombre || '—')}${g.descripcion ? ' · ' + esc(g.descripcion) : ''}</div></div>
+    <div>${finTag(g.tipo === 'preventivo' ? 'Preventivo' : 'Correctivo', g.tipo === 'preventivo' ? 'g' : 'a')}</div>
+    <div style="min-width:100px;text-align:right;font-weight:900;font-variant-numeric:tabular-nums">${finMXN2(g.monto)}</div>
+    <div style="display:flex;gap:6px">${g.archivo_path ? `<button class="btn sm" onclick="finVerArchivo('${esc(g.archivo_path)}')">Comprobante</button>` : ''}${R.admin ? `<button class="btn sm danger" title="Eliminar" onclick="finEliminarGasto('${g.id}')">🗑</button>` : ''}</div></div>`).join('')
+    : '<div class="empty" style="padding:30px"><div class="empty-sub">Sin gastos registrados</div></div>';
+  return h;
+}
+function finNuevoGasto(){
+  finModal('Registrar gasto de mantenimiento',
+    finSelect('Unidad', 'fg-uni', finOptUni(), FIN.unidad, 'Sin unidad (gasto de nave)') + finSelect('Nave / sede', 'fg-nave', finOptNave(), '', 'La de la unidad') +
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${finCampo('Fecha *', 'fg-fecha', 'date', finHoy())}${finSelect('Tipo *', 'fg-tipo', [['preventivo','Preventivo'],['correctivo','Correctivo']], 'preventivo')}</div>` +
+    finSelect('Categoría *', 'fg-cat', [['refaccion','Refacción'],['diesel','Diésel'],['taller','Taller / servicio externo'],['insumo','Insumo'],['otro','Otro']], 'refaccion') +
+    finCampo('Descripción', 'fg-desc', 'text', '') + finCampo('Monto (MXN) *', 'fg-monto', 'number', '', 'min="0.01" step="0.01"') + finSelect('Proveedor', 'fg-prov', finOptProv(), '', 'Sin proveedor') +
+    `<label class="form-lbl">Comprobante (opcional, PDF o imagen)</label><input class="form-input" type="file" id="fg-file" accept="application/pdf,image/jpeg,image/png,image/webp">`,
+    async () => {
+      const monto = parseFloat(fv('fg-monto')); if (!(monto > 0)) return finErr('Captura un monto mayor a cero');
+      if (!fv('fg-fecha')) return finErr('Elige la fecha');
+      const uni = FIN.d.uni.find(u => u.id === fv('fg-uni'));
+      const file = document.getElementById('fg-file').files[0];
+      const path = file ? await finSubir('mantenimiento', file) : null;
+      const { error } = await sb.from('fin_gastos_mantenimiento').insert({ unidad_id: fv('fg-uni') || null, bio_nave_id: fv('fg-nave') || uni?.bio_nave_id || null,
+        fecha: fv('fg-fecha'), tipo: fv('fg-tipo'), categoria: fv('fg-cat'), descripcion: fv('fg-desc').trim() || null, monto, proveedor_id: fv('fg-prov') || null,
+        archivo_path: path, archivo_nombre: file ? file.name : null });
+      if (error){ if (path) await sb.storage.from('finanzas').remove([path]); return finErr(error.message); }
+      toast('Gasto registrado', 'success'); await finRecargar();
+    }, 'Registrar');
+}
+function finEliminarGasto(id){
+  confirmar('¿Eliminar este gasto?', 'Eliminar gasto', async () => {
+    const g = FIN.d.gas.find(x => x.id === id);
+    const { error } = await sb.from('fin_gastos_mantenimiento').delete().eq('id', id);
+    if (error){ toast(error.message, 'error'); return; }
+    if (g?.archivo_path) sb.storage.from('finanzas').remove([g.archivo_path]);
+    await finRecargar();
+  });
+}
+
+/* ── Inventario y valorización ── */
+function finInv(){
+  const R = finRol(), d = FIN.d, puede = R.admin || R.oper;
+  const valor = d.art.reduce((s, a) => s + Number(a.existencias) * Number(a.costo_unitario), 0);
+  const alerta = d.art.filter(a => a.activo && finStock(a).c !== 'g');
+  let h = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">${finTile('Valor total del inventario', finMXN(valor), 'existencias × costo unitario')}${finTile('Artículos', String(d.art.length))}${finTile('Por atender', String(alerta.length), 'bajo mínimo o por reordenar', alerta.length ? 'var(--amber)' : '')}</div>`;
+  if (alerta.length) h += `<div class="banner bl-amber" style="margin-bottom:12px"><div class="banner-txt"><strong>Solicitar compra:</strong> ${alerta.map(a => esc(a.nombre) + ' (' + Number(a.existencias) + ' ' + esc(a.unidad_medida) + ')').join(' · ')}</div></div>`;
+  h += `<div style="display:flex;margin-bottom:12px">${puede ? '<button class="btn primary ml" onclick="finNuevoArticulo()">+ Artículo</button>' : ''}</div>`;
+  h += d.art.length ? d.art.map(a => { const s = finStock(a); return `<div class="panel" style="padding:10px 14px;margin-bottom:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <div style="flex:2;min-width:200px"><div style="font-size:13px;font-weight:700">${esc(a.nombre)}${a.codigo ? ' · ' + esc(a.codigo) : ''}</div><div style="font-size:11px;color:var(--text3)">${esc(a.categoria)}${a.bio_nave_id ? ' · ' + esc(finNave(a.bio_nave_id)) : ''} · mín. ${Number(a.stock_minimo)} · reorden ${Number(a.punto_reorden)}</div></div>
+    <div style="min-width:110px;text-align:right"><div style="font-weight:900;font-variant-numeric:tabular-nums">${Number(a.existencias)} ${esc(a.unidad_medida)}</div><div style="font-size:10px;color:var(--text3)">${finMXN2(a.costo_unitario)} c/u</div></div>
+    <div style="min-width:100px;text-align:right;font-variant-numeric:tabular-nums">${finMXN(Number(a.existencias) * Number(a.costo_unitario))}</div>
+    <div>${finTag(s.t, s.c)}</div>
+    <div style="display:flex;gap:6px">${puede ? `<button class="btn sm" onclick="finMovimiento('${a.id}','entrada')">Entrada</button><button class="btn sm" onclick="finMovimiento('${a.id}','salida')">Salida</button>` : ''}${R.admin ? `<button class="btn sm danger" title="Eliminar" onclick="finEliminarArticulo('${a.id}')">🗑</button>` : ''}</div></div>`; }).join('')
+    : '<div class="empty" style="padding:30px"><div class="empty-sub">Aún no hay artículos en el inventario</div></div>';
+  return h;
+}
+function finNuevoArticulo(){
+  finModal('Nuevo artículo de inventario',
+    finCampo('Nombre *', 'fa-nombre', 'text', '') + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${finCampo('Código', 'fa-codigo', 'text', '')}${finCampo('Unidad de medida', 'fa-um', 'text', 'pza')}</div>` +
+    finSelect('Categoría', 'fa-cat', [['herramienta','Herramienta'],['refaccion','Refacción'],['epp','EPP'],['consumible','Consumible'],['otro','Otro']], 'consumible') +
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${finCampo('Existencia inicial', 'fa-ini', 'number', '0', 'min="0" step="0.001"')}${finCampo('Costo unitario (MXN)', 'fa-costo', 'number', '0', 'min="0" step="0.01"')}</div>` +
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${finCampo('Stock mínimo', 'fa-min', 'number', '0', 'min="0" step="0.001"')}${finCampo('Punto de reorden', 'fa-reo', 'number', '0', 'min="0" step="0.001"')}</div>` +
+    finSelect('Nave / sede', 'fa-nave', finOptNave(), '', 'Sin asignar'),
+    async () => {
+      const nombre = fv('fa-nombre').trim(); if (!nombre) return finErr('Escribe el nombre');
+      const costo = parseFloat(fv('fa-costo')) || 0, ini = parseFloat(fv('fa-ini')) || 0;
+      const { data, error } = await sb.from('fin_inventario_articulos').insert({ nombre, codigo: fv('fa-codigo').trim() || null, unidad_medida: fv('fa-um').trim() || 'pza',
+        categoria: fv('fa-cat'), costo_unitario: costo, stock_minimo: parseFloat(fv('fa-min')) || 0, punto_reorden: parseFloat(fv('fa-reo')) || 0, bio_nave_id: fv('fa-nave') || null }).select().single();
+      if (error) return finErr(error.message);
+      if (ini > 0){
+        const { error: e2 } = await sb.from('fin_inventario_movimientos').insert({ articulo_id: data.id, tipo:'entrada', cantidad: ini, costo_unitario: costo, nota:'Existencia inicial' });
+        if (e2) return finErr('El artículo se creó, pero no la existencia inicial: ' + e2.message);
+      }
+      toast('Artículo creado', 'success'); await finRecargar();
+    }, 'Crear');
+}
+function finMovimiento(id, tipo){
+  const a = FIN.d.art.find(x => x.id === id); if (!a) return;
+  finModal((tipo === 'entrada' ? 'Entrada — ' : 'Salida — ') + a.nombre,
+    `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">Existencia actual: ${Number(a.existencias)} ${esc(a.unidad_medida)}</div>` +
+    finCampo('Cantidad *', 'fm-cant', 'number', '', 'min="0.001" step="0.001"') +
+    (tipo === 'entrada' ? finCampo('Costo unitario de esta compra (MXN)', 'fm-costo', 'number', Number(a.costo_unitario), 'min="0" step="0.01"')
+      : finSelect('Se usó en la unidad (opcional)', 'fm-uni', finOptUni(), '', 'Sin unidad') + '<div style="font-size:10px;color:var(--text3);margin:-4px 0 10px">Si eliges una unidad, el consumo se suma a su gasto de mantenimiento al costo actual.</div>') +
+    finCampo('Nota', 'fm-nota', 'text', ''),
+    async () => {
+      const cant = parseFloat(fv('fm-cant')); if (!(cant > 0)) return finErr('Captura una cantidad mayor a cero');
+      const fila = { articulo_id: id, tipo, cantidad: cant, nota: fv('fm-nota').trim() || null };
+      if (tipo === 'entrada'){ const c = fv('fm-costo'); if (c !== '') fila.costo_unitario = parseFloat(c); } else if (fv('fm-uni')) fila.unidad_id = fv('fm-uni');
+      const { data, error } = await sb.from('fin_inventario_movimientos').insert(fila).select().single();
+      if (error) return finErr(error.message);
+      if (tipo === 'salida' && fila.unidad_id && Number(data.costo_unitario) > 0){
+        const uni = FIN.d.uni.find(u => u.id === fila.unidad_id);
+        const { error: e2 } = await sb.from('fin_gastos_mantenimiento').insert({ unidad_id: fila.unidad_id, bio_nave_id: uni?.bio_nave_id || null, fecha: finHoy(), tipo:'correctivo', categoria:'insumo',
+          descripcion: `${a.nombre} × ${cant}`, monto: Math.round(cant * Number(data.costo_unitario) * 100) / 100 });
+        if (e2) toast('Salida registrada, pero no se pudo sumar al gasto de la unidad: ' + e2.message, 'error');
+      }
+      toast(tipo === 'entrada' ? 'Entrada registrada' : 'Salida registrada', 'success'); await finRecargar();
+    }, 'Registrar');
+}
+function finEliminarArticulo(id){
+  confirmar('¿Eliminar este artículo? Solo es posible si no tiene movimientos.', 'Eliminar artículo', async () => {
+    const { error } = await sb.from('fin_inventario_articulos').delete().eq('id', id);
+    if (error){ toast('No se puede eliminar: tiene movimientos registrados', 'error'); return; } await finRecargar();
+  });
+}
+
+/* ── Calendario financiero (agenda) ── */
+function finCal(){
+  const R = finRol(), d = FIN.d, hoy = finHoy();
+  const lim = new Date(); lim.setDate(lim.getDate() + 90); const limS = `${lim.getFullYear()}-${String(lim.getMonth()+1).padStart(2,'0')}-${String(lim.getDate()).padStart(2,'0')}`;
+  const ev = d.rec.map(r => ({ fecha:r.fecha, titulo:r.titulo, cat:({ pago_proveedor:'Pago a proveedor', poliza:'Póliza de seguro', servicio:'Servicio', verificacion:'Verificación', licencia:'Licencia', otro:'Otro' })[r.categoria], monto:r.monto, rec:r.id, nota:r.descripcion }));
+  if (R.admin || R.captura) d.fact.filter(f => ['pendiente','aprobado','programado'].includes(f.estatus)).forEach(f => {
+    const fecha = f.estatus === 'programado' && f.fecha_programada ? f.fecha_programada : f.fecha_vencimiento; if (!fecha) return;
+    ev.push({ fecha, titulo: `${finProvNom(f.proveedor_id)} · ${f.folio || f.concepto}`, cat: f.estatus === 'programado' ? 'Pago programado' : 'Vence factura', monto: f.monto, auto:true });
+  });
+  const vis = ev.filter(e => e.fecha <= limS).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const grupos = {}; vis.forEach(e => { (grupos[e.fecha] = grupos[e.fecha] || []).push(e); });
+  let h = R.admin ? '<div style="display:flex;margin-bottom:12px"><button class="btn primary ml" onclick="finNuevoRecordatorio()">+ Recordatorio</button></div>' : '';
+  h += Object.keys(grupos).length ? Object.entries(grupos).map(([f, es]) => {
+    const pas = f < hoy;
+    return `<div class="panel" style="padding:12px 14px;margin-bottom:8px"><div style="font-family:var(--head);font-size:11px;font-weight:800;color:${pas ? 'var(--red)' : f === hoy ? 'var(--amber)' : 'var(--text)'};margin-bottom:6px">${new Date(f + 'T00:00:00').toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}${pas ? ' · vencido' : f === hoy ? ' · hoy' : ''}</div>
+      ${es.map(e => `<div style="display:flex;gap:10px;align-items:center;padding:4px 0;flex-wrap:wrap"><div style="flex:1;min-width:180px;font-size:12px">${esc(e.titulo)}${e.nota ? `<div style="font-size:10px;color:var(--text3)">${esc(e.nota)}</div>` : ''}</div>${finTag(e.cat, e.auto ? 'b' : 'm')}<div style="min-width:90px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px">${e.monto != null ? finMXN(e.monto) : ''}</div>${R.admin && e.rec ? `<button class="btn sm danger" onclick="finEliminarRecordatorio('${e.rec}')">🗑</button>` : ''}</div>`).join('')}</div>`;
+  }).join('') : '<div class="empty" style="padding:30px"><div class="empty-sub">Sin compromisos en los próximos 90 días</div></div>';
+  return h;
+}
+function finNuevoRecordatorio(){
+  finModal('Nuevo recordatorio', finCampo('Fecha *', 'fc-fecha', 'date', finHoy()) + finCampo('Título *', 'fc-titulo', 'text', '') +
+    finSelect('Categoría', 'fc-cat', [['pago_proveedor','Pago a proveedor'],['poliza','Póliza de seguro'],['servicio','Servicio (luz, agua…)'],['verificacion','Verificación'],['licencia','Licencia operativa'],['otro','Otro']], 'pago_proveedor') +
+    finCampo('Monto estimado (MXN)', 'fc-monto', 'number', '', 'min="0" step="0.01"') + finArea('Notas', 'fc-nota', ''),
+    async () => {
+      const titulo = fv('fc-titulo').trim(), fecha = fv('fc-fecha'); if (!titulo || !fecha) return finErr('Fecha y título son obligatorios');
+      const m = fv('fc-monto');
+      const { error } = await sb.from('fin_recordatorios').insert({ fecha, titulo, categoria: fv('fc-cat'), monto: m === '' ? null : parseFloat(m), descripcion: fv('fc-nota').trim() || null });
+      if (error) return finErr(error.message); toast('Recordatorio creado', 'success'); await finRecargar();
+    }, 'Crear');
+}
+function finEliminarRecordatorio(id){
+  confirmar('¿Eliminar este recordatorio?', 'Eliminar recordatorio', async () => {
+    const { error } = await sb.from('fin_recordatorios').delete().eq('id', id);
+    if (error){ toast(error.message, 'error'); return; } await finRecargar();
+  });
+}
+
+/* ── Proveedores ── */
+function finProv(){
+  const R = finRol(), d = FIN.d;
+  let h = R.admin ? '<div style="display:flex;margin-bottom:12px"><button class="btn primary ml" onclick="finProvModal()">+ Proveedor</button></div>' : '';
+  h += d.prov.length ? d.prov.map(p => `<div class="panel" style="padding:10px 14px;margin-bottom:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <div style="flex:2;min-width:200px"><div style="font-size:13px;font-weight:700">${esc(p.razon_social)}</div><div style="font-size:11px;color:var(--text3)">${p.rfc ? 'RFC ' + esc(p.rfc) + ' · ' : ''}Crédito ${p.dias_credito} días</div></div>
+    <div style="flex:1;min-width:160px;font-size:11px;color:var(--text2)">${esc(p.contacto_nombre || '')}${p.contacto_tel ? '<br>' + esc(p.contacto_tel) : ''}${p.contacto_email ? '<br>' + esc(p.contacto_email) : ''}</div>
+    <div>${finTag(p.activo ? 'Activo' : 'Inactivo', p.activo ? 'g' : 'm')}</div>
+    <div style="display:flex;gap:6px">${R.admin ? `<button class="btn sm" onclick="finProvModal('${p.id}')">Editar</button>` : ''}</div></div>`).join('')
+    : '<div class="empty" style="padding:30px"><div class="empty-sub">Aún no hay proveedores</div></div>';
+  return h;
+}
+function finProvModal(id){
+  const p = id ? FIN.d.prov.find(x => x.id === id) : null;
+  finModal(p ? 'Editar proveedor' : 'Nuevo proveedor',
+    finCampo('Razón social *', 'fv-rs', 'text', p?.razon_social) + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${finCampo('RFC', 'fv-rfc', 'text', p?.rfc)}${finCampo('Días de crédito', 'fv-cred', 'number', p?.dias_credito ?? 0, 'min="0" max="365"')}</div>` +
+    finCampo('Contacto', 'fv-cn', 'text', p?.contacto_nombre) + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${finCampo('Teléfono', 'fv-ct', 'tel', p?.contacto_tel)}${finCampo('Correo', 'fv-ce', 'email', p?.contacto_email)}</div>` +
+    (p ? finSelect('Estatus', 'fv-act', [['1','Activo'],['0','Inactivo']], p.activo ? '1' : '0') : ''),
+    async () => {
+      const rs = fv('fv-rs').trim(); if (rs.length < 2) return finErr('Escribe la razón social');
+      const fila = { razon_social: rs, rfc: fv('fv-rfc').trim().toUpperCase() || null, dias_credito: parseInt(fv('fv-cred')) || 0, contacto_nombre: fv('fv-cn').trim() || null, contacto_tel: fv('fv-ct').trim() || null, contacto_email: fv('fv-ce').trim() || null };
+      if (p) fila.activo = fv('fv-act') === '1';
+      const { error } = p ? await sb.from('fin_proveedores').update(fila).eq('id', id) : await sb.from('fin_proveedores').insert(fila);
+      if (error) return finErr(error.message); toast('Proveedor guardado', 'success'); await finRecargar();
+    });
+}
+
+/* ── Presupuestos ── */
+function finPres(){
+  const al = finAlertasPres().sort((a, b) => b.pct - a.pct), hoy = finHoy();
+  let h = `<div style="display:flex;margin-bottom:12px;align-items:center"><div style="font-size:12px;color:var(--text3)">Tope mensual de mantenimiento — ${FIN_MESES[+hoy.slice(5,7)-1]} ${hoy.slice(0,4)}</div><button class="btn primary ml" onclick="finNuevoPresupuesto()">+ Presupuesto</button></div>`;
+  h += al.length ? al.map(a => `<div class="panel" style="padding:12px 14px;margin-bottom:8px"><div style="display:flex;gap:10px;align-items:center;margin-bottom:6px"><div style="font-size:13px;font-weight:700;flex:1">${esc(a.nombre)}</div><div style="font-size:12px;font-variant-numeric:tabular-nums">${finMXN(a.gasto)} de ${finMXN(a.tope)} · ${a.pct > 900 ? '—' : Math.round(a.pct) + '%'}</div><button class="btn sm danger" onclick="finEliminarPres('${a.id}')">🗑</button></div>
+    <div style="background:var(--surface2,#2a2a2a);height:10px;border-radius:5px;overflow:hidden"><div style="height:100%;width:${Math.min(100, a.pct)}%;background:${a.pct >= 100 ? 'var(--red)' : a.pct >= 80 ? 'var(--amber)' : 'var(--green)'}"></div></div></div>`).join('')
+    : '<div class="empty" style="padding:30px"><div class="empty-sub">No hay presupuestos para este mes</div></div>';
+  const otros = FIN.d.pre.filter(p => !(p.anio === +hoy.slice(0, 4) && p.mes === +hoy.slice(5, 7)));
+  if (otros.length) h += `<div style="font-size:11px;color:var(--text3);margin:12px 0 6px">Otros periodos</div>` + otros.sort((a, b) => b.anio * 100 + b.mes - a.anio * 100 - a.mes).map(p => `<div class="panel" style="padding:8px 14px;margin-bottom:6px;display:flex;gap:10px;align-items:center;font-size:12px"><div style="flex:1">${esc(p.unidad_id ? 'Unidad ' + finUnidad(p.unidad_id) : finNave(p.bio_nave_id))} · ${FIN_MESES[p.mes - 1]} ${p.anio}</div><div>${finMXN(p.monto_tope)}</div><button class="btn sm danger" onclick="finEliminarPres('${p.id}')">🗑</button></div>`).join('');
+  return h;
+}
+function finNuevoPresupuesto(){
+  const hoy = finHoy();
+  finModal('Nuevo presupuesto mensual', `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">Elige una nave o una unidad (solo una).</div>` +
+    finSelect('Nave / sede', 'fb-nave', finOptNave(), '', '—') + finSelect('Unidad', 'fb-uni', finOptUni(), '', '—') +
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${finCampo('Año', 'fb-anio', 'number', hoy.slice(0, 4), 'min="2024" max="2100"')}${finSelect('Mes', 'fb-mes', FIN_MESES.map((m, i) => [String(i + 1), m]), String(+hoy.slice(5, 7)))}</div>` +
+    finCampo('Monto tope (MXN) *', 'fb-monto', 'number', '', 'min="0" step="0.01"'),
+    async () => {
+      const nave = fv('fb-nave'), uni = fv('fb-uni'), monto = parseFloat(fv('fb-monto'));
+      if ((!nave && !uni) || (nave && uni)) return finErr('Elige una nave o una unidad, no ambas');
+      if (!(monto >= 0)) return finErr('Captura el monto tope');
+      const { error } = await sb.from('fin_presupuestos').insert({ bio_nave_id: nave || null, unidad_id: uni || null, anio: parseInt(fv('fb-anio')), mes: parseInt(fv('fb-mes')), monto_tope: monto });
+      if (error) return finErr(error.code === '23505' ? 'Ya existe un presupuesto para ese periodo' : error.message);
+      toast('Presupuesto guardado', 'success'); await finRecargar();
+    });
+}
+function finEliminarPres(id){
+  confirmar('¿Eliminar este presupuesto?', 'Eliminar presupuesto', async () => {
+    const { error } = await sb.from('fin_presupuestos').delete().eq('id', id);
+    if (error){ toast(error.message, 'error'); return; } await finRecargar();
+  });
+}
+
 // ═══════════════════════════════════════════════════════════════════
 function nav(page, el){
   marcarInicioModulo(page);
@@ -4484,7 +5118,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo' };
+  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio Muro' };
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
   if (page === 'sites') renderSites();
@@ -4498,6 +5132,7 @@ function nav(page, el){
   if (page === 'kpis') renderKPIs();
   if (page === 'procesos') renderProcesos();
   if (page === 'muro') renderMuro();
+  if (page === 'finanzas') renderFinanzas();
   if (page === 'miasistencia') renderMiAsistencia();
   if (page === 'equipoasis') renderEquipoAsistencia();
   if (page === 'compliance') renderCompliance();
@@ -8006,38 +8641,8 @@ async function renderProcesos(){
 }
 
 /* ── Muro de publicaciones — solo RH/Dirección publican, todos ven ── */
-function abrirNuevaPublicacion(){
-  document.getElementById('pub-categoria').value = 'Aviso';
-  document.getElementById('pub-contenido').value = '';
-  document.getElementById('pub-fijado').checked = false;
-  document.getElementById('err-publicacion').classList.remove('show');
-  openModal('modal-publicacion');
-}
 
-async function guardarPublicacion(){
-  const contenido = document.getElementById('pub-contenido').value.trim();
-  const err = document.getElementById('err-publicacion');
-  if (!contenido){ err.textContent = 'Escribe el contenido'; err.classList.add('show'); return; }
-  const { error } = await sb.from('publicaciones').insert({
-    autor_id: currentUser.userId, autor_nombre: currentUser.name,
-    categoria: document.getElementById('pub-categoria').value,
-    contenido, fijado: document.getElementById('pub-fijado').checked
-  });
-  if (error){ err.textContent = error.message; err.classList.add('show'); return; }
-  await audit('config', 'Publicación nueva en el muro', 'g');
-  closeModal('modal-publicacion');
-  renderMuro();
-  toast('Publicado','success');
-}
 
-function eliminarPublicacion(id){
-  confirmar('¿Eliminar esta publicación?', 'Eliminar publicación', async ()=>{
-    const { error } = await sb.from('publicaciones').delete().eq('id', id);
-    if (error){ toast(error.message,'error'); return; }
-    renderMuro();
-    toast('Publicación eliminada','info');
-  });
-}
 
 async function toggleReaccionMuro(pubId){
   const { data: existente } = await sb.from('publicacion_reacciones').select('*').eq('publicacion_id', pubId).eq('usuario_id', currentUser.userId).maybeSingle();
@@ -8068,10 +8673,209 @@ function eliminarComentarioMuro(id){
   });
 }
 
+
+/* ── Fotos de perfil — privadas, se muestran a cuentas con sesión; las imágenes se descargan
+   y se muestran como blob local (no se abre ningún dominio externo). ── */
+const AV = { dir:{}, blobs:{}, ts:0, cargando:false };
+function avIniciales(n){ return (n||'?').trim().split(/\s+/).map(x=>x[0]).join('').substring(0,2).toUpperCase(); }
+async function avBlob(bucket, path){
+  const k = bucket + '/' + path;
+  if (AV.blobs[k]) return AV.blobs[k];
+  try {
+    const { data, error } = await sb.storage.from(bucket).download(path);
+    if (error || !data) return null;
+    return (AV.blobs[k] = URL.createObjectURL(data));
+  } catch(e){ return null; }
+}
+async function cargarDirectorioAvatares(force){
+  if (AV.cargando) return;
+  if (!force && Date.now() - AV.ts < 120000) return;
+  AV.cargando = true;
+  try {
+    const { data } = await sb.rpc('directorio_basico');
+    AV.dir = {}; (data||[]).forEach(u => { AV.dir[u.id] = u; });
+    const pend = (data||[]).filter(u => u.avatar_path && !AV.blobs['avatares/' + u.avatar_path]);
+    for (let i = 0; i < pend.length; i += 6) await Promise.all(pend.slice(i, i + 6).map(u => avBlob('avatares', u.avatar_path)));
+    AV.ts = Date.now();
+  } catch(e){ /* sin foto: se muestran iniciales */ }
+  finally { AV.cargando = false; }
+  refrescarAvatarPropio();
+  if (document.getElementById('page-muro')?.classList.contains('active')) renderMuro();
+}
+function avUrl(userId){
+  const u = AV.dir[userId];
+  return u && u.avatar_path ? (AV.blobs['avatares/' + u.avatar_path] || null) : null;
+}
+function avatarHtml(userId, nombre, size){
+  size = size || 36;
+  const url = avUrl(userId);
+  const st = `width:${size}px;height:${size}px;border-radius:50%;flex-shrink:0;`;
+  if (url) return `<img src="${url}" alt="" style="${st}object-fit:cover;background:var(--surface)">`;
+  return `<span style="${st}display:inline-flex;align-items:center;justify-content:center;background:var(--green3);color:#fff;font-family:var(--head);font-weight:900;font-size:${Math.round(size*.38)}px">${esc(avIniciales(nombre || AV.dir[userId]?.nombre))}</span>`;
+}
+function refrescarAvatarPropio(){
+  if (!currentUser) return;
+  const el = document.getElementById('sb-av');
+  if (el){
+    const url = avUrl(currentUser.userId);
+    el.style.overflow = 'hidden';
+    if (url) el.innerHTML = `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+    else el.textContent = currentUser.initials;
+  }
+  actualizarFotoMiCuenta();
+}
+function actualizarFotoMiCuenta(){
+  const c = document.getElementById('mc-foto');
+  if (c && currentUser) c.innerHTML = avatarHtml(currentUser.userId, currentUser.name, 64);
+}
+function redimensionarImagen(file, max, calidad, cuadrado){
+  return new Promise((res, rej) => {
+    const img = new Image(); const u = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(u);
+      let sw = img.width, sh = img.height, sx = 0, sy = 0, dw, dh;
+      if (cuadrado){ const s = Math.min(sw, sh); sx = (sw - s) / 2; sy = (sh - s) / 2; sw = sh = s; dw = dh = Math.min(max, s); }
+      else { const k = Math.min(1, max / Math.max(sw, sh)); dw = Math.round(sw * k); dh = Math.round(sh * k); }
+      const c = document.createElement('canvas'); c.width = dw; c.height = dh;
+      const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, dw, dh);
+      cx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+      c.toBlob(b => b ? res(b) : rej(new Error('No se pudo procesar la imagen')), 'image/jpeg', calidad);
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('Imagen no válida')); };
+    img.src = u;
+  });
+}
+async function elegirFotoPerfil(input){
+  const f = input.files && input.files[0]; input.value = '';
+  if (!f) return;
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)){ toast('Elige una imagen JPG, PNG o WebP','error'); return; }
+  try {
+    const blob = await redimensionarImagen(f, 400, 0.85, true);
+    const path = `${currentUser.userId}/perfil-${Date.now()}.jpg`;
+    const { error } = await sb.storage.from('avatares').upload(path, blob, { contentType:'image/jpeg', upsert:true });
+    if (error) throw error;
+    const viejo = AV.dir[currentUser.userId]?.avatar_path;
+    const { error: e2 } = await sb.from('profiles').update({ avatar_path: path }).eq('id', currentUser.userId);
+    if (e2) throw e2;
+    if (viejo) sb.storage.from('avatares').remove([viejo]);
+    await cargarDirectorioAvatares(true);
+    toast('Foto de perfil actualizada','success');
+  } catch(e){ toast('No se pudo subir la foto: ' + (e.message || e), 'error'); }
+}
+async function quitarFotoPerfil(){
+  const viejo = AV.dir[currentUser.userId]?.avatar_path;
+  if (!viejo){ toast('Aún no tienes foto de perfil','info'); return; }
+  const { error } = await sb.from('profiles').update({ avatar_path: null }).eq('id', currentUser.userId);
+  if (error){ toast(error.message,'error'); return; }
+  sb.storage.from('avatares').remove([viejo]);
+  await cargarDirectorioAvatares(true);
+  toast('Foto eliminada','info');
+}
+
+/* ── Bio Muro — solo RH/Dirección publican (texto + imágenes), todos ven, reaccionan y comentan ── */
+let _pubImgs = [];
+function tiempoRel(iso){
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (s < 60) return 'hace un momento';
+  if (s < 3600) return `hace ${Math.floor(s/60)} min`;
+  if (s < 86400) return `hace ${Math.floor(s/3600)} h`;
+  if (s < 604800) return `hace ${Math.floor(s/86400)} d`;
+  return new Date(iso).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' });
+}
+function abrirNuevaPublicacion(conFoto){
+  document.getElementById('pub-categoria').value = 'Aviso';
+  document.getElementById('pub-contenido').value = '';
+  document.getElementById('pub-fijado').checked = false;
+  document.getElementById('err-publicacion').classList.remove('show');
+  _pubImgs.forEach(m => URL.revokeObjectURL(m.url)); _pubImgs = [];
+  renderPubPreview();
+  const pa = document.getElementById('pub-autor');
+  if (pa) pa.innerHTML = `${avatarHtml(currentUser.userId, currentUser.name, 40)}<div style="font-size:13px;font-weight:700">${esc(currentUser.name)}</div>`;
+  openModal('modal-publicacion');
+  if (conFoto === true) document.getElementById('pub-imgs-input').click();
+}
+async function agregarImagenesPub(input){
+  const files = [...input.files]; input.value = '';
+  for (const f of files){
+    if (_pubImgs.length >= 4){ toast('Máximo 4 imágenes por publicación','info'); break; }
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)){ toast('Solo imágenes JPG, PNG o WebP','error'); continue; }
+    try { const blob = await redimensionarImagen(f, 1600, 0.85, false); _pubImgs.push({ blob, url: URL.createObjectURL(blob) }); }
+    catch(e){ toast('No se pudo leer la imagen','error'); }
+  }
+  renderPubPreview();
+}
+function quitarImagenPub(i){ URL.revokeObjectURL(_pubImgs[i].url); _pubImgs.splice(i, 1); renderPubPreview(); }
+function renderPubPreview(){
+  const c = document.getElementById('pub-imgs-prev'); if (!c) return;
+  c.innerHTML = _pubImgs.map((m, i) => `<div style="position:relative;width:84px;height:84px"><img src="${m.url}" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:8px"><span onclick="quitarImagenPub(${i})" title="Quitar" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.65);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px">✕</span></div>`).join('');
+}
+
+async function guardarPublicacion(){
+  const contenido = document.getElementById('pub-contenido').value.trim();
+  const err = document.getElementById('err-publicacion');
+  const falla = m => { err.textContent = m; err.classList.add('show'); };
+  if (currentUser.role !== 'rh' && currentUser.role !== 'direccion_ceo'){ falla('Solo RH y Dirección pueden publicar'); return; }
+  if (!contenido && !_pubImgs.length){ falla('Escribe algo o agrega una imagen'); return; }
+  const btn = document.getElementById('pub-guardar'); btn.disabled = true;
+  const pid = crypto.randomUUID(); const paths = [];
+  try {
+    for (let i = 0; i < _pubImgs.length; i++){
+      const p = `${pid}/${i + 1}.jpg`;
+      const { error } = await sb.storage.from('muro').upload(p, _pubImgs[i].blob, { contentType:'image/jpeg' });
+      if (error) throw error;
+      paths.push(p);
+    }
+    const { error } = await sb.from('publicaciones').insert({
+      id: pid, autor_id: currentUser.userId, autor_nombre: currentUser.name,
+      categoria: document.getElementById('pub-categoria').value,
+      contenido, fijado: document.getElementById('pub-fijado').checked, imagenes: paths
+    });
+    if (error){ if (paths.length) await sb.storage.from('muro').remove(paths); throw error; }
+  } catch(e){ falla(e.message || String(e)); btn.disabled = false; return; }
+  btn.disabled = false;
+  _pubImgs.forEach(m => URL.revokeObjectURL(m.url)); _pubImgs = [];
+  await audit('config', 'Publicación nueva en el muro' + (paths.length ? ` (${paths.length} imagen${paths.length>1?'es':''})` : ''), 'g');
+  closeModal('modal-publicacion');
+  renderMuro();
+  toast('Publicado','success');
+}
+
+function eliminarPublicacion(id){
+  confirmar('¿Eliminar esta publicación?', 'Eliminar publicación', async ()=>{
+    const { data: pub } = await sb.from('publicaciones').select('imagenes').eq('id', id).maybeSingle();
+    const { error } = await sb.from('publicaciones').delete().eq('id', id);
+    if (error){ toast(error.message,'error'); return; }
+    if (pub?.imagenes?.length) sb.storage.from('muro').remove(pub.imagenes);
+    renderMuro();
+    toast('Publicación eliminada','info');
+  });
+}
+
+function verImagenMuro(u){
+  const o = document.createElement('div');
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:20px';
+  o.innerHTML = `<img src="${u}" alt="" style="max-width:100%;max-height:100%;border-radius:6px">`;
+  const cerrar = () => { o.remove(); document.removeEventListener('keydown', esc_); };
+  const esc_ = e => { if (e.key === 'Escape') cerrar(); };
+  o.onclick = cerrar; document.addEventListener('keydown', esc_);
+  document.body.appendChild(o);
+}
+function muroGrid(p){
+  const im = (p.imagenes || []).map(r => AV.blobs['muro/' + r]).filter(Boolean);
+  if (!im.length) return '';
+  const n = im.length;
+  return `<div style="display:grid;grid-template-columns:${n === 1 ? '1fr' : '1fr 1fr'};gap:2px;margin:0 -16px 10px">` +
+    im.map((u, i) => `<img src="${u}" alt="" onclick="verImagenMuro(this.src)" style="width:100%;display:block;cursor:zoom-in;object-fit:cover;${n === 1 ? 'max-height:520px' : 'height:230px'};${n === 3 && i === 0 ? 'grid-column:1/3;' : ''}">`).join('') + '</div>';
+}
+
 async function renderMuro(){
   const esRhODireccion = currentUser.role === 'rh' || currentUser.role === 'direccion_ceo';
-  document.getElementById('muro-nueva-btn').style.display = esRhODireccion ? 'inline-flex' : 'none';
-
+  const comp = document.getElementById('muro-composer');
+  comp.style.display = esRhODireccion ? 'block' : 'none';
+  if (esRhODireccion){
+    document.getElementById('muro-comp-av').innerHTML = avatarHtml(currentUser.userId, currentUser.name, 40);
+    document.getElementById('muro-comp-txt').textContent = `¿Qué quieres compartir, ${currentUser.name.split(' ')[0]}?`;
+  }
   renderAvisoAsistenciaMuro();
   await renderCelebracionesMuro();
 
@@ -8086,29 +8890,40 @@ async function renderMuro(){
     cont.innerHTML = '<div class="empty" style="padding:30px"><div class="empty-sub">Sin publicaciones aún</div></div>';
     return;
   }
+  await Promise.all(pubs.flatMap(p => p.imagenes || []).map(r => avBlob('muro', r)));
   cont.innerHTML = pubs.map(p => {
-    const reacs = (reacciones||[]).filter(r=>r.publicacion_id===p.id);
-    const yoReaccione = reacs.some(r=>r.usuario_id===currentUser.userId);
-    const coms = (comentarios||[]).filter(c=>c.publicacion_id===p.id);
-    return `<div class="panel" style="padding:16px">
-      ${p.fijado ? '<span class="tag a" style="margin-bottom:8px;display:inline-block">📌 Fijado</span>' : ''}
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span class="tag b">${esc(p.categoria)}</span>
-        <div style="font-size:10px;color:var(--text3)">${esc(p.autor_nombre||'—')} · ${new Date(p.created_at).toLocaleDateString('es-MX')}</div>
-        ${esRhODireccion ? `<button class="btn sm danger ml" onclick="eliminarPublicacion('${p.id}')">🗑</button>` : ''}
+    const reacs = (reacciones||[]).filter(r => r.publicacion_id === p.id);
+    const yoReaccione = reacs.some(r => r.usuario_id === currentUser.userId);
+    const coms = (comentarios||[]).filter(c => c.publicacion_id === p.id);
+    return `<div class="panel" style="padding:16px;margin-bottom:0">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        ${avatarHtml(p.autor_id, p.autor_nombre, 40)}
+        <div style="min-width:0;flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(p.autor_nombre||'—')}</div>
+          <div style="font-size:10px;color:var(--text3)">${tiempoRel(p.created_at)} · <span class="tag b" style="padding:1px 6px">${esc(p.categoria)}</span>${p.fijado ? ' · 📌 Fijado' : ''}</div>
+        </div>
+        ${esRhODireccion ? `<button class="btn sm danger" title="Eliminar" onclick="eliminarPublicacion('${p.id}')">🗑</button>` : ''}
       </div>
-      <div style="font-size:13px;white-space:pre-wrap;margin-bottom:10px">${esc(p.contenido)}</div>
-      <div style="display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:8px">
-        <button class="btn sm ${yoReaccione?'primary':''}" onclick="toggleReaccionMuro('${p.id}')">❤️ ${reacs.length||''}</button>
-        <span style="font-size:10px;color:var(--text3)">${coms.length} comentario${coms.length!==1?'s':''}</span>
+      ${p.contenido ? `<div style="font-size:14px;line-height:1.5;white-space:pre-wrap;margin-bottom:10px">${esc(p.contenido)}</div>` : ''}
+      ${muroGrid(p)}
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding:2px 0 8px">
+        <span>${reacs.length ? '👍 ' + reacs.length : ''}</span><span>${coms.length ? coms.length + ' comentario' + (coms.length!==1?'s':'') : ''}</span>
       </div>
-      <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
-        ${coms.map(c=>`<div style="font-size:11px;background:var(--surface2,#2a2a2a);border-radius:8px;padding:6px 10px">
-          <strong>${esc(c.autor_nombre||'—')}:</strong> ${esc(c.contenido)}
-          ${(c.autor_id===currentUser.userId||esRhODireccion) ? ` <span onclick="eliminarComentarioMuro('${c.id}')" style="color:var(--text3);cursor:pointer;float:right">✕</span>` : ''}
-        </div>`).join('')}
-        <div style="display:flex;gap:6px;margin-top:4px">
-          <input class="form-input" id="muro-comentario-${p.id}" placeholder="Escribe un comentario..." style="flex:1;font-size:11px;padding:6px 8px" onkeydown="if(event.key==='Enter')agregarComentarioMuro('${p.id}')">
+      <div style="display:flex;gap:6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 0">
+        <button class="btn sm ${yoReaccione?'primary':''}" style="flex:1;justify-content:center;border:none" onclick="toggleReaccionMuro('${p.id}')">👍 Me gusta</button>
+        <button class="btn sm" style="flex:1;justify-content:center;border:none" onclick="document.getElementById('muro-comentario-${p.id}').focus()">💬 Comentar</button>
+      </div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+        ${coms.map(c => `<div style="display:flex;gap:8px;align-items:flex-start">
+          ${avatarHtml(c.autor_id, c.autor_nombre, 28)}
+          <div style="font-size:12px;background:var(--surface2,#2a2a2a);border-radius:14px;padding:6px 12px;flex:1">
+            <strong>${esc(c.autor_nombre||'—')}</strong> <span style="color:var(--text3);font-size:10px">${tiempoRel(c.created_at)}</span>
+            ${(c.autor_id===currentUser.userId||esRhODireccion) ? ` <span onclick="eliminarComentarioMuro('${c.id}')" style="color:var(--text3);cursor:pointer;float:right">✕</span>` : ''}
+            <div style="white-space:pre-wrap">${esc(c.contenido)}</div>
+          </div></div>`).join('')}
+        <div style="display:flex;gap:8px;align-items:center">
+          ${avatarHtml(currentUser.userId, currentUser.name, 28)}
+          <input class="form-input" id="muro-comentario-${p.id}" placeholder="Escribe un comentario..." style="flex:1;font-size:12px;padding:7px 12px;border-radius:999px" onkeydown="if(event.key==='Enter')agregarComentarioMuro('${p.id}')">
           <button class="btn sm" onclick="agregarComentarioMuro('${p.id}')">➤</button>
         </div>
       </div>
