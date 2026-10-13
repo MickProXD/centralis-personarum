@@ -1179,6 +1179,7 @@ select.form-input option{background:var(--bg2)}
   <div id="page-muro" class="page fadein" style="max-width:680px;margin:0 auto">
     <div class="row" style="margin-bottom:14px">
       <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Bio Muro</div>
+      <button class="btn sm ml" id="muro-filtro-btn" style="display:none" onclick="abrirFiltroPalabras()">🛡 Filtro de palabras</button>
     </div>
     <div id="muro-composer" class="panel" style="display:none;padding:12px 14px">
       <div style="display:flex;gap:10px;align-items:center">
@@ -1460,6 +1461,28 @@ select.form-input option{background:var(--bg2)}
     <div class="role-sel-modal">
       <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Elige un perfil para ver la plataforma como la ve esa persona: menús, secciones y botones. Es solo para revisar la estructura de jerarquías: tus permisos y los datos reales siguen siendo los de Dirección, y todo se restablece al recargar.</div>
       <div id="vista-cards"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PUBLICACIÓN ABIERTA -->
+<div class="overlay" id="modal-post" onclick="if(event.target===this)cerrarPublicacion()">
+  <div class="modal" style="width:640px">
+    <div class="modal-head"><div class="modal-title">Publicación</div>
+      <button class="modal-close" onclick="cerrarPublicacion()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+    <div class="modal-body" id="pd-body"></div>
+  </div>
+</div>
+
+<!-- FILTRO DE PALABRAS (Dirección) -->
+<div class="overlay" id="modal-palabras" onclick="if(event.target===this)closeModal('modal-palabras')">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Filtro de palabras</div>
+      <button class="modal-close" onclick="closeModal('modal-palabras')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Las palabras de esta lista se ocultan con asteriscos en publicaciones, comentarios y chat. No distingue mayúsculas ni acentos. Toca una palabra para quitarla.</div>
+      <div id="pf-lista" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px"><input class="form-input" id="pf-nueva" placeholder="Palabra o frase a ocultar" maxlength="60" style="flex:1" onkeydown="if(event.key==='Enter')agregarPalabraFiltro()"><button class="btn primary" onclick="agregarPalabraFiltro()">Agregar</button></div>
     </div>
   </div>
 </div>
@@ -8644,34 +8667,8 @@ async function renderProcesos(){
 
 
 
-async function toggleReaccionMuro(pubId){
-  const { data: existente } = await sb.from('publicacion_reacciones').select('*').eq('publicacion_id', pubId).eq('usuario_id', currentUser.userId).maybeSingle();
-  if (existente){
-    await sb.from('publicacion_reacciones').delete().eq('publicacion_id', pubId).eq('usuario_id', currentUser.userId);
-  } else {
-    await sb.from('publicacion_reacciones').insert({ publicacion_id: pubId, usuario_id: currentUser.userId });
-  }
-  renderMuro();
-}
 
-async function agregarComentarioMuro(pubId){
-  const input = document.getElementById('muro-comentario-'+pubId);
-  const texto = input.value.trim();
-  if (!texto) return;
-  input.value = '';
-  const { error } = await sb.from('publicacion_comentarios').insert({
-    publicacion_id: pubId, autor_id: currentUser.userId, autor_nombre: currentUser.name, contenido: texto
-  });
-  if (error){ toast(error.message,'error'); return; }
-  renderMuro();
-}
 
-function eliminarComentarioMuro(id){
-  confirmar('¿Eliminar este comentario?', 'Eliminar comentario', async ()=>{
-    await sb.from('publicacion_comentarios').delete().eq('id', id);
-    renderMuro();
-  });
-}
 
 
 /* ── Fotos de perfil — privadas, se muestran a cuentas con sesión; las imágenes se descargan
@@ -8825,12 +8822,13 @@ async function guardarPublicacion(){
       if (error) throw error;
       paths.push(p);
     }
-    const { error } = await sb.from('publicaciones').insert({
+    const { data: creada, error } = await sb.from('publicaciones').insert({
       id: pid, autor_id: currentUser.userId, autor_nombre: currentUser.name,
       categoria: document.getElementById('pub-categoria').value,
       contenido, fijado: document.getElementById('pub-fijado').checked, imagenes: paths
-    });
+    }).select('contenido').single();
     if (error){ if (paths.length) await sb.storage.from('muro').remove(paths); throw error; }
+    if (creada && creada.contenido !== contenido) toast('Se ocultaron palabras no permitidas en la publicación','info');
   } catch(e){ falla(e.message || String(e)); btn.disabled = false; return; }
   btn.disabled = false;
   _pubImgs.forEach(m => URL.revokeObjectURL(m.url)); _pubImgs = [];
@@ -8868,11 +8866,33 @@ function muroGrid(p){
     im.map((u, i) => `<img src="${u}" alt="" onclick="verImagenMuro(this.src)" style="width:100%;display:block;cursor:zoom-in;object-fit:cover;${n === 1 ? 'max-height:520px' : 'height:230px'};${n === 3 && i === 0 ? 'grid-column:1/3;' : ''}">`).join('') + '</div>';
 }
 
+
+/* ── Bio Muro: vista previa en el muro, publicación completa al abrirla.
+   Público general: solo reacciones positivas. Solo RH y Dirección comentan. Texto filtrado en el servidor. ── */
+const MURO = { pubs:[], reacs:[], coms:[], abierta:null };
+const MURO_REAC = [['me_gusta','👍','Me gusta'], ['me_encanta','❤️','Me encanta'], ['celebro','🎉','Lo celebro'], ['aplauso','👏','Aplausos']];
+const muroEsRHoDir = () => currentUser.role === 'rh' || currentUser.role === 'direccion_ceo';
+
+function muroBarraReacciones(p){
+  const mias = MURO.reacs.find(r => r.publicacion_id === p.id && r.usuario_id === currentUser.userId);
+  return MURO_REAC.map(([k, emo, lbl]) => {
+    const n = MURO.reacs.filter(r => r.publicacion_id === p.id && (r.tipo || 'me_gusta') === k).length;
+    const sel = mias && (mias.tipo || 'me_gusta') === k;
+    return `<button class="btn sm ${sel ? 'primary' : ''}" title="${lbl}" style="border:none;flex:1;justify-content:center" onclick="event.stopPropagation();reaccionarMuro('${p.id}','${k}')">${emo}${n ? ' ' + n : ''}</button>`;
+  }).join('');
+}
+function muroResumenReacciones(p){
+  const rs = MURO.reacs.filter(r => r.publicacion_id === p.id);
+  if (!rs.length) return '';
+  const emos = MURO_REAC.filter(([k]) => rs.some(r => (r.tipo || 'me_gusta') === k)).map(([, e]) => e).join('');
+  return `${emos} ${rs.length}`;
+}
 async function renderMuro(){
-  const esRhODireccion = currentUser.role === 'rh' || currentUser.role === 'direccion_ceo';
+  const esRH = muroEsRHoDir();
   const comp = document.getElementById('muro-composer');
-  comp.style.display = esRhODireccion ? 'block' : 'none';
-  if (esRhODireccion){
+  comp.style.display = esRH ? 'block' : 'none';
+  const fb = document.getElementById('muro-filtro-btn'); if (fb) fb.style.display = esDireccionReal() && currentUser.role === 'direccion_ceo' ? 'inline-flex' : 'none';
+  if (esRH){
     document.getElementById('muro-comp-av').innerHTML = avatarHtml(currentUser.userId, currentUser.name, 40);
     document.getElementById('muro-comp-txt').textContent = `¿Qué quieres compartir, ${currentUser.name.split(' ')[0]}?`;
   }
@@ -8884,17 +8904,19 @@ async function renderMuro(){
     sb.from('publicacion_reacciones').select('*'),
     sb.from('publicacion_comentarios').select('*').order('created_at')
   ]);
-
+  MURO.pubs = pubs || []; MURO.reacs = reacciones || []; MURO.coms = comentarios || [];
   const cont = document.getElementById('muro-list');
-  if (!pubs || !pubs.length){
+  if (!MURO.pubs.length){
     cont.innerHTML = '<div class="empty" style="padding:30px"><div class="empty-sub">Sin publicaciones aún</div></div>';
     return;
   }
-  await Promise.all(pubs.flatMap(p => p.imagenes || []).map(r => avBlob('muro', r)));
-  cont.innerHTML = pubs.map(p => {
-    const reacs = (reacciones||[]).filter(r => r.publicacion_id === p.id);
-    const yoReaccione = reacs.some(r => r.usuario_id === currentUser.userId);
-    const coms = (comentarios||[]).filter(c => c.publicacion_id === p.id);
+  // Vista previa: solo la primera imagen de cada publicación
+  await Promise.all(MURO.pubs.map(p => (p.imagenes || [])[0]).filter(Boolean).map(r => avBlob('muro', r)));
+  cont.innerHTML = MURO.pubs.map(p => {
+    const coms = MURO.coms.filter(c => c.publicacion_id === p.id);
+    const imgs = p.imagenes || [];
+    const portada = imgs[0] ? AV.blobs['muro/' + imgs[0]] : null;
+    const largo = (p.contenido || '').length > 220 || (p.contenido || '').split('\n').length > 4;
     return `<div class="panel" style="padding:16px;margin-bottom:0">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         ${avatarHtml(p.autor_id, p.autor_nombre, 40)}
@@ -8902,33 +8924,121 @@ async function renderMuro(){
           <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(p.autor_nombre||'—')}</div>
           <div style="font-size:10px;color:var(--text3)">${tiempoRel(p.created_at)} · <span class="tag b" style="padding:1px 6px">${esc(p.categoria)}</span>${p.fijado ? ' · 📌 Fijado' : ''}</div>
         </div>
-        ${esRhODireccion ? `<button class="btn sm danger" title="Eliminar" onclick="eliminarPublicacion('${p.id}')">🗑</button>` : ''}
+        ${esRH ? `<button class="btn sm danger" title="Eliminar" onclick="event.stopPropagation();eliminarPublicacion('${p.id}')">🗑</button>` : ''}
       </div>
-      ${p.contenido ? `<div style="font-size:14px;line-height:1.5;white-space:pre-wrap;margin-bottom:10px">${esc(p.contenido)}</div>` : ''}
-      ${muroGrid(p)}
+      <div onclick="abrirPublicacion('${p.id}')" style="cursor:pointer">
+        ${p.contenido ? `<div style="font-size:14px;line-height:1.5;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px">${esc(p.contenido)}</div>` : ''}
+        ${largo ? '<div style="font-size:12px;color:var(--green);font-weight:700;margin-bottom:8px">Ver publicación completa</div>' : ''}
+        ${portada ? `<div style="position:relative;margin:0 -16px 8px"><img src="${portada}" alt="" style="width:100%;display:block;max-height:340px;object-fit:cover">${imgs.length > 1 ? `<span style="position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.7);color:#fff;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700">+${imgs.length - 1} foto${imgs.length > 2 ? 's' : ''}</span>` : ''}</div>` : ''}
+      </div>
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);padding:2px 0 8px">
-        <span>${reacs.length ? '👍 ' + reacs.length : ''}</span><span>${coms.length ? coms.length + ' comentario' + (coms.length!==1?'s':'') : ''}</span>
+        <span>${muroResumenReacciones(p)}</span><span>${coms.length ? coms.length + ' comentario' + (coms.length !== 1 ? 's' : '') : ''}</span>
       </div>
-      <div style="display:flex;gap:6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 0">
-        <button class="btn sm ${yoReaccione?'primary':''}" style="flex:1;justify-content:center;border:none" onclick="toggleReaccionMuro('${p.id}')">👍 Me gusta</button>
-        <button class="btn sm" style="flex:1;justify-content:center;border:none" onclick="document.getElementById('muro-comentario-${p.id}').focus()">💬 Comentar</button>
-      </div>
-      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
-        ${coms.map(c => `<div style="display:flex;gap:8px;align-items:flex-start">
-          ${avatarHtml(c.autor_id, c.autor_nombre, 28)}
-          <div style="font-size:12px;background:var(--surface2,#2a2a2a);border-radius:14px;padding:6px 12px;flex:1">
-            <strong>${esc(c.autor_nombre||'—')}</strong> <span style="color:var(--text3);font-size:10px">${tiempoRel(c.created_at)}</span>
-            ${(c.autor_id===currentUser.userId||esRhODireccion) ? ` <span onclick="eliminarComentarioMuro('${c.id}')" style="color:var(--text3);cursor:pointer;float:right">✕</span>` : ''}
-            <div style="white-space:pre-wrap">${esc(c.contenido)}</div>
-          </div></div>`).join('')}
-        <div style="display:flex;gap:8px;align-items:center">
-          ${avatarHtml(currentUser.userId, currentUser.name, 28)}
-          <input class="form-input" id="muro-comentario-${p.id}" placeholder="Escribe un comentario..." style="flex:1;font-size:12px;padding:7px 12px;border-radius:999px" onkeydown="if(event.key==='Enter')agregarComentarioMuro('${p.id}')">
-          <button class="btn sm" onclick="agregarComentarioMuro('${p.id}')">➤</button>
-        </div>
+      <div style="display:flex;gap:4px;border-top:1px solid var(--border);padding-top:4px">
+        ${muroBarraReacciones(p)}
+        <button class="btn sm" style="border:none;flex:1.4;justify-content:center" onclick="abrirPublicacion('${p.id}', ${esRH})">${esRH ? '💬 Comentar' : '👁 Abrir'}</button>
       </div>
     </div>`;
   }).join('');
+  if (MURO.abierta) pintarPublicacion(MURO.abierta);
+}
+
+async function reaccionarMuro(pubId, tipo){
+  const mia = MURO.reacs.find(r => r.publicacion_id === pubId && r.usuario_id === currentUser.userId);
+  let error;
+  if (mia && (mia.tipo || 'me_gusta') === tipo){
+    ({ error } = await sb.from('publicacion_reacciones').delete().eq('publicacion_id', pubId).eq('usuario_id', currentUser.userId));
+  } else {
+    ({ error } = await sb.from('publicacion_reacciones').upsert({ publicacion_id: pubId, usuario_id: currentUser.userId, tipo }, { onConflict: 'publicacion_id,usuario_id' }));
+  }
+  if (error){ toast(error.message, 'error'); return; }
+  renderMuro();
+}
+
+async function abrirPublicacion(id, enfocar){
+  MURO.abierta = id;
+  const p = MURO.pubs.find(x => x.id === id); if (!p) return;
+  await Promise.all((p.imagenes || []).map(r => avBlob('muro', r)));
+  pintarPublicacion(id);
+  openModal('modal-post');
+  if (enfocar) setTimeout(() => document.getElementById('pd-comentario')?.focus(), 80);
+}
+function cerrarPublicacion(){ MURO.abierta = null; closeModal('modal-post'); }
+function pintarPublicacion(id){
+  const p = MURO.pubs.find(x => x.id === id);
+  const body = document.getElementById('pd-body');
+  if (!p){ cerrarPublicacion(); return; }
+  const esRH = muroEsRHoDir();
+  const coms = MURO.coms.filter(c => c.publicacion_id === id);
+  const im = (p.imagenes || []).map(r => AV.blobs['muro/' + r]).filter(Boolean);
+  const n = im.length;
+  const porTipo = MURO_REAC.map(([k, e, l]) => ({ e, l, n: MURO.reacs.filter(r => r.publicacion_id === id && (r.tipo || 'me_gusta') === k).length })).filter(x => x.n);
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      ${avatarHtml(p.autor_id, p.autor_nombre, 44)}
+      <div><div style="font-size:14px;font-weight:700">${esc(p.autor_nombre || '—')}</div>
+      <div style="font-size:10px;color:var(--text3)">${new Date(p.created_at).toLocaleString('es-MX', { dateStyle:'medium', timeStyle:'short' })} · <span class="tag b" style="padding:1px 6px">${esc(p.categoria)}</span></div></div>
+    </div>
+    ${p.contenido ? `<div style="font-size:15px;line-height:1.55;white-space:pre-wrap;margin-bottom:12px">${esc(p.contenido)}</div>` : ''}
+    ${n ? `<div style="display:grid;grid-template-columns:${n === 1 ? '1fr' : '1fr 1fr'};gap:3px;margin-bottom:12px">${im.map((u, i) => `<img src="${u}" alt="" onclick="verImagenMuro(this.src)" style="width:100%;display:block;cursor:zoom-in;object-fit:cover;border-radius:6px;${n === 1 ? 'max-height:480px' : 'height:200px'};${n === 3 && i === 0 ? 'grid-column:1/3;' : ''}">`).join('')}</div>` : ''}
+    <div style="font-size:11px;color:var(--text3);padding:2px 0 8px">${porTipo.length ? porTipo.map(x => `${x.e} ${x.n}`).join(' · ') : 'Sé el primero en reaccionar'}</div>
+    <div style="display:flex;gap:4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 0;margin-bottom:12px">${muroBarraReacciones(p)}</div>
+    <div style="font-family:var(--head);font-size:11px;font-weight:800;margin-bottom:8px">Comentarios (${coms.length})</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${coms.length ? coms.map(c => `<div style="display:flex;gap:8px;align-items:flex-start">${avatarHtml(c.autor_id, c.autor_nombre, 30)}
+        <div style="font-size:12px;background:var(--surface2,#2a2a2a);border-radius:14px;padding:7px 12px;flex:1">
+          <strong>${esc(c.autor_nombre || '—')}</strong> <span style="color:var(--text3);font-size:10px">${tiempoRel(c.created_at)}</span>
+          ${(c.autor_id === currentUser.userId || esRH) ? ` <span onclick="eliminarComentarioMuro('${c.id}')" title="Eliminar" style="color:var(--text3);cursor:pointer;float:right">✕</span>` : ''}
+          <div style="white-space:pre-wrap">${esc(c.contenido)}</div></div></div>`).join('') : '<div style="font-size:11px;color:var(--text3)">Aún no hay comentarios.</div>'}
+      ${esRH ? `<div style="display:flex;gap:8px;align-items:center;margin-top:4px">${avatarHtml(currentUser.userId, currentUser.name, 30)}
+        <input class="form-input" id="pd-comentario" placeholder="Escribe un comentario…" maxlength="500" style="flex:1;font-size:12px;padding:8px 12px;border-radius:999px" onkeydown="if(event.key==='Enter')agregarComentarioMuro('${p.id}')">
+        <button class="btn sm primary" onclick="agregarComentarioMuro('${p.id}')">Comentar</button></div>
+        <div style="font-size:10px;color:var(--text3)">Se ocultan automáticamente las palabras ofensivas.</div>` : ''}
+    </div>`;
+}
+async function agregarComentarioMuro(pubId){
+  if (!muroEsRHoDir()){ toast('Solo RH y Dirección pueden comentar','info'); return; }
+  const input = document.getElementById('pd-comentario');
+  const texto = (input?.value || '').trim();
+  if (!texto) return;
+  input.disabled = true;
+  const { data, error } = await sb.from('publicacion_comentarios').insert({
+    publicacion_id: pubId, autor_id: currentUser.userId, autor_nombre: currentUser.name, contenido: texto
+  }).select('contenido').single();
+  if (error){ input.disabled = false; toast(error.message, 'error'); return; }
+  if (data && data.contenido !== texto) toast('Se ocultaron palabras no permitidas en tu comentario','info');
+  await renderMuro();
+  document.getElementById('pd-comentario')?.focus();
+}
+function eliminarComentarioMuro(id){
+  confirmar('¿Eliminar este comentario?', 'Eliminar comentario', async ()=>{
+    await sb.from('publicacion_comentarios').delete().eq('id', id);
+    renderMuro();
+  });
+}
+
+/* ── Filtro de palabras (solo Dirección): lista que el servidor usa para censurar ── */
+async function abrirFiltroPalabras(){
+  if (currentUser.role !== 'direccion_ceo') return;
+  const { data, error } = await sb.from('palabras_filtradas').select('palabra').order('palabra');
+  if (error){ toast(error.message, 'error'); return; }
+  document.getElementById('pf-lista').innerHTML = (data || []).map(x => `<span class="tag m" style="margin:2px;cursor:pointer" title="Quitar" onclick="quitarPalabraFiltro('${esc(x.palabra)}')">${esc(x.palabra)} ✕</span>`).join('') || '<span style="font-size:11px;color:var(--text3)">Sin palabras</span>';
+  document.getElementById('pf-nueva').value = '';
+  openModal('modal-palabras');
+}
+async function agregarPalabraFiltro(){
+  const raw = document.getElementById('pf-nueva').value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (raw.length < 2){ toast('Escribe la palabra o frase','info'); return; }
+  const { error } = await sb.from('palabras_filtradas').insert({ palabra: raw });
+  if (error){ toast(error.code === '23505' ? 'Esa palabra ya está en la lista' : error.message, 'error'); return; }
+  await audit('config', 'Filtro de palabras: se agregó una palabra', 'a');
+  abrirFiltroPalabras();
+}
+async function quitarPalabraFiltro(p){
+  const { error } = await sb.from('palabras_filtradas').delete().eq('palabra', p);
+  if (error){ toast(error.message, 'error'); return; }
+  await audit('config', 'Filtro de palabras: se quitó una palabra', 'a');
+  abrirFiltroPalabras();
 }
 
 /* ── Celebraciones — cumpleaños/aniversario, activados por RH,
