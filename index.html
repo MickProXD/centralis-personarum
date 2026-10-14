@@ -4351,6 +4351,17 @@ setInterval(()=>{
    el navegador, solo corre del lado del servidor. ── */
 let editingUserId = null;
 
+/* Mensaje real de una Edge Function (supabase-js solo dice "non-2xx"): lo leemos del cuerpo y lo traducimos */
+async function errorFuncion(error, data){
+  let m = data?.error || '';
+  if (!m && error?.context && typeof error.context.json === 'function'){
+    try { m = (await error.context.json())?.error || ''; } catch(e){}
+  }
+  m = m || error?.message || 'No se pudo completar la operación';
+  if (/already been registered|already registered|email_exists/i.test(m)) return 'Ese correo ya tiene una cuenta. Revisa en Configuración → Cuentas: si es la misma persona, no hace falta crearla otra vez (puedes restablecer su contraseña o su verificación en dos pasos).';
+  return m;
+}
+
 async function renderUsuariosConfig(){
   const cont = document.getElementById('cfg-usuarios-list');
   if (!cont) return;
@@ -4400,7 +4411,7 @@ async function guardarUsuario(){
     body: { usuario, nombre, correo, role, password: pass, ...leerCamposRol('au') },
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
-  if (error || data?.error) return fail(data?.error || error.message);
+  if (error || data?.error) return fail(await errorFuncion(error, data));
   toast('Cuenta creada correctamente','success');
   closeModal('modal-usuario');
   renderUsuariosConfig();
@@ -6351,7 +6362,7 @@ async function aprobarSolicitud(){
     body: { usuario: s.usuario, nombre: s.nombre, correo: s.correo, role, password: pass, ...leerCamposRol('aps') },
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
-  if (error || data?.error) return fail(data?.error || error.message);
+  if (error || data?.error) return fail(await errorFuncion(error, data));
 
   await sb.from('solicitudes_cuenta').update({
     estado: 'aprobada', revisado_por: currentUser.userId, revisado_en: new Date().toISOString()
