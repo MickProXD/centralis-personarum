@@ -275,6 +275,10 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 .bell-it:hover{background:var(--surface2)}
 .bell-n{flex-shrink:0;min-width:22px;height:22px;border-radius:999px;background:var(--amber,#e0a100);color:#111;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 6px}
 .audit-ico.b svg{color:var(--blue)}
+.ftbl-op .ftbl-hdr,.ftbl-op .ftbl-row{grid-template-columns:32px 60px 1fr 100px 150px 70px}
+.ftbl-op .ftbl-hdr>:nth-child(n+7),.ftbl-op .ftbl-row>:nth-child(n+7){display:none}
+.sem-hint{border-left:5px solid var(--lgc,#e0a100);background:var(--surface2,#2a2a2a);border-radius:8px;padding:8px 10px;font-size:11.5px;line-height:1.45;margin:-2px 0 10px}
+.sem-hint b{display:block;font-family:var(--head);font-size:11px;margin-bottom:2px}
 /* Logros (insignias estilo consola) */
 .lg-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--border)}
 .lg-big{font-family:var(--head);font-size:30px;font-weight:900;line-height:1;color:var(--green)}.lg-big span{font-size:13px;color:var(--text3);font-weight:700}
@@ -1181,7 +1185,7 @@ select.form-input option{background:var(--bg2)}
         <div class="ftbl-hdr"><div></div><div class="col-h">BAK</div><div class="col-h">Unidad</div><div class="col-h">Tipo</div><div class="col-h">Chofer</div><div class="col-h">Estatus</div><div class="col-h" style="text-align:center;font-size:8px">Póliza</div><div class="col-h" style="text-align:center;font-size:8px">Verif.</div><div class="col-h" style="text-align:center;font-size:8px">Circ.</div></div>
         <div id="flota-body"></div>
       </div>
-      <div class="row" style="gap:12px;margin-top:8px">
+      <div class="row" id="flota-leyenda" style="gap:12px;margin-top:8px">
         <div class="leg"><div class="pip ok" style="margin:0"></div><span style="font-family:var(--head);font-size:10px;font-weight:700;color:var(--text2)">Vigente</span></div>
         <div class="leg"><div class="pip w" style="margin:0"></div><span style="font-family:var(--head);font-size:10px;font-weight:700;color:var(--text2)">Próximo</span></div>
         <div class="leg"><div class="pip cr" style="margin:0"></div><span style="font-family:var(--head);font-size:10px;font-weight:700;color:var(--text2)">Vencido</span></div>
@@ -1208,7 +1212,7 @@ select.form-input option{background:var(--bg2)}
         <div class="panel"><div class="ph"><div class="ph-title">Datos técnicos</div></div><div id="unidad-datos"></div></div>
         <div class="panel"><div class="ph"><div class="ph-title">Chofer asignado</div><button class="ph-btn ml" data-min-role="supervisor" onclick="openReasignarUnidad()">Reasignar</button></div><div id="unidad-chofer"></div></div>
       </div>
-      <div class="panel">
+      <div class="panel" id="panel-unidad-docs">
         <div class="ph"><div class="ph-title">Documentos de la unidad</div><button class="ph-btn ml" data-cap="fleet" onclick="openSubirDoc('unidad')">+ Subir documento</button></div>
         <div id="unidad-docs"></div>
       </div>
@@ -5498,11 +5502,18 @@ function ejecutarBusqueda(i){
 function renderDashboard(){
   const activos = DB.colaboradores.filter(c=>c.estatus==='activo').length;
   const bajas = DB.colaboradores.filter(c=>c.estatus==='baja').length;
-  const empty = activos === 0 && DB.unidades.length === 0;
+  const rolDash = currentUser.role, esOpDash = rolDash === 'chofer', esRHDash = rolDash === 'rh';
+  const empty = activos === 0 && DB.unidades.length === 0 && !esOpDash && !esRHDash;
   document.getElementById('dash-empty').style.display = empty ? 'block' : 'none';
   document.getElementById('dash-content').style.display = empty ? 'none' : 'block';
   if (empty) { updateBadges(); return; }
   const alertas = getAlertas();
+  const ocultar = (el, v) => { if (el) el.style.display = v ? 'none' : ''; };
+  ocultar(document.querySelector('#dash-content .metrics.c4'), esOpDash);
+  ocultar(document.getElementById('dash-asist')?.closest('.panel'), esOpDash);
+  ocultar(document.getElementById('dash-alertas-body')?.closest('.panel'), !verDocsPersonal() && !verDocsUnidades());
+  const tAl = document.querySelector('#dash-alertas-body')?.closest('.panel')?.querySelector('.ph-title'); if (tAl) tAl.textContent = esRHDash ? 'Pendientes del personal' : 'Alertas de vencimiento';
+  const tFl = document.getElementById('dash-flota-body')?.closest('.panel'); if (tFl){ tFl.querySelector('.ph-title').textContent = esOpDash ? 'Mi unidad' : esRHDash ? 'Unidades y su personal' : 'Flota'; const bFl = tFl.querySelector('.ph-btn'); if (bFl) bFl.style.display = esRHDash ? 'none' : ''; }
   const unActivas = DB.unidades.filter(u=>u.estatus==='activo').length;
   const unTaller = DB.unidades.filter(u=>u.estatus==='taller').length;
   document.getElementById('dm-colab').textContent = activos;
@@ -5537,9 +5548,34 @@ function renderDashboard(){
   ab2.innerHTML = `<div style="padding:16px;text-align:center"><div style="font-family:var(--head);font-size:28px;font-weight:900;color:var(--green);letter-spacing:-1px">${present}<span style="font-size:14px;color:var(--text3);font-weight:700">/${activos2.length}</span></div><div style="font-size:11px;color:var(--text3);font-family:var(--body);margin-top:4px">presentes hoy</div><button class="btn" style="margin-top:12px" onclick="nav('asistencias',null)">Ver semana →</button></div>`;
   // Flota
   const fb = document.getElementById('dash-flota-body');
-  if (DB.unidades.length === 0) fb.innerHTML = '<div class="empty" style="padding:18px"><div class="empty-sub">Sin unidades.</div></div>';
+  if (esOpDash || esRHDash) dashUnidadesBasico();
+  else if (DB.unidades.length === 0) fb.innerHTML = '<div class="empty" style="padding:18px"><div class="empty-sub">Sin unidades.</div></div>';
   else fb.innerHTML = DB.unidades.slice(0,4).map(u=>{ const chofer = DB.colaboradores.find(c=>c.unidadId===u.id&&c.estatus==='activo'); return `<div class="doc-row" style="cursor:pointer" onclick="abrirExpedienteUnidad('${u.id}')"><div class="doc-ico" style="background:var(--green3);color:var(--green);font-family:var(--head);font-size:9px;font-weight:900">${u.bak.replace('BAK-','')}</div><div style="flex:1"><div class="doc-name">${esc(u.bak)}</div><div class="doc-meta">${chofer?esc(chofer.nombre):'Sin chofer'}</div></div><span class="tag ${u.estatus==='activo'?'g':u.estatus==='taller'?'a':'r'}">${u.estatus}</span></div>`; }).join('');
   updateBadges();
+}
+
+/* Lo básico de las unidades (BAK, estatus y quién está asignado): RH ve todas; el operativo solo la suya */
+const asigRol = r => r.titular ? 'Chofer' : (r.perfil_operativo === 'ayudante_general' ? 'Ayudante general' : (r.puesto || 'Personal'));
+function asigAgrupar(rows){
+  const m = new Map();
+  (rows || []).forEach(r => { if (!m.has(r.unidad_id)) m.set(r.unidad_id, { id:r.unidad_id, bak:r.bak, tipo:r.tipo, estatus:r.estatus, gente:[] }); if (r.colaborador_id) m.get(r.unidad_id).gente.push(r); });
+  return [...m.values()];
+}
+async function cargarAsignaciones(){
+  if (!['rh', 'chofer'].includes(currentUser.role)){ DB.asig = []; return; }
+  const { data, error } = await sb.rpc('unidades_asignaciones');
+  DB.asig = error ? [] : (data || []);
+}
+async function dashUnidadesBasico(){
+  const fb = document.getElementById('dash-flota-body'); if (!fb) return;
+  await cargarAsignaciones();
+  const uni = asigAgrupar(DB.asig);
+  if (currentUser.role === 'rh'){
+    const el = document.getElementById('dm-unidades'); if (el) el.textContent = uni.filter(u => u.estatus === 'activo').length;
+    const sub = document.getElementById('dm-unidades-sub'); if (sub) sub.textContent = uni.filter(u => u.estatus === 'taller').length + ' en taller';
+  }
+  if (!uni.length){ fb.innerHTML = `<div class="empty" style="padding:18px"><div class="empty-sub">${currentUser.role === 'chofer' ? 'Todavía no tienes una unidad asignada.' : 'Sin unidades.'}</div></div>`; return; }
+  fb.innerHTML = uni.slice(0, currentUser.role === 'chofer' ? 1 : 8).map(u => `<div class="doc-row" ${currentUser.role === 'chofer' ? `style="cursor:pointer" onclick="abrirExpedienteUnidad('${u.id}')"` : ''}><div class="doc-ico" style="background:var(--green3);color:var(--green);font-family:var(--head);font-size:9px;font-weight:900">${esc(String(u.bak).replace('BAK-', ''))}</div><div style="flex:1;min-width:0"><div class="doc-name">${esc(u.bak)}</div><div class="doc-meta">${u.gente.length ? u.gente.map(g => esc(g.nombre.split(' ').slice(0, 2).join(' ')) + ' (' + esc(asigRol(g)) + ')').join(' · ') : 'Sin personal asignado'}</div></div><span class="tag ${u.estatus === 'activo' ? 'g' : u.estatus === 'taller' ? 'a' : 'r'}">${esc(u.estatus)}</span></div>`).join('');
 }
 
 function tiempoRelativo(ts){
@@ -5552,10 +5588,13 @@ function tiempoRelativo(ts){
 
 function nivelColor(n){ return n==='critico'?'r':n==='urgente'?'a':n==='advertencia'?'b':'m'; }
 
+/* Documentación de la empresa: cada rol solo ve lo que le corresponde (el servidor lo aplica; esto mantiene la pantalla coherente) */
+const verDocsUnidades = () => !!currentUser && (caps().fleet || opEsAdminOp());
+const verDocsPersonal = () => !!currentUser && ['rh', 'direccion_ceo', 'supervisor'].includes(currentUser.role);
 function getAlertas(){
   const alertas = [];
   const hoy = new Date(); hoy.setHours(0,0,0,0);
-  DB.unidades.forEach(u => {
+  (verDocsUnidades() ? DB.unidades : []).forEach(u => {
     ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia'].forEach(tipo => {
       const key = `unidad-${u.id}-${tipo}`;
       const doc = DB.documentos[key];
@@ -5569,7 +5608,7 @@ function getAlertas(){
       else if (dias <= DB.cfg.d1) alertas.push({ entidadId:u.id, entidadTipo:'unidad', entidadNombre:u.bak, docTipo:tipo, nivel:'advertencia', diasStr:dias+'d', dias });
     });
   });
-  DB.colaboradores.filter(c=>c.estatus==='activo').forEach(c => {
+  (verDocsPersonal() ? DB.colaboradores : []).filter(c=>c.estatus==='activo').forEach(c => {
     const key = `colab-${c.id}-Licencia de conducir`;
     const doc = DB.documentos[key];
     if (c.puesto === 'Operador') {
@@ -5582,17 +5621,22 @@ function getAlertas(){
       else if (dias <= DB.cfg.d2) alertas.push({ entidadId:c.id, entidadTipo:'colab', entidadNombre:c.nombre, docTipo:'Licencia de conducir', nivel:'urgente', diasStr:dias+'d', dias });
       else if (dias <= DB.cfg.d1) alertas.push({ entidadId:c.id, entidadTipo:'colab', entidadNombre:c.nombre, docTipo:'Licencia de conducir', nivel:'advertencia', diasStr:dias+'d', dias });
     }
+    // RH: además, lo que le falta a cada persona en su expediente
+    if (currentUser.role === 'rh') ['Contrato laboral', 'Alta IMSS', 'Identificación oficial'].forEach(t => {
+      if (!DB.documentos[`colab-${c.id}-${t}`]) alertas.push({ entidadId:c.id, entidadTipo:'colab', entidadNombre:c.nombre, docTipo:t, nivel:'faltante', diasStr:'Faltante', dias:9998 });
+    });
   });
   return alertas.sort((a,b)=>a.dias-b.dias);
 }
 
 function getFaltantes(){
   let n = 0;
-  DB.colaboradores.filter(c=>c.estatus==='activo').forEach(c => {
+  if (!verDocsPersonal() && !verDocsUnidades()) return 0;
+  (verDocsPersonal() ? DB.colaboradores : []).filter(c=>c.estatus==='activo').forEach(c => {
     const docs = c.puesto === 'Operador' ? ['Licencia de conducir','Contrato laboral','Alta IMSS'] : ['Contrato laboral','Alta IMSS'];
     docs.forEach(t => { if (!DB.documentos[`colab-${c.id}-${t}`]) n++; });
   });
-  DB.unidades.forEach(u => {
+  (verDocsUnidades() ? DB.unidades : []).forEach(u => {
     ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia'].forEach(t => { if (!DB.documentos[`unidad-${u.id}-${t}`]) n++; });
   });
   return n;
@@ -7057,7 +7101,10 @@ function renderFlota(){
   const q = (document.getElementById('search-unidad')||{}).value||'';
   const fe = (document.getElementById('filter-estatus-flota')||{}).value||'';
   const ft = (document.getElementById('filter-tipo-flota')||{}).value||'';
+  const esOp0 = currentUser.role === 'chofer';
+  const mios = esOp0 ? miUnidadIds() : null;
   let list = DB.unidades.filter(u=>{
+    if (mios && !mios.has(String(u.id))) return false;
     if (q && !u.bak.toLowerCase().includes(q.toLowerCase()) && !((u.marca||'')+' '+(u.modelo||'')).toLowerCase().includes(q.toLowerCase())) return false;
     if (fe && u.estatus!==fe) return false;
     if (ft && u.tipo!==ft) return false;
@@ -7065,6 +7112,9 @@ function renderFlota(){
   });
   const esOp = currentUser.role === 'chofer';
   const tb = document.getElementById('flota-toolbar'); if (tb) tb.style.display = esOp ? 'none' : '';
+  document.getElementById('page-flota')?.classList.toggle('ftbl-op', esOp);
+  const ley = document.getElementById('flota-leyenda'); if (ley) ley.style.display = esOp ? 'none' : '';
+  if (esOp && DB.asig === undefined){ DB.asig = null; cargarAsignaciones().then(() => renderFlota()); }
   const body = document.getElementById('flota-body');
   if (!body) return;
   if (list.length===0){
@@ -7088,7 +7138,7 @@ function renderFlota(){
       <div class="bak-lbl">${esc(u.bak)}</div>
       <div><div class="cname">${esc(u.marca)||''} ${esc(u.modelo)||''}</div><div class="cnum">${u.anio||'—'} · NIV ${u.niv?u.niv.substring(0,8)+'...':'—'}</div></div>
       <div class="ccell"><div>${esc(u.tipo)||'—'}</div>${u.jurisdiccion?`<div style="font-size:9px;color:var(--${u.jurisdiccion==='Federal'?'blue':'amber'});font-family:var(--head);font-weight:700;margin-top:1px">${u.jurisdiccion}</div>`:''}</div>
-      <div class="ccell">${chofer?esc(chofer.nombre.split(' ').slice(0,2).join(' ')):'Sin chofer'}</div>
+      <div class="ccell">${esOp ? esc(((DB.asig || []).filter(r => String(r.unidad_id) === String(u.id) && r.colaborador_id).map(r => r.nombre.split(' ').slice(0, 2).join(' ') + ' (' + asigRol(r) + ')').join(' · ')) || 'Sin personal asignado') : (chofer?esc(chofer.nombre.split(' ').slice(0,2).join(' ')):'Sin chofer')}</div>
       <div><span class="tag ${u.estatus==='activo'?'g':u.estatus==='taller'?'a':'r'}">${u.estatus}</span></div>
       <div><div class="pip ${p1}"></div></div>
       <div><div class="pip ${p2}"></div></div>
@@ -7098,6 +7148,13 @@ function renderFlota(){
   applyRoleVisibility();
 }
 
+/* Unidades a las que el operativo está asignado (como chofer o como ayudante) */
+function miUnidadIds(){
+  const ids = new Set(), yo = currentUser.colaboradorId; if (!yo) return ids;
+  DB.unidades.forEach(u => { if (u.choferId && String(u.choferId) === String(yo)) ids.add(String(u.id)); });
+  const c = DB.colaboradores.find(x => String(x.id) === String(yo)); if (c && c.unidadId) ids.add(String(c.unidadId));
+  return ids;
+}
 function getDocPip(u, tipo){
   const key = `unidad-${u.id}-${tipo}`;
   const doc = DB.documentos[key];
@@ -7116,6 +7173,7 @@ function abrirExpedienteUnidad(id){
   const u = DB.unidades.find(u=>String(u.id)===currentUnidadId);
   if (!u) return;
   const zipB = document.getElementById('btn-unidad-zip'); if (zipB) zipB.style.display = currentUser.role === 'chofer' ? 'none' : '';
+  ['panel-unidad-docs', 'panel-unidad-tags'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = currentUser.role === 'chofer' ? 'none' : ''; });
   document.getElementById('unidad-bak-ico').textContent = u.bak.replace('BAK-','');
   document.getElementById('unidad-nombre').textContent = `${u.marca||''} ${u.modelo||''} — ${u.anio||'—'}`;
   document.getElementById('unidad-meta').textContent = `NIV ${u.niv||'—'} · Placas ${u.placas||'—'} · ${u.tipo||'—'}`;
@@ -7135,15 +7193,18 @@ function abrirExpedienteUnidad(id){
   document.getElementById('unidad-chofer').innerHTML = `
     <div class="field-row"><div class="field-lbl">Asignado</div><div class="field-val" style="color:var(--${chofer?'green':'text3'})">${chofer?esc(chofer.nombre):'Sin chofer asignado'}</div></div>
     <div class="field-row"><div class="field-lbl">Bodega</div><div class="field-val">${u.bodega||'Bodega Xalostoc'}</div></div>`;
-  renderUnidadDocs();
-  renderUnidadTags();
+  if (currentUser.role === 'chofer'){
+    const g = (DB.asig || []).filter(r => String(r.unidad_id) === String(u.id) && r.colaborador_id);
+    document.getElementById('unidad-chofer').innerHTML = g.length ? g.map(r => `<div class="field-row"><div class="field-lbl">${esc(asigRol(r))}</div><div class="field-val">${esc(r.nombre)}</div></div>`).join('') : '<div class="field-row"><div class="field-val" style="color:var(--text3)">Sin personal asignado</div></div>';
+    document.getElementById('unidad-tags').innerHTML = `<span class="tag ${u.estatus==='activo'?'g':u.estatus==='taller'?'a':'r'}">${u.estatus}</span>`;
+  } else { renderUnidadDocs(); renderUnidadTags(); }
   nav('unidad', null);
   document.getElementById('tb-crumb').textContent = '/ '+u.bak;
 }
 
 async function renderUnidadDocs(){
   const u = DB.unidades.find(u=>String(u.id)===currentUnidadId);
-  if (!u) return;
+  if (!u || currentUser.role === 'chofer') return;
   await cargarDocumentosEntidad('unidad', u.id);
   const esOp = currentUser.role === 'chofer';
   const tipos = ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia','Revista de transporte'];
@@ -7193,7 +7254,7 @@ async function cargarTagsUnidad(unidadId){
 
 async function renderUnidadTags(){
   const cont = document.getElementById('unidad-tags-list');
-  if(!cont) return;
+  if(!cont || currentUser.role === 'chofer') return;
   await cargarTagsUnidad(currentUnidadId);
   const editable = can('fleet');
   cont.innerHTML = TAG_SLOTS.map(({slot, label, color, icon}) => {
@@ -9266,6 +9327,15 @@ function eliminarComentarioMuro(id){
 const SHE = { inv:{}, tab:'muro', reps:[], salud:{}, soloAbiertos:true, cat:[], pos:null };
 const SHE_TIPOS = { incidente:'Incidente', condicion_insegura:'Condición insegura', casi_accidente:'Casi accidente', accidente:'Accidente', ambiental:'Evento ambiental' };
 const SHE_SEM = { verde:['g','Verde','#2e9e5b'], amarillo:['a','Amarillo','#e0a100'], rojo:['r','Rojo','#d64545'] };
+const SHE_IMPORTANCIA = {
+  verde:    { t:'Importancia baja', d:'No hay riesgo inmediato. Es un aviso o una mejora. SHE lo revisa en su seguimiento normal.' },
+  amarillo: { t:'Importancia media', d:'Puede provocar un accidente si no se corrige. Avisa a tu jefe; SHE y Gerencia lo ven y debe atenderse pronto.' },
+  rojo:     { t:'Importancia alta: riesgo inmediato', d:'Hay peligro para personas, la unidad o el ambiente. Detén la actividad y avisa a tu jefe y a SHE en ese momento. Queda como alerta roja en el Bio-Muro y en la campana de Dirección, SHE, RH y Gerentes Operativos hasta que se cierre.' }
+};
+function sheSemHint(){
+  const k = fv('sr-sem') || 'amarillo', i = SHE_IMPORTANCIA[k], box = document.getElementById('sr-sem-hint'); if (!box || !i) return;
+  box.style.setProperty('--lgc', SHE_SEM[k][2]); box.innerHTML = `<b style="color:${SHE_SEM[k][2]}">${esc(i.t)}</b>${esc(i.d)}`;
+}
 const SHE_EST = { abierto:'Abierto', en_proceso:'En proceso', cerrado:'Cerrado' };
 const SHE_VIG_CAT = { extintor:'Extintor', calibracion:'Calibración', permiso_ambiental:'Permiso ambiental', examen_medico:'Examen médico', simulacro:'Simulacro', otro:'Otro' };
 const sheVeTodo    = () => ['she','direccion_ceo','rh','supervisor'].includes(currentUser.role);
@@ -9301,7 +9371,7 @@ function sheCard(r){
   const gasto = r.solicitud_gasto_id;
   return `<div class="panel" style="padding:14px;margin-bottom:0;border-left:5px solid ${s[2]}">
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
-      <span class="tag ${s[0]}">${s[1]}</span><span class="tag b">${esc(SHE_TIPOS[r.tipo] || r.tipo)}</span><span class="tag m">${esc(SHE_EST[r.estatus] || r.estatus)}</span>
+      <span class="tag ${s[0]}" title="${esc((SHE_IMPORTANCIA[r.semaforo] || {}).d || '')}">${s[1]}${SHE_IMPORTANCIA[r.semaforo] ? ' · ' + esc(SHE_IMPORTANCIA[r.semaforo].t.split(':')[0]) : ''}</span><span class="tag b">${esc(SHE_TIPOS[r.tipo] || r.tipo)}</span><span class="tag m">${esc(SHE_EST[r.estatus] || r.estatus)}</span>
       <span style="font-size:10px;color:var(--text3);margin-left:auto">${esc(r.folio)}</span></div>
     <div style="font-size:13px;font-weight:700">${esc(r.lugar)}</div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Reportó: ${esc(r.reportado_por_nombre)} · ${tiempoRel(r.created_at)}</div>
@@ -9384,13 +9454,15 @@ async function sheNuevoReporte(){
   finModal('Reportar incidente o condición insegura',
     `<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Reporta: <strong>${esc(currentUser.name)}</strong> <span style="color:var(--text3)">(el reporte lleva tu nombre)</span></div>`
     + finSelect('Tipo', 'sr-tipo', Object.entries(SHE_TIPOS), 'condicion_insegura')
-    + finSelect('Gravedad que percibes', 'sr-sem', [['verde', 'Verde — bajo'], ['amarillo', 'Amarillo — atención'], ['rojo', 'Rojo — riesgo alto o inmediato']], 'amarillo')
+    + finSelect('Gravedad que percibes', 'sr-sem', [['verde', 'Verde — baja'], ['amarillo', 'Amarillo — media'], ['rojo', 'Rojo — alta o inmediata']], 'amarillo').replace('<select ', '<select onchange="sheSemHint()" ')
+    + '<div class="sem-hint" id="sr-sem-hint"></div>'
     + `<label class="form-lbl req">Bodega, site o sitio de trabajo</label><input class="form-input" id="sr-lugar" list="sr-lugares" maxlength="200" placeholder="Ej. BIONAVE-03, Nave 1 Congreso…" style="margin-bottom:10px"><datalist id="sr-lugares">${opts}</datalist>`
     + finArea('¿Qué pasó o qué viste?', 'sr-desc', '')
     + `<label style="display:flex;gap:8px;align-items:center;font-size:12px;margin-bottom:10px"><input type="checkbox" id="sr-lesion"> Hubo personas lesionadas</label>`
     + `<label class="form-lbl">Fotos (hasta 3)</label><input class="form-input" type="file" id="sr-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">`
     + `<button class="btn sm" type="button" onclick="sheUbicacion()">Agregar mi ubicación</button> <span id="sr-pos" style="font-size:11px;color:var(--text3)">Opcional</span>`,
     sheEnviarReporte, 'Enviar reporte');
+  sheSemHint();
 }
 function sheUbicacion(){
   const el = document.getElementById('sr-pos');
@@ -10360,14 +10432,14 @@ async function mpScore(){
 /* ── Solicitudes operativas ── */
 const SOL_TIPOS = {
   combustible:          { t:'Carga de combustible',         ap:'operativo', campos:[['litros','Litros solicitados','number'],['km','Kilometraje actual','number']] },
-  permiso:              { t:'Permiso',                      ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta','date']] },
+  permiso:              { t:'Permiso',                      ap:'rh_op',     campos:[['desde','Desde','date'],['hasta','Hasta','date']] },
   vacaciones:           { t:'Vacaciones',                   ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta','date']] },
   cambio_ruta:          { t:'Cambio de ruta',               ap:'operativo', campos:[['fecha','Fecha','date'],['ruta','Ruta que solicitas','text']] },
   cambio_unidad:        { t:'Cambio de unidad',             ap:'operativo', campos:[['unidad','Unidad que solicitas','text']] },
   cambio_turno:         { t:'Cambio de turno',              ap:'operativo', campos:[['fecha','Fecha','date'],['turno','Turno que solicitas','text']] },
   falla_urgente:        { t:'Falla o reparación urgente',   ap:'operativo', campos:[] },
   epp_uniforme:         { t:'EPP o uniforme',               ap:'she',       campos:[['articulo','Artículo','text'],['talla','Talla','text']] },
-  viaticos:             { t:'Viáticos, anticipo o reembolso', ap:'finanzas', campos:[['monto','Monto (MXN)','number'],['concepto','Concepto','text']] },
+  viaticos:             { t:'Viáticos, anticipo o reembolso', ap:'finanzas', campos:[['monto','Monto del ticket o factura (MXN)','number'],['concepto','Concepto','text'],['fecha_doc','Fecha del ticket o factura (debe ser de hoy)','date']] },
   material_unidad:      { t:'Material para la unidad',      ap:'operativo', campos:[['material','Material','text'],['cantidad','Cantidad','number']] },
   lavado_mantenimiento: { t:'Lavado o mantenimiento programado', ap:'operativo', campos:[['servicio','Servicio','sel:Lavado,Servicio preventivo,Otro'],['fecha','Fecha deseada','date']] },
   incapacidad:          { t:'Aviso de incapacidad',         ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta (si la sabes)','date']] },
@@ -10378,25 +10450,29 @@ const SOL_TIPOS = {
 };
 /* Evidencia por tipo (el servidor aplica la misma regla) */
 const SOL_EV = { combustible:'requerida', falla_urgente:'requerida', incapacidad:'requerida', viaticos:'requerida', permiso:'opcional', material_unidad:'opcional', epp_uniforme:'opcional', cambio_unidad:'opcional' };
-const SOL_AP = { operativo:'Gerente Operativo', rh:'Recursos Humanos', finanzas:'Gerente Administrativo', she:'SHE' };
-const SOL = { lista:[] };
+const SOL_AP = { operativo:'Gerente Operativo', rh_op:'RH o Gerente Operativo', rh:'Recursos Humanos', finanzas:'Gerente Administrativo', she:'SHE' };
+const SOL = { lista:[], goce:{} };
 function solPuedeResolver(ap){
   if (opEsDireccion()) return true;
-  return { operativo:'supervisor', finanzas:'administracion', she:'she', rh:'rh' }[ap] === currentUser.role;
+  const m = { operativo:['supervisor'], finanzas:['administracion'], she:['she'], rh:['rh'], rh_op:['rh', 'supervisor'] }[ap] || [];
+  return m.includes(currentUser.role);
 }
 async function renderSolicitudes(){
   const cont = document.getElementById('sol-body'); if (!cont) return;
   const { data, error } = await sb.from('solicitudes_op').select('*').order('created_at', { ascending:false }).limit(150);
   if (error){ cont.innerHTML = `<div class="empty-sub" style="padding:20px">No se pudieron cargar las solicitudes.</div>`; return; }
   SOL.lista = data || [];
+  // El goce de sueldo solo lo devuelve el servidor a quien aprueba; el solicitante nunca lo recibe
+  const gz = await sb.from('solicitudes_goce').select('solicitud_id,goce');
+  SOL.goce = {}; (gz.data || []).forEach(g => { SOL.goce[g.solicitud_id] = g.goce; });
   const tag = e => e === 'aprobada' ? '<span class="tag g">Aprobada</span>' : e === 'rechazada' ? '<span class="tag r">Rechazada</span>' : '<span class="tag a">Pendiente</span>';
   const resumen = d => Object.entries(d || {}).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${esc(k)}: ${esc(String(v))}`).join(' · ');
   const fila = s => { const def = SOL_TIPOS[s.tipo] || { t:s.tipo }, puede = s.estatus === 'pendiente' && solPuedeResolver(s.aprobador);
-    return `<div class="panel" style="padding:14px;margin-bottom:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px"><span class="tag b">${esc(def.t)}</span>${tag(s.estatus)}${s.goce_sueldo === true ? '<span class="tag g">Con goce de sueldo</span>' : s.goce_sueldo === false ? '<span class="tag a">Sin goce de sueldo</span>' : ''}<span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(s.created_at)}</span></div>
+    return `<div class="panel" style="padding:14px;margin-bottom:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px"><span class="tag b">${esc(def.t)}</span>${tag(s.estatus)}${SOL.goce[s.id] === true ? '<span class="tag g">Con goce de sueldo</span>' : SOL.goce[s.id] === false ? '<span class="tag a">Sin goce de sueldo</span>' : ''}<span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(s.created_at)}</span></div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${esc(s.solicitante_nombre || '—')} · Aprueba: ${esc(SOL_AP[s.aprobador] || s.aprobador)}</div>
       <div style="font-size:13px;white-space:pre-wrap">${esc(s.detalle)}</div>
       ${resumen(s.datos) ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${resumen(s.datos)}</div>` : ''}
-      ${opMiniaturas('solicitudes', s.evidencia)}
+      ${solEvidenciaHtml(s.evidencia)}
       ${s.motivo ? `<div style="font-size:12px;margin-top:6px"><strong>Motivo:</strong> ${esc(s.motivo)}</div>` : ''}
       ${puede ? `<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="solResolver('${esc(s.id)}',true)">Aprobar</button><button class="btn sm danger" onclick="solResolver('${esc(s.id)}',false)">Rechazar</button></div>` : ''}</div>`; };
   const porRes = SOL.lista.filter(s => s.estatus === 'pendiente' && solPuedeResolver(s.aprobador));
@@ -10419,10 +10495,41 @@ function solNueva(){
 function solCampos(){
   const def = SOL_TIPOS[fv('sl-tipo')]; if (!def) return;
   const ev = SOL_EV[fv('sl-tipo')];
-  document.getElementById('sl-campos').innerHTML = `<div style="font-size:11px;color:var(--text3);margin:-4px 0 10px">La aprueba: <strong>${esc(SOL_AP[def.ap])}</strong>${fv('sl-tipo') === 'permiso' ? ' · quien lo aprueba define si es con goce de sueldo' : ''}</div>` +
-    def.campos.map(([k, l, t]) => t.startsWith('sel:') ? finSelect(l, 'sl-f-' + k, t.slice(4).split(',').map(x => [x, x]), '') : finCampo(l, 'sl-f-' + k, t, '', t === 'number' ? 'min="0" step="any" inputmode="decimal"' : 'maxlength="120"')).join('') +
-    (ev ? `<label class="form-lbl">Evidencia (foto) — ${ev === 'requerida' ? 'obligatoria' : 'opcional'}</label><input class="form-input" type="file" id="sl-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">` : '');
+  document.getElementById('sl-campos').innerHTML = `<div style="font-size:11px;color:var(--text3);margin:-4px 0 10px">La aprueba: <strong>${esc(SOL_AP[def.ap])}</strong></div>` +
+    def.campos.map(([k, l, t]) => t.startsWith('sel:') ? finSelect(l, 'sl-f-' + k, t.slice(4).split(',').map(x => [x, x]), '') : solCampoHtml(k, l, t)).join('') +
+    (ev ? `<label class="form-lbl">${esc(SOL_EV_TXT[fv('sl-tipo')] || 'Evidencia (foto)')} — ${ev === 'requerida' ? 'obligatoria' : 'opcional'}</label><input class="form-input" type="file" id="sl-fotos" accept="image/jpeg,image/png,image/webp,application/pdf" multiple style="margin-bottom:10px">` : '');
 }
+const SOL_EV_TXT = { incapacidad:'Documento oficial de incapacidad (foto o PDF)', viaticos:'Ticket o factura de hoy (foto o PDF)', combustible:'Foto del tablero con el kilometraje', falla_urgente:'Foto de la falla' };
+function solCampoHtml(k, l, t){
+  if (k === 'fecha_doc'){ const hoy = hoyLocal(); return finCampo(l, 'sl-f-' + k, 'date', hoy, `min="${hoy}" max="${hoy}"`); }
+  return finCampo(l, 'sl-f-' + k, t, '', t === 'number' ? 'min="0" step="any" inputmode="decimal"' : 'maxlength="120"');
+}
+function solValidarArchivos(files, max){
+  if (files.length > max) return `Máximo ${max} archivos`;
+  for (const f of files) if (!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(f.type)) return 'Los archivos deben ser foto (JPG, PNG, WebP) o PDF';
+  return '';
+}
+async function solSubirArchivos(rid, files){
+  const paths = [];
+  try {
+    for (let i = 0; i < files.length; i++){
+      const f = files[i], pdf = f.type === 'application/pdf';
+      if (pdf && f.size > 5 * 1024 * 1024) throw new Error('Cada PDF debe pesar máximo 5 MB');
+      const blob = pdf ? f : await redimensionarImagen(f, 1600, 0.82, false);
+      const pth = `${currentUser.userId}/${rid}/${i + 1}.${pdf ? 'pdf' : 'jpg'}`;
+      const { error } = await sb.storage.from('solicitudes').upload(pth, blob, { contentType: pdf ? 'application/pdf' : 'image/jpeg' });
+      if (error) throw error;
+      paths.push(pth);
+    }
+  } catch(e){ if (paths.length) await sb.storage.from('solicitudes').remove(paths); throw e; }
+  return paths;
+}
+function solAbrirPdf(pth){ const u = AV.blobs['solicitudes/' + pth]; if (u) window.open(u, '_blank', 'noopener'); }
+function solEvidenciaHtml(ev){
+  const imgs = (ev || []).filter(x => !/\.pdf$/i.test(x)), pdfs = (ev || []).filter(x => /\.pdf$/i.test(x));
+  return opMiniaturas('solicitudes', imgs) + (pdfs.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${pdfs.map((x, i) => `<button class="btn sm" onclick="solAbrirPdf('${esc(x)}')">📄 Documento PDF ${pdfs.length > 1 ? i + 1 : ''}</button>`).join('')}</div>` : '');
+}
+
 async function solEnviar(){
   const tipo = fv('sl-tipo'), def = SOL_TIPOS[tipo], det = fv('sl-det').trim(), ev = SOL_EV[tipo];
   if (det.length < 5) return finErr('Escribe el detalle de tu solicitud');
@@ -10431,11 +10538,15 @@ async function solEnviar(){
   let files = [];
   if (ev){
     files = [...(document.getElementById('sl-fotos')?.files || [])];
-    const ef = opValidarFotos(files, 4); if (ef) return finErr(ef);
-    if (ev === 'requerida' && !files.length) return finErr('Esta solicitud necesita evidencia: agrega al menos una foto');
+    const ef = solValidarArchivos(files, 4); if (ef) return finErr(ef);
+    if (ev === 'requerida' && !files.length) return finErr('Esta solicitud necesita evidencia: agrega al menos un archivo');
+  }
+  if (tipo === 'viaticos'){
+    if (!(Number(datos.monto) > 0)) return finErr('Indica el monto del ticket o factura');
+    if (datos.fecha_doc !== hoyLocal()) return finErr('El ticket o factura debe ser de hoy');
   }
   const rid = crypto.randomUUID(); let paths = [];
-  if (files.length) paths = await opSubirFotos('solicitudes', rid, files);
+  if (files.length) paths = await solSubirArchivos(rid, files);
   const { error } = await sb.from('solicitudes_op').insert({ id:rid, tipo, detalle:det, datos, evidencia:paths });
   if (error){ if (paths.length) await sb.storage.from('solicitudes').remove(paths); return finErr(error.message); }
   toast('Solicitud enviada', 'success'); renderSolicitudes();
@@ -10672,7 +10783,7 @@ async function renderBell(marcarLeidas){
   const [fel, pend, res] = await Promise.all([
     sb.from('felicitaciones').select('*').eq('para_usuario_id', currentUser.userId).order('created_at', { ascending:false }).limit(30).then(r => r.data || [], () => []),
     bellPendientes().catch(() => []),
-    sb.from('solicitudes_op').select('tipo,estatus,resuelto_en,motivo,goce_sueldo').eq('solicitante', currentUser.userId).not('resuelto_en', 'is', null).gte('resuelto_en', desde3).order('resuelto_en', { ascending:false }).limit(8).then(r => r.data || [], () => [])
+    sb.from('solicitudes_op').select('tipo,estatus,resuelto_en,motivo').eq('solicitante', currentUser.userId).not('resuelto_en', 'is', null).gte('resuelto_en', desde3).order('resuelto_en', { ascending:false }).limit(8).then(r => r.data || [], () => [])
   ]);
   let rojos = [];
   if (typeof sheVeTodo === 'function' && sheVeTodo()){
@@ -10685,7 +10796,7 @@ async function renderBell(marcarLeidas){
   if (pend.length) h += sec('Pendientes de hoy') + pend.map(p => `<div class="bell-it" onclick="bellIr('${p.pg}')"><span class="bell-n">${p.n}</span><span>${esc(p.txt)}</span></div>`).join('');
   if (rojos.length) h += sec('Seguridad') + rojos.map(r => `<div class="bell-it" onclick="bellIr('seguridad')" style="border-left:4px solid #d64545"><span><strong>Riesgo rojo abierto</strong> · ${esc(r.lugar)}<div style="color:var(--text3);font-size:10px;margin-top:2px">${esc(r.folio)} · ${new Date(r.created_at).toLocaleString('es-MX')}</div></span></div>`).join('');
   const novedades = [
-    ...res.map(r => ({ ts:r.resuelto_en, pg:'solicitudes', html:`Tu solicitud de <strong>${esc((SOL_TIPOS[r.tipo] || { t:r.tipo }).t.toLowerCase())}</strong> fue <strong>${r.estatus === 'aprobada' ? 'aprobada' : 'rechazada'}</strong>${r.goce_sueldo === true ? ' · con goce de sueldo' : r.goce_sueldo === false ? ' · sin goce de sueldo' : ''}${r.estatus === 'rechazada' && r.motivo ? `<div style="color:var(--text3);font-size:10px;margin-top:2px">Motivo: ${esc(r.motivo)}</div>` : ''}` })),
+    ...res.map(r => ({ ts:r.resuelto_en, pg:'solicitudes', html:`Tu solicitud de <strong>${esc((SOL_TIPOS[r.tipo] || { t:r.tipo }).t.toLowerCase())}</strong> fue <strong>${r.estatus === 'aprobada' ? 'aprobada' : 'rechazada'}</strong>${r.estatus === 'rechazada' && r.motivo ? `<div style="color:var(--text3);font-size:10px;margin-top:2px">Motivo: ${esc(r.motivo)}</div>` : ''}` })),
     ...fel.map(f => ({ ts:f.created_at, pg:null, html:esc(f.mensaje), leida:f.leida }))
   ].sort((a, b) => new Date(b.ts) - new Date(a.ts));
   if (novedades.length) h += sec('Novedades') + novedades.map(n => `<div class="bell-it" ${n.pg ? `onclick="bellIr('${n.pg}')"` : 'style="cursor:default"'}><span>${n.html}<div style="color:var(--text3);font-size:10px;margin-top:2px">${new Date(n.ts).toLocaleString('es-MX')}</div></span></div>`).join('');
@@ -10726,10 +10837,12 @@ async function cargarContratosVigentes(){
 
 async function renderCompliance(){
   await Promise.all([ cargarTodosDocumentos(), cargarContratosVigentes() ]);
+  const verUni = verDocsUnidades();
   const cats = [
     { titulo: 'Documentos vehiculares', tipos: ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia'], scope: 'unidad' },
     { titulo: 'Documentos laborales', tipos: ['Licencia de conducir','Contrato laboral','Alta IMSS','Identificación oficial'], scope: 'colab' }
-  ];
+  ].filter(c => c.scope !== 'unidad' || verUni);
+  const cardUni = document.getElementById('comp-unid-ok')?.closest('.mcard'); if (cardUni) cardUni.style.display = verUni ? '' : 'none';
   const activos = DB.colaboradores.filter(c=>c.estatus==='activo');
 
   // ── Métricas superiores ──
@@ -10778,11 +10891,11 @@ async function renderCompliance(){
       { ok: activos.every(c=>DB.contratosVigentes.has(String(c.id))), txt:'Todos los colaboradores activos tienen contrato firmado' },
       { ok: activos.every(c=>DB.documentos[`colab-${c.id}-Alta IMSS`]), txt:'Todos los colaboradores tienen alta IMSS' },
       { ok: activos.filter(c=>c.puesto==='Operador').every(c=>{ const d=DB.documentos[`colab-${c.id}-Licencia de conducir`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Choferes con licencia vigente' },
-      { ok: DB.unidades.every(u=>{ const d=DB.documentos[`unidad-${u.id}-Póliza de seguro`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades con póliza vigente' },
-      { ok: DB.unidades.every(u=>{ const d=DB.documentos[`unidad-${u.id}-Verificación vehicular`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades verificadas' },
-      { ok: DB.unidades.every(u=>!!u.jurisdiccion), txt:'Todas las unidades con jurisdicción definida (Federal/Estatal)' },
+      { u:1, ok: DB.unidades.every(u=>{ const d=DB.documentos[`unidad-${u.id}-Póliza de seguro`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades con póliza vigente' },
+      { u:1, ok: DB.unidades.every(u=>{ const d=DB.documentos[`unidad-${u.id}-Verificación vehicular`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades verificadas' },
+      { u:1, ok: DB.unidades.every(u=>!!u.jurisdiccion), txt:'Todas las unidades con jurisdicción definida (Federal/Estatal)' },
       { ok: DB.bajas.every(b=>b.doc && b.doc!=='—'), txt:'Todas las bajas tienen documento legal archivado' },
-    ];
+    ].filter(i => !i.u || verUni);
     chk.innerHTML = items.map(i=>`<div class="doc-row"><div class="doc-ico ${i.ok?'ok':'crit'}">${i.ok?'✓':'✗'}</div><div style="flex:1"><div class="doc-name" style="color:var(--${i.ok?'text':'red'})">${i.txt}</div></div><span class="tag ${i.ok?'g':'r'}">${i.ok?'Cumple':'Pendiente'}</span></div>`).join('');
   }
 
