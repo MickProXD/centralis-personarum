@@ -3680,8 +3680,12 @@ function mapUnidadRow(r){ return { id:r.id, bak:r.bak, niv:r.niv, placas:r.placa
 
 /* ── Subida genérica a Supabase Storage — reutilizada por Actas,
    Documentos, Contratos, Permisos, Bajas y Firmas. ── */
+/* Storage solo acepta claves con letras, números y . _ - / : quitamos acentos y caracteres raros del nombre */
+function claveStorageSegura(path){
+  return String(path).split('/').map(seg => seg.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9._-]+/g, '_').replace(/_{2,}/g, '_')).join('/');
+}
 async function subirArchivoStorage(bucket, path, file){
-  const { data, error } = await sb.storage.from(bucket).upload(path, file, { upsert: true });
+  const { data, error } = await sb.storage.from(bucket).upload(claveStorageSegura(path), file, { upsert: true });
   if (error) throw error;
   return data.path;
 }
