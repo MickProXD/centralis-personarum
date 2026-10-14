@@ -7968,6 +7968,7 @@ async function guardarDocumento(){
     storagePath = await subirArchivoStorage(bucket, `${id}/documento/${tipo.replace(/\s+/g,'_')}_${Date.now()}_${sdFile.name}`, sdFile);
   } catch(e){ toast('Error subiendo el archivo: '+e.message,'error'); return; }
 
+  const { data: previo } = await sb.from('documentos').select('storage_path').eq('entidad_tipo', entidadTipo).eq('entidad_id', id).eq('tipo_documento', tipo).maybeSingle();
   const { error } = await sb.from('documentos').upsert({
     entidad_tipo: entidadTipo, entidad_id: id, tipo_documento: tipo,
     emision: document.getElementById('sd-emision').value || null,
@@ -7976,7 +7977,9 @@ async function guardarDocumento(){
     storage_path: storagePath, nombre_archivo: sdFile.name,
     subido_por: currentUser.userId
   }, { onConflict: 'entidad_tipo,entidad_id,tipo_documento' });
-  if (error){ toast(error.message,'error'); return; }
+  if (error){ await sb.storage.from(bucket).remove([storagePath]); toast(error.message,'error'); return; }
+  // Al reemplazar un documento, se borra el archivo anterior para no dejar basura en el almacenamiento
+  if (previo?.storage_path && previo.storage_path !== storagePath) await sb.storage.from(bucket).remove([previo.storage_path]);
 
   closeModal('modal-subir-doc');
   const entidad = currentDocCtx==='colab' ?
@@ -10341,6 +10344,42 @@ async function opBadges(){
     if (typeof sheVeTodo === 'function' && sheVeTodo()) renderRojosMuro();
   } catch(e){}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SINCRONIZACIÓN — mantiene al día lo que otros usuarios cambian.
+   Chat y rutas ya van en vivo; el resto se refresca al volver a la app, al recuperar internet
+   y cada 3 minutos, sin interrumpir si estás escribiendo o tienes una ventana abierta.
+   ═══════════════════════════════════════════════════════════════════ */
+const SYNC = { ultimo:Date.now(), corriendo:false };
+const SYNC_RENDER = {
+  sites:() => renderSites(), asistencias:() => renderAsistencias(), documentos:() => renderDocumentos(), personal:() => renderColab(),
+  flota:() => renderFlota(), permisos:() => renderPermisos(), dashboard:() => renderDashboard(), calendario:() => renderCalendario(),
+  kpis:() => renderKPIs(), procesos:() => renderProcesos(), muro:() => renderMuro(), finanzas:() => renderFinanzas(),
+  miasistencia:() => renderMiAsistencia(), mantenimiento:() => renderMantenimiento(), solicitudes:() => renderSolicitudes(),
+  insignias:() => renderInsignias(), seguridad:() => { renderSeg(); renderRojosMuro(); }, equipoasis:() => renderEquipoAsistencia(),
+  compliance:() => renderCompliance(), equipos:() => renderEquipos()
+};
+function syncOcupado(){
+  if (document.querySelector('.overlay.open')) return true;
+  const a = document.activeElement; return !!a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
+}
+async function sincronizarDatos(minSeg){
+  if (!currentUser || SYNC.corriendo || document.hidden || !navigator.onLine) return;
+  if (Date.now() - SYNC.ultimo < (minSeg || 60) * 1000) return;
+  if (syncOcupado()) return;
+  SYNC.corriendo = true;
+  try {
+    await cargarDatosSupabase();
+    SYNC.ultimo = Date.now();
+    if (typeof updateBadges === 'function') updateBadges();
+    if (typeof opBadges === 'function') opBadges();
+    const pg = document.querySelector('.page.active'); const id = pg ? pg.id.replace('page-', '') : '';
+    if (SYNC_RENDER[id] && !syncOcupado()) await SYNC_RENDER[id]();
+  } catch(e){} finally { SYNC.corriendo = false; }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) sincronizarDatos(60); });
+window.addEventListener('online', () => sincronizarDatos(5));
+setInterval(() => sincronizarDatos(170), 180000);
 
 /* ── Filtro de palabras (solo Dirección): lista que el servidor usa para censurar ── */
 async function abrirFiltroPalabras(){
