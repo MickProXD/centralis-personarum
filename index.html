@@ -1250,6 +1250,11 @@ select.form-input option{background:var(--bg2)}
     <!-- ASISTENCIAS -->
     <div id="page-asistencias" class="page fadein">
       <div id="asis-firma-estado"></div>
+      <div class="panel" id="asis-qr-panel" style="display:none;margin-bottom:14px">
+        <div class="ph"><div class="ph-title">QR de asistencia por sede</div></div>
+        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada Site y cada Bio-Nave tiene su propio QR. Imprímelo y colócalo en la entrada de la sede.</div>
+        <div id="asis-qr-list" style="padding:4px 14px 12px;display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
       <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div style="font-family:var(--head);font-size:13px;font-weight:800;color:var(--text2)" id="asis-semana-lbl">—</div>
         <span class="tag g" id="asis-estatus-tag">Abierta</span>
@@ -8343,6 +8348,7 @@ async function renderFirmaEstado(){
 }
 
 async function renderAsistencias(){
+  renderQrSedesAsis();
   // Scope real: supervisor solo marca/ve asistencias de colaboradores de sus propios Sites
   const activos = colaboradoresVisibles().filter(c=>c.estatus==='activo');
   const dias = diasDeSemana(currentSemana);
@@ -12082,6 +12088,15 @@ async function renderSedesConfig(){
         <button class="btn sm primary" onclick="guardarSede('${n.id}','${esc(n.nombre)}','${n.tipo}')">Guardar</button>
       </div></div>`;
   }).join('') || '<div class="empty-sub">Sin Sites ni Bio-Naves registrados</div>';
+}
+async function renderQrSedesAsis(){
+  const p=document.getElementById('asis-qr-panel'), l=document.getElementById('asis-qr-list');
+  if(!p||!l) return;
+  if(!['rh','direccion_ceo'].includes(currentUser.role)){ p.style.display='none'; return; }
+  const [{data:sites},{data:naves}]=await Promise.all([ sb.from('sites').select('id,nombre').order('nombre'), sb.from('bio_naves').select('id,nombre').order('nombre') ]);
+  const items=[...(sites||[]).map(x=>({...x,et:'Site'})),...(naves||[]).map(x=>({...x,et:'Bio-Nave'}))];
+  p.style.display= items.length?'block':'none';
+  l.innerHTML=items.map(n=>`<button class="btn sm" onclick="verQrSede('${n.id}','${esc(n.nombre)}')">${esc(n.nombre)} <span class="tag m" style="margin-left:6px">${n.et}</span></button>`).join('');
 }
 async function ubicacionSede(id){
   try {
