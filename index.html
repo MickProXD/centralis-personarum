@@ -264,6 +264,44 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 .tb-user{display:flex;align-items:center;padding:2px;background:var(--surface);border:1px solid var(--border);border-radius:999px;cursor:pointer;transition:border-color .15s}
 .tb-salir{flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer}
 .tb-salir:hover{color:var(--red);border-color:var(--red)}
+
+.tb-bell{position:relative;flex-shrink:0;width:34px;height:34px;display:none;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);cursor:pointer}
+.tb-bell:hover{color:var(--green);border-color:var(--green)}
+.tb-bell svg{width:17px;height:17px}
+#bell-badge{display:none;position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:999px;min-width:16px;height:16px;padding:0 4px;align-items:center;justify-content:center}
+#bell-widget-panel{display:none;position:fixed;top:58px;right:12px;width:340px;max-width:calc(100vw - 24px);max-height:min(72vh,540px);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:600;overflow-y:auto}
+.bell-sec{padding:8px 12px 4px;font-family:var(--head);font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--text3)}
+.bell-it{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.bell-it:hover{background:var(--surface2)}
+.bell-n{flex-shrink:0;min-width:22px;height:22px;border-radius:999px;background:var(--amber,#e0a100);color:#111;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 6px}
+.audit-ico.b svg{color:var(--blue)}
+/* Logros (insignias estilo consola) */
+.lg-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--border)}
+.lg-big{font-family:var(--head);font-size:30px;font-weight:900;line-height:1;color:var(--green)}.lg-big span{font-size:13px;color:var(--text3);font-weight:700}
+.lg-sub{font-size:12px;color:var(--text2);margin-top:4px}
+.lg-bar{flex:1;min-width:140px;height:8px;border-radius:999px;background:var(--border);overflow:hidden}.lg-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),#e0a100);border-radius:999px;transition:width .8s ease}
+.lg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:12px}
+.lg-card{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);opacity:.62;filter:grayscale(.7)}
+.lg-card.on{opacity:1;filter:none}
+.lg-n{font-family:var(--head);font-size:13px;font-weight:800}.lg-d{font-size:11px;color:var(--text2);margin-top:2px}.lg-m{font-size:10px;color:var(--text3);margin-top:4px}
+.lg-med{border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--border2);flex-shrink:0;line-height:1}
+.lg-med.on{border-color:var(--lgc);box-shadow:0 0 14px var(--lgc)}
+.lg-pop{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;height:64px;border-radius:999px;background:linear-gradient(135deg,#141815,#202823);border:1px solid var(--lgc);box-shadow:0 10px 40px rgba(0,0,0,.6),0 0 28px var(--lgc);max-width:calc(100vw - 20px);cursor:pointer;animation:lgIn .55s cubic-bezier(.2,1.3,.4,1) both}
+.lg-pop.out{animation:lgOut .45s ease-in both}
+.lg-pop-med{width:64px;height:64px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:30px;background:radial-gradient(circle at 30% 25%,var(--lgc),#000a);position:relative;animation:lgSpin .9s ease-out both}
+.lg-pop-med::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--lgc);animation:lgRing 1s .2s ease-out both}
+.lg-pop-txt{overflow:hidden;white-space:nowrap;max-width:0;opacity:0;animation:lgTxt .6s .45s ease-out forwards}
+.lg-pop-k{font-family:var(--head);font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--lgc)}
+.lg-pop-n{font-family:var(--head);font-size:15px;font-weight:900;color:#fff}.lg-pop-p{font-size:11px;color:#b6c0b9}
+.lg-sp{position:absolute;inset:0;pointer-events:none}
+.lg-sp i{position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:var(--lgc);opacity:0;animation:lgSpark .9s .25s ease-out forwards}
+@keyframes lgIn{from{opacity:0;transform:translate(-50%,-30px) scale(.6)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes lgOut{to{opacity:0;transform:translate(-50%,-24px) scale(.8)}}
+@keyframes lgSpin{0%{transform:scale(0) rotate(-200deg)}60%{transform:scale(1.25) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes lgRing{from{opacity:.9;transform:scale(.8)}to{opacity:0;transform:scale(1.9)}}
+@keyframes lgTxt{to{max-width:300px;opacity:1;padding:0 22px 0 14px}}
+@keyframes lgSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}}
+@media (prefers-reduced-motion:reduce){.lg-pop,.lg-pop-med,.lg-sp i,.lg-pop-med::after{animation:none}.lg-pop-txt{max-width:300px;opacity:1;padding:0 22px 0 14px;animation:none}}
 .tb-user:hover{border-color:var(--green)}
 .tb-user .sb-av{width:32px;height:32px;font-size:12px;overflow:hidden}
 .tb-user-txt{min-width:0;line-height:1.2}
@@ -877,6 +915,10 @@ select.form-input option{background:var(--bg2)}
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>
         Alta colaborador
       </button>
+      <button id="bell-widget-launcher" class="tb-bell" onclick="toggleBellWidget()" title="Notificaciones y pendientes" aria-label="Notificaciones" style="display:none">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M8 1.5a3 3 0 00-3 3v2c0 1-.5 2-1.5 3h9c-1-1-1.5-2-1.5-3v-2a3 3 0 00-3-3z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>
+        <span id="bell-badge">0</span>
+      </button>
       <button id="btn-cambiar-pass-sidebar" onclick="abrirCambiarPassword(false)" title="Cambiar contraseña temporal" style="display:none;flex-shrink:0;width:30px;height:30px;align-items:center;justify-content:center;background:transparent;border:1px solid var(--red);border-radius:8px;color:var(--red);cursor:pointer">
         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" style="width:14px;height:14px"><rect x="4" y="7" width="8" height="6" rx="1"/><path d="M6 7V5a2 2 0 014 0v2"/></svg>
       </button>
@@ -941,8 +983,8 @@ select.form-input option{background:var(--bg2)}
               <div id="dash-alertas-body"></div>
             </div>
             <div class="panel">
-              <div class="ph"><svg fill="none" stroke="var(--blue)" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M8 4v4l3 2"/></svg><div class="ph-title">Actividad reciente</div><button class="ph-btn ml" onclick="nav('auditoria',null)" data-min-role="admintotal">Ver bitácora</button></div>
-              <div id="dash-actividad"></div>
+              <div class="ph"><svg fill="none" stroke="var(--blue)" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M8 4v4l3 2"/></svg><div class="ph-title">Actividad de hoy</div><button class="ph-btn ml" onclick="nav('auditoria',null)" data-min-role="admintotal">Ver bitácora</button></div>
+              <div id="dash-actividad" style="max-height:340px;overflow-y:auto"></div>
             </div>
           </div>
           <div class="col">
@@ -1300,6 +1342,7 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div id="muro-aviso-asistencia"></div>
     <div id="muro-celebraciones" style="margin-bottom:14px"></div>
+    <div id="muro-logros" style="margin-bottom:14px"></div>
     <div id="muro-list" style="display:flex;flex-direction:column;gap:12px"></div>
     </div>
     </div>
@@ -1848,13 +1891,9 @@ select.form-input option{background:var(--bg2)}
   </div>
 </div>
 
-<!-- CAMPANA DE NOTIFICACIONES — felicitaciones y reconocimientos recibidos -->
-<div id="bell-widget-launcher" onclick="toggleBellWidget()" style="display:none;position:fixed;bottom:16px;right:76px;width:48px;height:48px;border-radius:50%;background:var(--surface2,#2a2a2a);border:1px solid var(--border);align-items:center;justify-content:center;cursor:pointer;z-index:500;box-shadow:0 4px 14px rgba(0,0,0,.35)">
-  <svg fill="none" stroke="var(--text)" stroke-width="1.5" viewBox="0 0 16 16" style="width:19px;height:19px"><path d="M8 1.5a3 3 0 00-3 3v2c0 1-.5 2-1.5 3h9c-1-1-1.5-2-1.5-3v-2a3 3 0 00-3-3z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>
-  <span id="bell-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:50%;width:16px;height:16px;align-items:center;justify-content:center">0</span>
-</div>
-<div id="bell-widget-panel" style="display:none;position:fixed;bottom:72px;right:76px;width:280px;max-height:360px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:500;overflow-y:auto">
-  <div style="padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700;font-size:12px">Notificaciones</div>
+<!-- CAMPANA DE NOTIFICACIONES — pendientes de hoy y novedades (el botón vive en la barra superior) -->
+<div id="bell-widget-panel">
+  <div style="padding:10px 12px;border-bottom:1px solid var(--border);font-weight:800;font-size:12px;font-family:var(--head)">Notificaciones</div>
   <div id="bell-list"></div>
 </div>
 
@@ -3583,14 +3622,14 @@ const ROLES = {
 const CAPS = {
   she: {
     // SHE: Bio-Muro (pestaña Seguridad), su asistencia y su perfil. Datos de salud y gasto los limita el servidor.
-    pages:['dashboard','miasistencia','miperfil','muro','seguridad','solicitudes'],
+    pages:['dashboard','miasistencia','miperfil','muro','seguridad','solicitudes','insignias'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   monitoreo: {
-    pages:['dashboard','flota','documentos','equipos','miasistencia','miperfil','muro','seguridad','solicitudes'],
+    pages:['dashboard','flota','documentos','equipos','miasistencia','miperfil','muro','seguridad','solicitudes','insignias'],
     fleet:true, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3612,14 +3651,14 @@ const CAPS = {
     reportes:'own', actas:'own_sites', firmaAsistencia:true, equipos:true
   },
   rh: {
-    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','solicitudes','miasistencia','miperfil','muro','seguridad'],
+    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','solicitudes','miasistencia','miperfil','muro','seguridad','insignias'],
     fleet:false, personnel:'all', editPersonnel:'all', baja:false,
     sites:'all_view', createSite:false, permisosLegales:false, permisos:false,
     config:'personnel', auditoria:false, kpis:true, compliance:true,
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
   administracion: {
-    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','muro','seguridad'],
+    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','muro','seguridad','insignias'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3627,7 +3666,7 @@ const CAPS = {
   },
   administrativo: {
     // El área (finanzas/operativa) amplía las páginas en caps(); en Finanzas el Administrativo de finanzas captura
-    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','muro','seguridad'],
+    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','muro','seguridad','insignias'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3941,7 +3980,7 @@ function caps(){
   const base = CAPS[currentUser.role] || CAPS.chofer;
   // Administrativo de área operativa: ve Flota, Equipos y Documentos de unidades (solo lectura)
   if (currentUser.role==='administrativo' && currentUser.areaAdmin==='operativa'){
-    return Object.assign({}, base, { pages:[...base.pages,'flota','rutas','documentos','equipos','mantenimiento','insignias'] });
+    return Object.assign({}, base, { pages:[...new Set([...base.pages,'flota','rutas','documentos','equipos','mantenimiento','insignias'])] });
   }
   // Ayudante general: no maneja unidad, no llena Informe de mantenimiento
   if (currentUser.role==='chofer' && esAyudanteGeneral()){
@@ -4282,6 +4321,7 @@ async function cargarPerfilYActivarSesion(){
   cargarDirectorioAvatares(true); iniciarPresencia(); cargarCumpleanos();
   await cargarDatosSupabase();
   updateBadges();
+  insigniasEvaluar(true);
   nav(paginaInicio(), null);
   if (!currentUser.tourCompletado) iniciarTour(); else avisoAsistenciaInicio();
   toast(`Bienvenido, ${currentUser.name.split(' ')[0]}`, 'success');
@@ -5403,6 +5443,7 @@ function toast(msg, tipo='success'){
   t.innerHTML = (icos[tipo]||icos.info) + msg;
   document.getElementById('toast-cont').appendChild(t);
   setTimeout(()=>t.remove(), 3000);
+  if (tipo === 'success' && typeof insigniasProgramar === 'function') insigniasProgramar();
 }
 
 function confirmar(msg, title, onOk){
@@ -5486,11 +5527,8 @@ function renderDashboard(){
   } else {
     ab.innerHTML = '<div class="atbl-hdr"><div></div><div class="col-h">Entidad / Documento</div><div class="col-h">Tipo</div><div class="col-h">Nivel</div><div class="col-h">Días</div><div class="col-h" style="text-align:right">Acción</div></div>' + alertas.slice(0,6).map(a=>`<div class="atbl-row" onclick="irAAlerta('${a.entidadTipo}','${a.entidadId}','${a.docTipo}')"><div><div class="adot ${nivelColor(a.nivel)}"></div></div><div><div class="aentity">${esc(a.entidadNombre)}</div><div class="adoc">${esc(a.docTipo)}</div></div><div class="ccell">${a.entidadTipo==='colab'?'Colab.':'Unidad'}</div><div><span class="tag ${nivelColor(a.nivel)}">${a.nivel}</span></div><div><span class="adias ${nivelColor(a.nivel)}">${a.diasStr}</span></div><div class="aact">Subir →</div></div>`).join('');
   }
-  // Actividad reciente
-  const acts = DB.auditoria.slice(0, 5);
-  const aBody = document.getElementById('dash-actividad');
-  if (acts.length === 0) aBody.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">Sin actividad reciente.</div></div>';
-  else aBody.innerHTML = acts.map(a=>`<div class="audit-row"><div class="audit-ico ${a.color}"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4"/></svg></div><div class="audit-text">${a.desc} <strong>· ${a.user}</strong></div><div class="audit-time">${tiempoRelativo(a.ts)}</div></div>`).join('');
+  // Actividad del día (filtrada por rol en el servidor)
+  cargarActividadHoy();
   // Asistencias hoy
   const hoy = new Date(); const hoyStr = fmtDate(hoy);
   const activos2 = DB.colaboradores.filter(c=>c.estatus==='activo');
@@ -9098,6 +9136,7 @@ async function renderMuro(){
   }
   renderRojosMuro();
   renderAvisoAsistenciaMuro();
+  renderLogrosMuro();
   await renderCelebracionesMuro();
 
   const [{ data: pubs }, { data: reacciones }, { data: comentarios }] = await Promise.all([
@@ -10110,11 +10149,15 @@ function mantSolicitar(){
   const lista = MANT.unidades; if (!lista.length){ toast('No hay unidades disponibles', 'error'); return; }
   const mia = lista.find(u => u.chofer_id && u.chofer_id === currentUser.colaboradorId) || lista[0];
   finModal('Solicitar mantenimiento',
-    finSelect('Tipo', 'ms-tipo', MANT_SOL_TIPOS, 'falla_urgente') + finSelect('Unidad', 'ms-uni', lista.map(u => [u.id, u.bak]), mia.id) + finArea('¿Qué necesita la unidad?', 'ms-det', ''),
+    finSelect('Tipo', 'ms-tipo', MANT_SOL_TIPOS, 'falla_urgente') + finSelect('Unidad', 'ms-uni', lista.map(u => [u.id, u.bak]), mia.id) + finArea('¿Qué necesita la unidad?', 'ms-det', '') +
+    `<label class="form-lbl">Fotos (obligatorias en falla o reparación urgente)</label><input class="form-input" type="file" id="ms-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">`,
     async () => {
       const det = fv('ms-det').trim(); if (det.length < 5) return finErr('Describe lo que necesita la unidad');
-      const { error } = await sb.from('solicitudes_op').insert({ tipo: fv('ms-tipo'), unidad_id: fv('ms-uni'), detalle: det, datos: {} });
-      if (error) return finErr(error.message);
+      const tipo = fv('ms-tipo'), files = [...(document.getElementById('ms-fotos')?.files || [])], ef = opValidarFotos(files, 4); if (ef) return finErr(ef);
+      if (tipo === 'falla_urgente' && !files.length) return finErr('Agrega al menos una foto de la falla');
+      const rid = crypto.randomUUID(), paths = files.length && SOL_EV[tipo] ? await opSubirFotos('solicitudes', rid, files) : [];
+      const { error } = await sb.from('solicitudes_op').insert({ id:rid, tipo, unidad_id: fv('ms-uni'), detalle: det, datos: {}, evidencia: paths });
+      if (error){ if (paths.length) await sb.storage.from('solicitudes').remove(paths); return finErr(error.message); }
       toast('Solicitud enviada', 'success'); renderMantenimiento();
     }, 'Enviar solicitud');
 }
@@ -10171,29 +10214,99 @@ function mantResponder(id){
 }
 
 /* ── Score e insignias ── */
-const INS_DEF = [
-  { t:'cumplimiento_total', min:1, n:'Cumplimiento total', d:'Cerraste un mes con el 100% de tus parámetros', c:'#e0a100' },
-  { t:'lavado_completo', min:1, n:'Unidad impecable', d:'Entregaste tu primer lavado con evidencia', c:'#2e9e5b' },
-  { t:'lavado_completo', min:10, n:'Siempre limpio', d:'10 lavados entregados a tiempo', c:'#2f7de1' },
-  { t:'checklist_llenado', min:1,   n:'Primer checklist',      d:'Entregaste tu primer checklist', c:'#2e9e5b' },
-  { t:'checklist_llenado', min:10,  n:'Constancia',            d:'10 checklists entregados',       c:'#2f7de1' },
-  { t:'checklist_llenado', min:30,  n:'Inspector estrella',    d:'30 checklists entregados',       c:'#e0a100' },
-  { t:'checklist_llenado', min:100, n:'Guardián de la unidad', d:'100 checklists entregados',      c:'#8a4fd6' },
-  { t:'reporte_con_evidencia', min:1, n:'Ojo clínico',         d:'Reportaste una falla con fotos', c:'#2e9e5b' },
-  { t:'reporte_con_evidencia', min:5, n:'Prevención activa',   d:'5 fallas reportadas con fotos',  c:'#e0a100' },
-  { t:'mant_respuesta_a_tiempo', min:1,  n:'Respuesta puntual',    d:'Respondiste una falla en plazo con evidencia', c:'#2e9e5b' },
-  { t:'mant_respuesta_a_tiempo', min:10, n:'Gerencia ágil',        d:'10 respuestas en plazo',  c:'#2f7de1' },
-  { t:'mant_respuesta_a_tiempo', min:25, n:'Mantenimiento al día', d:'25 respuestas en plazo',  c:'#8a4fd6' }
+const LOGROS_RAREZA = { comun:['Común', '#b8733a'], rara:['Rara', '#8a97a8'], epica:['Épica', '#8a4fd6'], legendaria:['Legendaria', '#e0a100'] };
+const LOGROS = [
+  { c:'primer_paso',       i:'🏁', n:'Primer paso',        d:'Entraste a Bio-centralis',                         h:'Inicia sesión en tu cuenta',                           r:'comun',      p:10, a:['*'] },
+  { c:'siempre_presente',  i:'🎯', n:'Siempre presente',   d:'Registraste 10 asistencias',                       h:'Registra 10 asistencias en tu sede',                   r:'rara',       p:25, a:['*'] },
+  { c:'unidad_impecable',  i:'✨', n:'Unidad impecable',   d:'Entregaste tu primer lavado con evidencia',        h:'Entrega un lavado programado con sus 3 fotos',         r:'comun',      p:15, a:['chofer'] },
+  { c:'constancia',        i:'✅', n:'Constancia',         d:'Entregaste 10 checklists de tu unidad',            h:'Entrega 10 checklists de tu unidad',                   r:'rara',       p:25, a:['chofer'] },
+  { c:'cumplimiento_total',i:'🏆', n:'Cumplimiento total', d:'Cerraste un mes con el 100% de tus parámetros',    h:'Cierra un mes cumpliendo todos tus parámetros',        r:'legendaria', p:50, a:['chofer'] },
+  { c:'gerencia_agil',     i:'⚡', n:'Gerencia ágil',      d:'Respondiste 10 fallas dentro del plazo',           h:'Responde 10 fallas de unidades dentro del plazo',      r:'epica',      p:40, a:['supervisor','adminop','direccion_ceo'] },
+  { c:'ruta_control',      i:'🛰️', n:'Ruta bajo control',  d:'Creaste tu primera orden de servicio',             h:'Crea tu primera orden de servicio',                    r:'comun',      p:15, a:['monitoreo','supervisor','adminop','direccion_ceo'] },
+  { c:'voz_empresa',       i:'📣', n:'Voz de la empresa',  d:'Publicaste en el Bio-Muro',                        h:'Haz tu primera publicación en el Bio-Muro',            r:'comun',      p:15, a:['rh','direccion_ceo'] },
+  { c:'cuentas_claras',    i:'🧾', n:'Cuentas claras',     d:'Capturaste 5 facturas',                            h:'Captura 5 facturas de proveedores',                    r:'rara',       p:25, a:['administracion','administrativo','direccion_ceo'] },
+  { c:'seguridad_primero', i:'🦺', n:'Seguridad primero',  d:'Atendiste tu primer reporte de seguridad',         h:'Registra o cierra tu primer reporte de seguridad',     r:'rara',       p:25, a:['she','direccion_ceo'] }
 ];
+const LG = { cola:[], mostrando:false, ultimo:0 };
+function logroAplica(l){
+  if (esDireccionReal()) return true;
+  return l.a.includes('*') || l.a.includes(currentUser.role) || (l.a.includes('adminop') && opEsAdminOp());
+}
+function logroMedalla(l, ganada, px){
+  const col = LOGROS_RAREZA[l.r][1];
+  const bg = ganada ? `radial-gradient(circle at 30% 25%, ${col}, ${col}99 60%, #0008)` : 'var(--surface2)';
+  return `<div class="lg-med${ganada ? ' on' : ''}" style="width:${px}px;height:${px}px;background:${bg};--lgc:${col};font-size:${Math.round(px * .46)}px">${ganada ? l.i : '🔒'}</div>`;
+}
+const logroFecha = iso => new Date(iso).toLocaleDateString('es-MX', { day:'2-digit', month:'short', timeZone:TZ_MX });
+function logrosHtml(mias, resumen){
+  const lista = LOGROS.filter(logroAplica), got = new Set((mias || []).map(x => x.codigo));
+  const n = lista.filter(l => got.has(l.c)).length, pts = lista.filter(l => got.has(l.c)).reduce((a, l) => a + l.p, 0), tot = lista.reduce((a, l) => a + l.p, 0);
+  const cuentas = Math.max(1, (resumen && resumen.cuentas) || 1), por = (resumen && resumen.por_codigo) || {};
+  const cards = lista.map(l => {
+    const g = (mias || []).find(x => x.codigo === l.c), rz = LOGROS_RAREZA[l.r], k = por[l.c] || 0;
+    return `<div class="lg-card${g ? ' on' : ''}">${logroMedalla(l, !!g, 52)}<div style="min-width:0;flex:1"><div class="lg-n">${esc(l.n)}</div><div class="lg-d">${esc(g ? l.d : l.h)}</div>
+      <div class="lg-m"><span style="color:${rz[1]};font-weight:800">${rz[0]}</span> · ${l.p} pts${k ? ` · lo tiene el ${Math.round(k / cuentas * 100)}% del equipo` : ''}${g ? ` · ${esc(logroFecha(g.ganada_en))}` : ''}</div></div></div>`;
+  }).join('');
+  return `<div class="lg-head"><div><div class="lg-big">${pts}<span> / ${tot} pts</span></div><div class="lg-sub">${n} de ${lista.length} logros desbloqueados</div></div><div class="lg-bar"><i style="width:${tot ? Math.round(pts / tot * 100) : 0}%"></i></div></div><div class="lg-grid">${cards}</div>`;
+}
+async function logrosDatos(){
+  const [mi, rs] = await Promise.all([
+    sb.from('insignias_ganadas').select('codigo,ganada_en').eq('user_id', currentUser.userId),
+    sb.rpc('insignias_resumen')
+  ]);
+  return { mias: mi.data || [], res: rs.data || null };
+}
+/* Evalúa en el servidor qué logros ya cumpliste y celebra los nuevos */
+async function insigniasEvaluar(force){
+  if (!currentUser) return;
+  if (!force && Date.now() - LG.ultimo < 20000) return;
+  LG.ultimo = Date.now();
+  try {
+    const { data, error } = await sb.rpc('insignias_evaluar');
+    if (error || !Array.isArray(data) || !data.length) return;
+    const nuevos = data.filter(c => LOGROS.some(l => l.c === c));
+    if (!nuevos.length) return;
+    sb.rpc('insignias_marcar_vistas');
+    logroEncolar(nuevos);
+    if (document.getElementById('page-insignias')?.classList.contains('active')) renderInsignias(true);
+    if (document.getElementById('page-muro')?.classList.contains('active')) renderLogrosMuro();
+  } catch(e){}
+}
+let _logroT = null;
+function insigniasProgramar(){ clearTimeout(_logroT); _logroT = setTimeout(() => insigniasEvaluar(false), 2500); }
+function logroEncolar(codes){
+  codes.forEach(c => { const l = LOGROS.find(x => x.c === c); if (l) LG.cola.push(l); });
+  if (!LG.mostrando) logroSiguiente();
+}
+function logroSiguiente(){
+  const l = LG.cola.shift();
+  if (!l){ LG.mostrando = false; return; }
+  LG.mostrando = true;
+  const rz = LOGROS_RAREZA[l.r];
+  const el = document.createElement('div');
+  el.className = 'lg-pop'; el.style.setProperty('--lgc', rz[1]);
+  const chispas = Array.from({ length:16 }, (_, i) => { const a = i / 16 * Math.PI * 2, d = 46 + Math.random() * 34; return `<i style="--dx:${(Math.cos(a) * d).toFixed(0)}px;--dy:${(Math.sin(a) * d).toFixed(0)}px;animation-delay:${(Math.random() * .15).toFixed(2)}s"></i>`; }).join('');
+  el.innerHTML = `<div class="lg-pop-med">${l.i}<span class="lg-sp">${chispas}</span></div><div class="lg-pop-txt"><div class="lg-pop-k">Logro desbloqueado</div><div class="lg-pop-n">${esc(l.n)}</div><div class="lg-pop-p">${l.p} pts · ${rz[0]}</div></div>`;
+  let cerrado = false;
+  const cerrar = () => { if (cerrado) return; cerrado = true; el.classList.add('out'); setTimeout(() => { el.remove(); logroSiguiente(); }, 450); };
+  el.onclick = cerrar;
+  document.body.appendChild(el);
+  try { navigator.vibrate && navigator.vibrate([40, 30, 60]); } catch(e){}
+  setTimeout(cerrar, 5200);
+}
+/* Bio-Muro: quién desbloqueó qué (sin explicar cómo se consigue) */
+async function renderLogrosMuro(){
+  const box = document.getElementById('muro-logros'); if (!box) return;
+  const { data } = await sb.from('insignias_ganadas').select('user_id,codigo,nombre_usuario,ganada_en').order('ganada_en', { ascending:false }).limit(8);
+  const filas = (data || []).map(x => ({ x, l:LOGROS.find(l => l.c === x.codigo) })).filter(r => r.l);
+  if (!filas.length){ box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="panel" style="padding:12px 14px"><div style="font-family:var(--head);font-size:12px;font-weight:800;margin-bottom:8px">🏆 Logros del equipo</div>` +
+    filas.map(({ x, l }) => `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--border)">${avatarHtml(x.user_id, x.nombre_usuario || '—', 34)}<div style="flex:1;min-width:0;font-size:12px"><strong>${esc(x.nombre_usuario || '—')}</strong> desbloqueó <strong>«${esc(l.n)}»</strong><div style="font-size:10px;color:var(--text3)">${tiempoRel(x.ganada_en)}</div></div>${logroMedalla(l, true, 34)}</div>`).join('') + `</div>`;
+}
 const INS_EV = { cumplimiento_total:'Mes con el 100% de parámetros', lavado_completo:'Lavado entregado con evidencia', lavado_tarde:'Lavado entregado fuera de fecha', lavado_incumplido:'Lavado sin evidencia en la fecha', checklist_omitido:'Checklist del día no entregado', checklist_llenado:'Checklist entregado', reporte_con_evidencia:'Falla reportada con fotos', mant_respuesta_a_tiempo:'Respuesta en plazo con evidencia', mant_respuesta_tarde:'Respuesta fuera de plazo', mant_sin_respuesta:'Falla sin respuesta en plazo', mant_sin_evidencia_adjunta:'Respuesta sin foto ni folio' };
 function insNivel(t){
   if (t >= 125) return ['Oro', '#e0a100']; if (t >= 110) return ['Plata', '#8a97a8']; if (t >= 90) return ['Bronce', '#b8733a'];
   if (t >= 70) return ['En observación', '#e0a100']; return ['Requiere atención', '#d64545'];
-}
-function insMedalla(b, n, ganada){
-  const c = ganada ? b.c : '#6b7280';
-  return `<div style="text-align:center;width:110px;opacity:${ganada ? 1 : .45}"><div style="width:54px;height:54px;border-radius:50%;margin:0 auto 6px;background:${c};display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px ${c}33"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg></div>
-    <div style="font-size:11px;font-weight:800">${esc(b.n)}</div><div style="font-size:10px;color:var(--text3)">${ganada ? esc(b.d) : Math.min(n, b.min) + ' / ' + b.min}</div></div>`;
 }
 const opScoreAplica = () => currentUser.role === 'chofer' || currentUser.role === 'supervisor' || opEsAdminOp();
 async function scoreDatos(){
@@ -10213,36 +10326,41 @@ function scoreBloque(d){
       ${fila(c.asistencia, 'Asistencia completa')}${fila(c.rutas, 'Rutas completas')}
       ${c.puesto === 'Operador' ? fila(c.checklists_omitidos === 0, 'Checklist de la unidad todos los días', c.checklists_omitidos ? c.checklists_omitidos + ' omitido' + (c.checklists_omitidos === 1 ? '' : 's') : '') + fila(c.lavados_incumplidos === 0, 'Lavados programados con evidencia', c.lavados_incumplidos ? c.lavados_incumplidos + ' incumplido' + (c.lavados_incumplidos === 1 ? '' : 's') : '') : ''}
       <div style="padding:10px 0;font-size:12px;color:var(--text2)">${c.cumple ? 'Vas al <strong>100%</strong> de tus parámetros este mes. Si lo mantienes hasta el cierre del mes, ganas la insignia “Cumplimiento total”.' : 'Tienes parámetros pendientes este mes. Ponerte al corriente evita que se acumulen.'}</div></div>` : '';
-  const medallas = INS_DEF.map(b => insMedalla(b, pt[b.t] || 0, (pt[b.t] || 0) >= b.min)).join('');
   return `<div class="panel" style="padding:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:0">
       <div style="width:96px;height:96px;border-radius:50%;border:6px solid ${niv[1]};display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:var(--head);font-size:28px;font-weight:900;line-height:1">${total}</div><div style="font-size:10px;color:var(--text3)">puntos</div></div>
       <div style="flex:1;min-width:200px"><div style="font-family:var(--head);font-size:16px;font-weight:900;color:${niv[1]}">${niv[0]}</div>
         <div style="font-size:12px;color:var(--text2);margin-top:4px">Todos empiezan en 100 puntos. Sube con checklists, lavados con evidencia y respuestas a tiempo; baja cuando algo queda sin entregar en su fecha o sin evidencia.</div></div>
     </div>${cumpl}
-    <div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Insignias</div>
-    <div class="panel" style="padding:16px;display:flex;gap:14px;flex-wrap:wrap">${medallas}</div>
     <div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Mi historial</div>
     <div class="panel" style="padding:6px 16px">${d.ev.map(e => `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="flex:1">${esc(INS_EV[e.tipo] || e.nota || e.tipo)}</span><span style="color:var(--text3);font-size:11px">${opFechaHora(e.created_at)}</span><span class="tag ${e.puntos >= 0 ? 'g' : 'r'}">${e.puntos > 0 ? '+' : ''}${e.puntos}</span></div>`).join('') || '<div class="empty-sub" style="padding:14px">Aún no tienes movimientos.</div>'}</div>`;
 }
-async function renderInsignias(){
+async function renderInsignias(sinEvaluar){
   const cont = document.getElementById('ins-body'); if (!cont) return;
+  if (!sinEvaluar) await insigniasEvaluar(true);
   const equipoOk = currentUser.role === 'supervisor' || currentUser.role === 'rh' || opEsDireccion();
-  const [d, eq] = await Promise.all([ scoreDatos(), equipoOk ? sb.rpc('score_equipo') : Promise.resolve({ data:[] }) ]);
+  const [lg, d, eq] = await Promise.all([
+    logrosDatos(),
+    opScoreAplica() ? scoreDatos() : Promise.resolve(null),
+    equipoOk ? sb.rpc('score_equipo') : Promise.resolve({ data:[] })
+  ]);
   const roles = { chofer:'Chofer', supervisor:'Gerente Operativo', administrativo:'Administrativo operativo' };
-  cont.innerHTML = scoreBloque(d) + (equipoOk ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Score del equipo operativo</div>
+  cont.innerHTML = `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:0 0 8px">Logros</div>` + logrosHtml(lg.mias, lg.res) +
+    (d ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:22px 0 8px">Mi score</div>` + scoreBloque(d) : '') +
+    (equipoOk ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:22px 0 8px">Score del equipo operativo</div>
     <div class="panel" style="padding:6px 16px">${(eq.data || []).map(p => { const n = insNivel(p.total); return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="flex:1;min-width:0"><strong>${esc(p.nombre)}</strong> <span style="color:var(--text3)">· ${esc(roles[p.rol] || p.rol)}</span></span><span style="font-size:11px;color:${n[1]};font-weight:700">${n[0]}</span><span class="tag b">${p.total}</span></div>`; }).join('') || '<div class="empty-sub" style="padding:14px">Sin datos.</div>'}</div>` : '');
 }
 async function mpScore(){
   const box = document.getElementById('mp-score'); if (!box) return;
-  if (!opScoreAplica()){ box.innerHTML = ''; return; }
-  try { const d = await scoreDatos(); box.innerHTML = `<div style="margin-top:12px"><div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:8px">Score</div>${scoreBloque(d)}</div>`; }
-  catch(e){ box.innerHTML = ''; }
+  let h = '';
+  try { if (opScoreAplica()){ const d = await scoreDatos(); h += `<div style="margin-top:12px"><div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:8px">Score</div>${scoreBloque(d)}</div>`; } } catch(e){}
+  try { const lg = await logrosDatos(); h += `<div style="margin-top:16px"><div style="font-family:var(--head);font-weight:800;font-size:13px;margin-bottom:8px">Logros</div>${logrosHtml(lg.mias, lg.res)}</div>`; } catch(e){}
+  box.innerHTML = h;
 }
 
 /* ── Solicitudes operativas ── */
 const SOL_TIPOS = {
   combustible:          { t:'Carga de combustible',         ap:'operativo', campos:[['litros','Litros solicitados','number'],['km','Kilometraje actual','number']] },
-  permiso:              { t:'Permiso',                      ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta','date'],['goce','Con goce de sueldo','sel:Sí,No,Por definir']] },
+  permiso:              { t:'Permiso',                      ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta','date']] },
   vacaciones:           { t:'Vacaciones',                   ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta','date']] },
   cambio_ruta:          { t:'Cambio de ruta',               ap:'operativo', campos:[['fecha','Fecha','date'],['ruta','Ruta que solicitas','text']] },
   cambio_unidad:        { t:'Cambio de unidad',             ap:'operativo', campos:[['unidad','Unidad que solicitas','text']] },
@@ -10258,6 +10376,8 @@ const SOL_TIPOS = {
   cambio_ayudante:      { t:'Cambio de ayudante',           ap:'operativo', campos:[['ayudante','Ayudante que solicitas (opcional)','text']] },
   sugerencia_queja:     { t:'Sugerencia o queja',           ap:'rh',        campos:[] }
 };
+/* Evidencia por tipo (el servidor aplica la misma regla) */
+const SOL_EV = { combustible:'requerida', falla_urgente:'requerida', incapacidad:'requerida', viaticos:'requerida', permiso:'opcional', material_unidad:'opcional', epp_uniforme:'opcional', cambio_unidad:'opcional' };
 const SOL_AP = { operativo:'Gerente Operativo', rh:'Recursos Humanos', finanzas:'Gerente Administrativo', she:'SHE' };
 const SOL = { lista:[] };
 function solPuedeResolver(ap){
@@ -10272,14 +10392,16 @@ async function renderSolicitudes(){
   const tag = e => e === 'aprobada' ? '<span class="tag g">Aprobada</span>' : e === 'rechazada' ? '<span class="tag r">Rechazada</span>' : '<span class="tag a">Pendiente</span>';
   const resumen = d => Object.entries(d || {}).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${esc(k)}: ${esc(String(v))}`).join(' · ');
   const fila = s => { const def = SOL_TIPOS[s.tipo] || { t:s.tipo }, puede = s.estatus === 'pendiente' && solPuedeResolver(s.aprobador);
-    return `<div class="panel" style="padding:14px;margin-bottom:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px"><span class="tag b">${esc(def.t)}</span>${tag(s.estatus)}<span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(s.created_at)}</span></div>
+    return `<div class="panel" style="padding:14px;margin-bottom:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px"><span class="tag b">${esc(def.t)}</span>${tag(s.estatus)}${s.goce_sueldo === true ? '<span class="tag g">Con goce de sueldo</span>' : s.goce_sueldo === false ? '<span class="tag a">Sin goce de sueldo</span>' : ''}<span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(s.created_at)}</span></div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${esc(s.solicitante_nombre || '—')} · Aprueba: ${esc(SOL_AP[s.aprobador] || s.aprobador)}</div>
       <div style="font-size:13px;white-space:pre-wrap">${esc(s.detalle)}</div>
       ${resumen(s.datos) ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${resumen(s.datos)}</div>` : ''}
+      ${opMiniaturas('solicitudes', s.evidencia)}
       ${s.motivo ? `<div style="font-size:12px;margin-top:6px"><strong>Motivo:</strong> ${esc(s.motivo)}</div>` : ''}
       ${puede ? `<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="solResolver('${esc(s.id)}',true)">Aprobar</button><button class="btn sm danger" onclick="solResolver('${esc(s.id)}',false)">Rechazar</button></div>` : ''}</div>`; };
   const porRes = SOL.lista.filter(s => s.estatus === 'pendiente' && solPuedeResolver(s.aprobador));
   const mias = SOL.lista.filter(s => s.solicitante === currentUser.userId);
+  await Promise.all([...porRes, ...mias.slice(0, 20)].filter(s => (s.evidencia || []).length).flatMap(s => s.evidencia.slice(0, 4).map(p => avBlob('solicitudes', p))));
   const otras = SOL.lista.filter(s => s.solicitante !== currentUser.userId && !porRes.includes(s));
   const bloque = (t, arr) => arr.length ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">${t}</div><div style="display:flex;flex-direction:column;gap:10px">${arr.map(fila).join('')}</div>` : '';
   cont.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="solNueva()">Nueva solicitud</button></div>` +
@@ -10296,23 +10418,47 @@ function solNueva(){
 }
 function solCampos(){
   const def = SOL_TIPOS[fv('sl-tipo')]; if (!def) return;
-  document.getElementById('sl-campos').innerHTML = `<div style="font-size:11px;color:var(--text3);margin:-4px 0 10px">La aprueba: <strong>${esc(SOL_AP[def.ap])}</strong></div>` +
-    def.campos.map(([k, l, t]) => t.startsWith('sel:') ? finSelect(l, 'sl-f-' + k, t.slice(4).split(',').map(x => [x, x]), '') : finCampo(l, 'sl-f-' + k, t, '', t === 'number' ? 'min="0" step="any" inputmode="decimal"' : 'maxlength="120"')).join('');
+  const ev = SOL_EV[fv('sl-tipo')];
+  document.getElementById('sl-campos').innerHTML = `<div style="font-size:11px;color:var(--text3);margin:-4px 0 10px">La aprueba: <strong>${esc(SOL_AP[def.ap])}</strong>${fv('sl-tipo') === 'permiso' ? ' · quien lo aprueba define si es con goce de sueldo' : ''}</div>` +
+    def.campos.map(([k, l, t]) => t.startsWith('sel:') ? finSelect(l, 'sl-f-' + k, t.slice(4).split(',').map(x => [x, x]), '') : finCampo(l, 'sl-f-' + k, t, '', t === 'number' ? 'min="0" step="any" inputmode="decimal"' : 'maxlength="120"')).join('') +
+    (ev ? `<label class="form-lbl">Evidencia (foto) — ${ev === 'requerida' ? 'obligatoria' : 'opcional'}</label><input class="form-input" type="file" id="sl-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">` : '');
 }
 async function solEnviar(){
-  const tipo = fv('sl-tipo'), def = SOL_TIPOS[tipo], det = fv('sl-det').trim();
+  const tipo = fv('sl-tipo'), def = SOL_TIPOS[tipo], det = fv('sl-det').trim(), ev = SOL_EV[tipo];
   if (det.length < 5) return finErr('Escribe el detalle de tu solicitud');
   const datos = {}; def.campos.forEach(([k, , t]) => { const v = fv('sl-f-' + k); if (v !== '') datos[k] = t === 'number' ? Number(v) : v; });
   if (datos.desde && datos.hasta && datos.hasta < datos.desde) return finErr('La fecha final no puede ser anterior a la inicial');
-  const { error } = await sb.from('solicitudes_op').insert({ tipo, detalle: det, datos });
-  if (error) return finErr(error.message);
+  let files = [];
+  if (ev){
+    files = [...(document.getElementById('sl-fotos')?.files || [])];
+    const ef = opValidarFotos(files, 4); if (ef) return finErr(ef);
+    if (ev === 'requerida' && !files.length) return finErr('Esta solicitud necesita evidencia: agrega al menos una foto');
+  }
+  const rid = crypto.randomUUID(); let paths = [];
+  if (files.length) paths = await opSubirFotos('solicitudes', rid, files);
+  const { error } = await sb.from('solicitudes_op').insert({ id:rid, tipo, detalle:det, datos, evidencia:paths });
+  if (error){ if (paths.length) await sb.storage.from('solicitudes').remove(paths); return finErr(error.message); }
   toast('Solicitud enviada', 'success'); renderSolicitudes();
 }
 function solRefrescar(){ if (document.getElementById('page-mantenimiento')?.classList.contains('active')) renderMantenimiento(); else renderSolicitudes(); }
 async function solResolver(id, aprobar){
   if (aprobar){
+    let s = SOL.lista.find(x => x.id === id);
+    if (!s){ const r = await sb.from('solicitudes_op').select('tipo').eq('id', id).single(); s = r.data; }
+    if (s && s.tipo === 'permiso'){
+      finModal('Aprobar permiso',
+        '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Define cómo se paga este permiso.</div>' +
+        finSelect('¿Con goce de sueldo?', 'sl-goce', [['si', 'Sí, con goce de sueldo'], ['no', 'No, sin goce de sueldo']], '', 'Selecciona…'),
+        async () => {
+          const g = fv('sl-goce'); if (!g) return finErr('Indica si es con goce de sueldo');
+          const { error } = await sb.rpc('resolver_solicitud_op2', { p_id:id, p_aprobar:true, p_motivo:null, p_goce: g === 'si' });
+          if (error) return finErr(error.message);
+          toast('Permiso aprobado', 'success'); solRefrescar();
+        }, 'Aprobar');
+      return;
+    }
     confirmar('¿Aprobar esta solicitud?', 'Aprobar solicitud', async () => {
-      const { error } = await sb.rpc('resolver_solicitud_op', { p_id:id, p_aprobar:true, p_motivo:null });
+      const { error } = await sb.rpc('resolver_solicitud_op2', { p_id:id, p_aprobar:true, p_motivo:null, p_goce:null });
       if (error) return toast(error.message, 'error');
       toast('Solicitud aprobada', 'success'); solRefrescar();
     });
@@ -10320,7 +10466,7 @@ async function solResolver(id, aprobar){
   }
   finModal('Rechazar solicitud', finArea('Motivo del rechazo', 'sl-mot', ''), async () => {
     const m = fv('sl-mot').trim(); if (m.length < 3) return finErr('Indica el motivo');
-    const { error } = await sb.rpc('resolver_solicitud_op', { p_id:id, p_aprobar:false, p_motivo:m });
+    const { error } = await sb.rpc('resolver_solicitud_op2', { p_id:id, p_aprobar:false, p_motivo:m, p_goce:null });
     if (error) return finErr(error.message);
     toast('Solicitud rechazada', 'success'); solRefrescar();
   }, 'Rechazar');
@@ -10371,6 +10517,7 @@ async function sincronizarDatos(minSeg){
   try {
     await cargarDatosSupabase();
     SYNC.ultimo = Date.now();
+    renderBell(false); insigniasEvaluar(false);
     if (typeof updateBadges === 'function') updateBadges();
     if (typeof opBadges === 'function') opBadges();
     const pg = document.querySelector('.page.active'); const id = pg ? pg.id.replace('page-', '') : '';
@@ -10472,34 +10619,103 @@ async function enviarFelicitacion(paraUsuarioId, nombreColab, tipo){
   toast(`Felicitaste a ${nombreColab} 🎉`,'success');
 }
 
-/* ── Campana de notificaciones — felicitaciones/reconocimientos recibidos ── */
+/* ── Campana (barra superior): pendientes de hoy + novedades ── */
 let _bellWidgetAbierto = false;
-
 function toggleBellWidget(){
   _bellWidgetAbierto = !_bellWidgetAbierto;
   document.getElementById('bell-widget-panel').style.display = _bellWidgetAbierto ? 'block' : 'none';
   if (_bellWidgetAbierto) renderBell(true);
 }
+function bellIr(pg){ if (_bellWidgetAbierto) toggleBellWidget(); if (pg) nav(pg, null); }
+const bellKey = () => 'bio_bell_visto_' + (currentUser ? currentUser.userId : '');
+function bellVisto(){ try { return localStorage.getItem(bellKey()) || ''; } catch(e){ return ''; } }
+function bellMarcarVisto(){ try { localStorage.setItem(bellKey(), new Date().toISOString()); } catch(e){} }
+
+async function bellPendientes(){
+  const out = [], hoy = hoyLocal(), r = currentUser.role, uid = currentUser.userId;
+  const add = (n, txt, pg) => { if (n > 0) out.push({ n, txt, pg }); };
+  if (r === 'chofer' && caps().pages.includes('mantenimiento') && currentUser.colaboradorId){
+    const [u, inf, lav] = await Promise.all([
+      sb.from('unidades').select('id').eq('chofer_id', currentUser.colaboradorId).limit(1),
+      sb.from('mant_informes').select('id').eq('chofer_user', uid).eq('fecha', hoy).limit(1),
+      sb.from('lavados_programados').select('id').eq('chofer_user', uid).eq('estado', 'pendiente').lte('fecha_programada', hoy)
+    ]);
+    if ((u.data || []).length && !(inf.data || []).length) add(1, 'Entrega el checklist de tu unidad de hoy', 'mantenimiento');
+    const nl = (lav.data || []).length;
+    add(nl, nl === 1 ? 'Tienes un lavado pendiente de evidencia' : 'Tienes lavados pendientes de evidencia', 'mantenimiento');
+  }
+  if (caps().pages.includes('solicitudes')){
+    const { data } = await sb.from('solicitudes_op').select('aprobador').eq('estatus', 'pendiente');
+    const n = (data || []).filter(s => solPuedeResolver(s.aprobador)).length;
+    add(n, n === 1 ? 'Una solicitud por resolver' : n + ' solicitudes por resolver', 'solicitudes');
+  }
+  if (caps().pages.includes('mantenimiento') && typeof mantEsGerencia === 'function' && mantEsGerencia()){
+    const { data } = await sb.from('mant_informes').select('id').neq('nivel', 'ok').gt('created_at', new Date(Date.now() - 7 * 864e5).toISOString());
+    const ids = (data || []).map(x => x.id);
+    const rs = ids.length ? (await sb.from('mant_respuestas').select('informe_id').in('informe_id', ids)).data : [];
+    const resp = new Set((rs || []).map(x => x.informe_id));
+    const n = ids.filter(i => !resp.has(i)).length;
+    add(n, n === 1 ? 'Una falla de unidad sin respuesta' : n + ' fallas de unidades sin respuesta', 'mantenimiento');
+  }
+  if (caps().fleet || caps().compliance){
+    const c = getAlertas().filter(a => a.nivel === 'critico').length;
+    const pg = caps().pages.includes('compliance') ? 'compliance' : (caps().pages.includes('documentos') ? 'documentos' : null);
+    if (pg) add(c, c === 1 ? 'Un documento vencido o crítico' : c + ' documentos vencidos o críticos', pg);
+  }
+  return out;
+}
 
 async function renderBell(marcarLeidas){
-  const { data } = await sb.from('felicitaciones').select('*').eq('para_usuario_id', currentUser.userId).order('created_at', { ascending:false }).limit(30);
-  const cont = document.getElementById('bell-list');
+  if (!currentUser) return;
+  const visto = bellVisto();
+  const desde3 = new Date(Date.now() - 3 * 864e5).toISOString();
+  const [fel, pend, res] = await Promise.all([
+    sb.from('felicitaciones').select('*').eq('para_usuario_id', currentUser.userId).order('created_at', { ascending:false }).limit(30).then(r => r.data || [], () => []),
+    bellPendientes().catch(() => []),
+    sb.from('solicitudes_op').select('tipo,estatus,resuelto_en,motivo,goce_sueldo').eq('solicitante', currentUser.userId).not('resuelto_en', 'is', null).gte('resuelto_en', desde3).order('resuelto_en', { ascending:false }).limit(8).then(r => r.data || [], () => [])
+  ]);
   let rojos = [];
-  if (sheVeTodo()){ const rr = await sb.from('she_reportes').select('id,folio,lugar,created_at').eq('semaforo','rojo').neq('estatus','cerrado').order('created_at',{ascending:false}).limit(10); rojos = rr.data || []; }
-  const rojosHtml = rojos.map(r=>`<div onclick="toggleBellWidget();nav('seguridad',null)" style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px;cursor:pointer;border-left:4px solid #d64545"><strong>Riesgo rojo abierto</strong> · ${esc(r.lugar)}<div style="color:var(--text3);font-size:9px;margin-top:2px">${esc(r.folio)} · ${new Date(r.created_at).toLocaleString('es-MX')}</div></div>`).join('');
-  cont.innerHTML = rojosHtml + ((data||[]).length ? data.map(f=>`<div style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px">
-      ${esc(f.mensaje)}
-      <div style="color:var(--text3);font-size:9px;margin-top:2px">${new Date(f.created_at).toLocaleString('es-MX')}</div>
-    </div>`).join('') : (rojos.length ? '' : '<div class="empty" style="padding:16px;font-size:11px">Sin notificaciones</div>'));
-
-  const noLeidas = (data||[]).filter(f=>!f.leida).length + rojos.length;
-  const badge = document.getElementById('bell-badge');
-  badge.style.display = noLeidas > 0 ? 'flex' : 'none';
-  badge.textContent = noLeidas;
-
-  if (marcarLeidas && noLeidas > 0){
-    await sb.from('felicitaciones').update({ leida:true }).eq('para_usuario_id', currentUser.userId).eq('leida', false);
+  if (typeof sheVeTodo === 'function' && sheVeTodo()){
+    const rr = await sb.from('she_reportes').select('id,folio,lugar,created_at').eq('semaforo', 'rojo').neq('estatus', 'cerrado').order('created_at', { ascending:false }).limit(10);
+    rojos = rr.data || [];
   }
+  const cont = document.getElementById('bell-list');
+  const sec = t => `<div class="bell-sec">${t}</div>`;
+  let h = '';
+  if (pend.length) h += sec('Pendientes de hoy') + pend.map(p => `<div class="bell-it" onclick="bellIr('${p.pg}')"><span class="bell-n">${p.n}</span><span>${esc(p.txt)}</span></div>`).join('');
+  if (rojos.length) h += sec('Seguridad') + rojos.map(r => `<div class="bell-it" onclick="bellIr('seguridad')" style="border-left:4px solid #d64545"><span><strong>Riesgo rojo abierto</strong> · ${esc(r.lugar)}<div style="color:var(--text3);font-size:10px;margin-top:2px">${esc(r.folio)} · ${new Date(r.created_at).toLocaleString('es-MX')}</div></span></div>`).join('');
+  const novedades = [
+    ...res.map(r => ({ ts:r.resuelto_en, pg:'solicitudes', html:`Tu solicitud de <strong>${esc((SOL_TIPOS[r.tipo] || { t:r.tipo }).t.toLowerCase())}</strong> fue <strong>${r.estatus === 'aprobada' ? 'aprobada' : 'rechazada'}</strong>${r.goce_sueldo === true ? ' · con goce de sueldo' : r.goce_sueldo === false ? ' · sin goce de sueldo' : ''}${r.estatus === 'rechazada' && r.motivo ? `<div style="color:var(--text3);font-size:10px;margin-top:2px">Motivo: ${esc(r.motivo)}</div>` : ''}` })),
+    ...fel.map(f => ({ ts:f.created_at, pg:null, html:esc(f.mensaje), leida:f.leida }))
+  ].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  if (novedades.length) h += sec('Novedades') + novedades.map(n => `<div class="bell-it" ${n.pg ? `onclick="bellIr('${n.pg}')"` : 'style="cursor:default"'}><span>${n.html}<div style="color:var(--text3);font-size:10px;margin-top:2px">${new Date(n.ts).toLocaleString('es-MX')}</div></span></div>`).join('');
+  if (!h) h = '<div class="empty" style="padding:18px;font-size:12px">Todo al día. No tienes pendientes.</div>';
+  cont.innerHTML = h;
+
+  const nuevas = res.filter(r => !visto || r.resuelto_en > visto).length + fel.filter(f => !f.leida).length;
+  const total = pend.reduce((a, p) => a + p.n, 0) + rojos.length + (marcarLeidas ? 0 : nuevas);
+  const badge = document.getElementById('bell-badge');
+  badge.style.display = total > 0 ? 'flex' : 'none';
+  badge.textContent = total > 99 ? '99+' : total;
+  if (marcarLeidas){
+    bellMarcarVisto();
+    if (fel.some(f => !f.leida)) await sb.from('felicitaciones').update({ leida:true }).eq('para_usuario_id', currentUser.userId).eq('leida', false);
+  }
+}
+
+/* ── Actividad de hoy (dashboard): lo que el servidor deja ver según tu rol y área ── */
+const ACT_COL = { solicitudes:'b', mantenimiento:'a', documentos:'g', rutas:'b', finanzas:'g', muro:'b', seguridad:'r', personal:'g' };
+async function cargarActividadHoy(){
+  const box = document.getElementById('dash-actividad'); if (!box) return;
+  const ini = new Date(hoyLocal() + 'T00:00:00-06:00').toISOString();
+  const { data, error } = await sb.from('actividad').select('id,created_at,actor_nombre,texto,modulo').gte('created_at', ini).order('created_at', { ascending:false }).limit(60);
+  if (error) return;
+  if (!(data || []).length){ box.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">Aún no hay movimientos hoy.</div></div>'; return; }
+  box.innerHTML = data.map(a => {
+    const t = /^[A-ZÁÉÍÓÚÑ]/.test(a.texto) ? esc(a.texto) : `<strong>${esc(a.actor_nombre || 'Alguien')}</strong> ${esc(a.texto)}`;
+    const hora = new Date(a.created_at).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', timeZone:TZ_MX });
+    return `<div class="audit-row"><div class="audit-ico ${ACT_COL[a.modulo] || ''}"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4"/></svg></div><div class="audit-text">${t}</div><div class="audit-time">${hora}</div></div>`;
+  }).join('');
 }
 
 async function cargarContratosVigentes(){
