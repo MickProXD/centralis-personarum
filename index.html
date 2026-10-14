@@ -1015,6 +1015,11 @@ select.form-input option{background:var(--bg2)}
         <button class="btn primary" data-cap="createSite" onclick="openSite()"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>Crear Site</button>
       </div>
       <div id="sites-grid"></div>
+      <div class="panel" id="panel-sedes" style="display:none;margin-top:16px">
+        <div class="ph"><div class="ph-title">Sedes de asistencia — ubicación, red, foto y QR</div></div>
+        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada Site y cada Bio-Nave es una sede con su propio QR. Para dar de alta una sede, ponte físicamente en el lugar, conectado a su Wi-Fi, y usa los botones de ubicación actual y red actual. Sube también una foto del lugar por fuera. El registro de asistencia solo se acepta dentro del radio y desde las redes indicadas.</div>
+        <div id="cfg-sedes-list" style="padding:6px 14px 12px"></div>
+      </div>
     </div>
 
     <!-- DETALLE DE SITE -->
@@ -1574,11 +1579,6 @@ select.form-input option{background:var(--bg2)}
             <div class="ph"><div class="ph-title">Horarios de asistencia</div>
               <button class="ph-btn ml" id="btn-horario-nuevo" onclick="abrirHorario('')">Editar horario</button></div>
             <div id="cfg-horarios-list" style="padding:6px 14px 12px"></div>
-          </div>
-          <div class="panel" data-cap="config" id="panel-sedes" style="display:none">
-            <div class="ph"><div class="ph-title">Sites/Sedes — asistencia (ubicación, red y QR)</div></div>
-            <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada Site y cada Bio-Nave es una sede con su propio QR. Para dar de alta una sede, ponte físicamente en el lugar, conectado a su Wi-Fi, y usa los botones de ubicación actual y red actual. El registro de asistencia solo se acepta dentro del radio y desde las redes indicadas.</div>
-            <div id="cfg-sedes-list" style="padding:6px 14px 12px"></div>
           </div>
           <div class="panel" data-cap="config" id="panel-solicitudes" style="display:none">
             <div class="ph">
@@ -5673,6 +5673,7 @@ let editingUnidadId = null;
 function renderSites(){
   const grid = document.getElementById('sites-grid');
   if (!grid) return;
+  renderSedesConfig();
   const lista = sitesVisibles();
   const sub = document.getElementById('sites-sub');
   if (sub){
@@ -12054,16 +12055,18 @@ function descargarQrSede(){
   img.src = blobUrl;
 }
 
-/* ── Sedes de asistencia (solo Dirección) ── */
+/* ── Sedes de asistencia (RH y Dirección) ── */
 async function renderSedesConfig(){
   const panel = document.getElementById('panel-sedes'), cont = document.getElementById('cfg-sedes-list');
   if (!panel || !cont) return;
-  if (currentUser.role !== 'direccion_ceo'){ panel.style.display = 'none'; return; }
+  if (!['direccion_ceo','rh'].includes(currentUser.role)){ panel.style.display = 'none'; return; }
   panel.style.display = 'block';
   const [{ data: naves }, { data: sites }, { data: sedesN }, { data: sedesS }] = await Promise.all([
     sb.from('bio_naves').select('id,nombre').order('nombre'), sb.from('sites').select('id,nombre,lat,lng').order('nombre'),
     sb.from('sedes_asistencia').select('*'), sb.from('sedes_asistencia_site').select('*')
   ]);
+  const { data: fotos } = await sb.from('sedes_foto').select('*');
+  const fotoDe = (t,id) => (fotos||[]).find(f => f.sede_tipo===t && f.sede_id===id);
   const items = [
     ...(sites||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'site', etiqueta:'Site', s:(sedesS||[]).find(y => y.site_id === x.id) || (x.lat != null ? { lat:x.lat, lng:x.lng } : {}) })),
     ...(naves||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'nave', etiqueta:'Bio-Nave', s:(sedesN||[]).find(y => y.bio_nave_id === x.id) || {} }))
@@ -12081,6 +12084,9 @@ async function renderSedesConfig(){
       </div>
       <label class="form-lbl" style="margin-top:8px">Redes permitidas (una IP pública por línea)</label>
       <textarea class="form-input" rows="2" id="sa-ips-${n.id}">${esc((s.ips_permitidas||[]).join('\n'))}</textarea>
+      <div style="margin-top:10px"><label class="form-lbl">Foto del lugar por fuera</label>
+        <div id="sf-prev-${n.id}" data-foto="${fotoDe(n.tipo,n.id)?esc(fotoDe(n.tipo,n.id).path):''}" style="margin-bottom:6px"></div>
+        <input type="file" accept="image/jpeg,image/png,image/webp" class="form-input" onchange="subirFotoSede('${n.id}','${n.tipo}',this)"></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
         <button class="btn sm" onclick="ubicacionSede('${n.id}')">Usar mi ubicación actual</button>
         <button class="btn sm" onclick="ipSede('${n.id}')">Agregar la red actual</button>
@@ -12088,6 +12094,28 @@ async function renderSedesConfig(){
         <button class="btn sm primary" onclick="guardarSede('${n.id}','${esc(n.nombre)}','${n.tipo}')">Guardar</button>
       </div></div>`;
   }).join('') || '<div class="empty-sub">Sin Sites ni Bio-Naves registrados</div>';
+
+  cont.querySelectorAll('[data-foto]').forEach(el => { if (el.dataset.foto) pintarFotoSede(el, el.dataset.foto); });
+}
+async function pintarFotoSede(el, path){
+  const u = await avBlob('sedes', path);
+  el.innerHTML = u ? `<img src="${u}" alt="Foto de la sede" style="width:100%;max-width:320px;border-radius:10px;display:block;border:1px solid var(--border)">` : '<div class="empty-sub">No se pudo cargar la foto</div>';
+}
+async function subirFotoSede(id, tipo, inp){
+  const f = inp.files && inp.files[0]; if (!f) return;
+  if (!['rh','direccion_ceo'].includes(currentUser.role)) return;
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)){ toast('La foto debe ser JPG, PNG o WebP','error'); inp.value=''; return; }
+  try {
+    const blob = await redimensionarImagen(f, 1600, 0.82, false);
+    const path = `${tipo}/${id}/${Date.now()}.jpg`;
+    const { error } = await sb.storage.from('sedes').upload(path, blob, { contentType:'image/jpeg' });
+    if (error) throw error;
+    const { error: e2 } = await sb.from('sedes_foto').upsert({ sede_tipo:tipo, sede_id:id, path, actualizado_por:currentUser.userId, actualizado_en:new Date().toISOString() }, { onConflict:'sede_tipo,sede_id' });
+    if (e2) throw e2;
+    await audit('config', 'Foto de sede actualizada', 'a');
+    const el = document.getElementById('sf-prev-'+id); if (el) pintarFotoSede(el, path);
+    toast('Foto guardada','success'); inp.value='';
+  } catch(e){ toast(e.message || 'No se pudo subir la foto','error'); }
 }
 async function renderQrSedesAsis(){
   const p=document.getElementById('asis-qr-panel'), l=document.getElementById('asis-qr-list');
@@ -12117,7 +12145,7 @@ async function ipSede(id){
   toast(`Red agregada: ${data.ip}. Pulsa Guardar.`, 'success');
 }
 async function guardarSede(id, nombre, tipo){
-  if (currentUser.role !== 'direccion_ceo') return;
+  if (!['direccion_ceo','rh'].includes(currentUser.role)) return;
   const lat = parseFloat(document.getElementById('sa-lat-'+id).value), lng = parseFloat(document.getElementById('sa-lng-'+id).value);
   const radio_m = parseInt(document.getElementById('sa-rad-'+id).value);
   const ips = document.getElementById('sa-ips-'+id).value.split('\n').map(x=>x.trim()).filter(Boolean);
