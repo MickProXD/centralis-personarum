@@ -754,6 +754,14 @@ select.form-input option{background:var(--bg2)}
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="4" cy="12" r="1.8"/><circle cx="12" cy="4" r="1.8"/><path d="M5.5 11C8 10 5 6 8 6s1.5 1 2.5-.5"/></svg>
       Rutas
     </div>
+    <div class="sb-item" data-page="mantenimiento" onclick="nav('mantenimiento',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M10.5 2.5a3.5 3.5 0 00-3.2 4.8L2.5 12.1a1.3 1.3 0 001.8 1.8l4.8-4.8a3.5 3.5 0 004.8-3.2l-2.2 2.2-2-.5-.5-2 2.2-2.2c-.3-.2-.6-.9-.9-.9z"/></svg>
+      Informe de mantenimiento <span id="bdg-mant" style="display:none;background:#d64545;color:#fff;border-radius:999px;min-width:16px;height:16px;padding:0 5px;font-size:10px;font-weight:800;align-items:center;justify-content:center;margin-left:auto"></span>
+    </div>
+    <div class="sb-item" data-page="solicitudes" onclick="nav('solicitudes',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M3 2h10v12H3z"/><path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3"/></svg>
+      Solicitudes <span id="bdg-sol" style="display:none;background:#d64545;color:#fff;border-radius:999px;min-width:16px;height:16px;padding:0 5px;font-size:10px;font-weight:800;align-items:center;justify-content:center;margin-left:auto"></span>
+    </div>
     <div class="sb-item" data-page="documentos" onclick="nav('documentos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M4 2h5l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M9 2v4h3"/></svg>
       Documentos <span class="sb-bdg r" id="bdg-docs">0</span>
@@ -785,6 +793,14 @@ select.form-input option{background:var(--bg2)}
     <div class="sb-item" data-page="muro" onclick="nav('muro',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
       Bio-Muro
+    </div>
+    <div class="sb-item" data-page="seguridad" onclick="nav('seguridad',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M8 1L14 3v5c0 3.5-2.5 6-6 7-3.5-1-6-3.5-6-7V3l6-2z"/><path d="M8 5v3.5M8 10.6v.4"/></svg>
+      Seguridad <span id="bdg-seg" style="display:none;background:#d64545;color:#fff;border-radius:999px;min-width:16px;height:16px;padding:0 5px;font-size:10px;font-weight:800;align-items:center;justify-content:center;margin-left:auto"></span>
+    </div>
+    <div class="sb-item" data-page="insignias" onclick="nav('insignias',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M8 1.5l1.9 4 4.3.5-3.2 3 .9 4.3L8 11.1 4.1 13.3 5 9l-3.2-3 4.3-.5z"/></svg>
+      Insignias
     </div>
     <div class="sb-item" data-page="procesos" onclick="nav('procesos',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 8.5h6M5 11h3"/></svg>
@@ -1273,10 +1289,6 @@ select.form-input option{background:var(--bg2)}
       <button class="btn sm ml" id="muro-filtro-btn" style="display:none" onclick="abrirFiltroPalabras()">🛡 Filtro de palabras</button>
     </div>
     <div id="muro-rojos"></div>
-    <div class="tabs" style="margin-bottom:14px">
-      <div class="tab-item active" id="mtab-muro" onclick="muroTab('muro')">Muro</div>
-      <div class="tab-item" id="mtab-seg" onclick="muroTab('seg')">Seguridad <span id="mtab-seg-n" style="display:none;background:#d64545;color:#fff;border-radius:999px;min-width:16px;height:16px;padding:0 5px;font-size:10px;font-weight:800;align-items:center;justify-content:center;margin-left:4px"></span></div>
-    </div>
     <div id="muro-general">
     <div id="muro-composer" class="panel" style="display:none;padding:12px 14px">
       <div style="display:flex;gap:10px;align-items:center">
@@ -1289,9 +1301,32 @@ select.form-input option{background:var(--bg2)}
     <div id="muro-celebraciones" style="margin-bottom:14px"></div>
     <div id="muro-list" style="display:flex;flex-direction:column;gap:12px"></div>
     </div>
-    <div id="muro-seg" style="display:none"><div id="seg-bar"></div><div id="seg-body"></div><div id="seg-extra" style="display:none"></div></div>
     </div>
     <aside class="ct-aside"><div class="ct-panel"></div></aside>
+  </div>
+
+  <!-- SEGURIDAD (SHE) -->
+  <div id="page-seguridad" class="page fadein" style="max-width:900px;margin:0 auto">
+    <div class="row" style="margin-bottom:14px"><div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Seguridad, salud y ambiente</div></div>
+    <div id="seg-bar"></div><div id="seg-body"></div><div id="seg-extra" style="display:none"></div>
+  </div>
+
+  <!-- INFORME DE MANTENIMIENTO -->
+  <div id="page-mantenimiento" class="page fadein" style="max-width:820px;margin:0 auto">
+    <div class="row" style="margin-bottom:14px"><div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Informe de mantenimiento</div></div>
+    <div id="mant-body"></div>
+  </div>
+
+  <!-- SOLICITUDES OPERATIVAS -->
+  <div id="page-solicitudes" class="page fadein" style="max-width:820px;margin:0 auto">
+    <div class="row" style="margin-bottom:14px"><div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Solicitudes</div></div>
+    <div id="sol-body"></div>
+  </div>
+
+  <!-- INSIGNIAS Y SCORE -->
+  <div id="page-insignias" class="page fadein" style="max-width:820px;margin:0 auto">
+    <div class="row" style="margin-bottom:14px"><div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Insignias y score</div></div>
+    <div id="ins-body"></div>
   </div>
 
   <!-- FINANZAS -->
@@ -2271,6 +2306,12 @@ select.form-input option{background:var(--bg2)}
               <option value="Rabón">Rabón</option>
               <option value="3 toneladas">3 toneladas</option>
               <option value="5 toneladas">5 toneladas</option>
+            </select>
+            <label class="form-lbl req" style="margin-top:10px">Perfil operativo (define cómo se programa su ruta)</label>
+            <select class="form-input" id="ac-perfil-operativo">
+              <option value="">Seleccionar...</option>
+              <option value="hooklift_skiploader">Chofer Hooklift / Skiploader (ruta programada un día antes)</option>
+              <option value="recolector">Chofer Recolector (ruta precargada)</option>
             </select>
           </div>
           <div id="ac-subtipo-mecanico" style="display:none;margin-top:10px">
@@ -3541,14 +3582,14 @@ const ROLES = {
 const CAPS = {
   she: {
     // SHE: Bio-Muro (pestaña Seguridad), su asistencia y su perfil. Datos de salud y gasto los limita el servidor.
-    pages:['dashboard','miasistencia','miperfil','muro'],
+    pages:['dashboard','miasistencia','miperfil','muro','seguridad','solicitudes'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   monitoreo: {
-    pages:['dashboard','flota','documentos','equipos','miasistencia','miperfil','muro'],
+    pages:['dashboard','flota','documentos','equipos','miasistencia','miperfil','muro','seguridad','solicitudes'],
     fleet:true, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3556,28 +3597,28 @@ const CAPS = {
   },
   chofer: {
     // Operativo: solo ve su camión asignado (RLS lo limita), su asistencia y el Muro
-    pages:['dashboard','flota','rutas','miasistencia','miperfil','muro'],
+    pages:['dashboard','flota','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','muro','seguridad'],
     fleet:false, personnel:'self', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   supervisor: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','finanzas','rutas','miasistencia','miperfil','muro'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','muro','seguridad'],
     fleet:true, personnel:'own_sites', editPersonnel:'own_sites', baja:false,
     sites:'own', createSite:true, permisosLegales:false, permisos:true,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'own', actas:'own_sites', firmaAsistencia:true, equipos:true
   },
   rh: {
-    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','miasistencia','miperfil','muro'],
+    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','solicitudes','miasistencia','miperfil','muro','seguridad'],
     fleet:false, personnel:'all', editPersonnel:'all', baja:false,
     sites:'all_view', createSite:false, permisosLegales:false, permisos:false,
     config:'personnel', auditoria:false, kpis:true, compliance:true,
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
   administracion: {
-    pages:['dashboard','calendario','procesos','finanzas','miasistencia','miperfil','muro'],
+    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','muro','seguridad'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3585,14 +3626,14 @@ const CAPS = {
   },
   administrativo: {
     // El área (finanzas/operativa) amplía las páginas en caps(); en Finanzas el Administrativo de finanzas captura
-    pages:['dashboard','calendario','procesos','finanzas','miasistencia','miperfil','muro'],
+    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','muro','seguridad'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   direccion_ceo: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','rutas','miperfil','muro'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','seguridad','miperfil','muro'],
     fleet:true, personnel:'all', editPersonnel:'all', baja:true,
     sites:'all', createSite:true, permisosLegales:true, permisos:true,
     config:true, auditoria:true, kpis:true, compliance:true,
@@ -3629,7 +3670,7 @@ function mapSiteRow(r){ return { id:r.id, nombre:r.nombre, direccion:r.direccion
 function mapBioNaveRow(r){ return { id:r.id, nombre:r.nombre, direccion:r.direccion, capacidad:r.capacidad, pendiente:r.pendiente }; }
 function mapColabRow(r){
   return { id:r.id, nombre:r.nombre, puesto:r.puesto,
-    operadorSubtipo:r.operador_subtipo, mecanicoSubtipo:r.mecanico_subtipo, mecanicoOtrosComentario:r.mecanico_otros_comentario,
+    operadorSubtipo:r.operador_subtipo, perfilOperativo:r.perfil_operativo, mecanicoSubtipo:r.mecanico_subtipo, mecanicoOtrosComentario:r.mecanico_otros_comentario,
     areaId:r.area_id, curp:r.curp, rfc:r.rfc, ingreso:r.ingreso, contrato:r.contrato_tipo, turno:r.turno,
     siteId:r.site_id, bodegaId:r.bio_nave_id, tel:r.tel, emerg:r.emerg, estatus:r.estatus, unidadId:r.unidad_id,
     observaciones:r.observaciones, observacionesUpd:r.observaciones_upd, fechaNacimiento:r.fecha_nacimiento };
@@ -3895,9 +3936,17 @@ function caps(){
   const base = CAPS[currentUser.role] || CAPS.chofer;
   // Administrativo de área operativa: ve Flota, Equipos y Documentos de unidades (solo lectura)
   if (currentUser.role==='administrativo' && currentUser.areaAdmin==='operativa'){
-    return Object.assign({}, base, { pages:[...base.pages,'flota','rutas','documentos','equipos'] });
+    return Object.assign({}, base, { pages:[...base.pages,'flota','rutas','documentos','equipos','mantenimiento','insignias'] });
+  }
+  // Ayudante general: no maneja unidad, no llena Informe de mantenimiento
+  if (currentUser.role==='chofer' && esAyudanteGeneral()){
+    return Object.assign({}, base, { pages: base.pages.filter(p => p!=='mantenimiento') });
   }
   return base;
+}
+function esAyudanteGeneral(){
+  const c = (DB.colaboradores || []).find(x => x.id === currentUser.colaboradorId);
+  return !!c && (c.puesto === 'Ayudante general' || c.perfilOperativo === 'ayudante_general');
 }
 function can(cap){ return !!caps()[cap]; }
 
@@ -3972,6 +4021,7 @@ function applyRoleVisibility(){
     else { const ref = navEl.querySelector('[data-page="procesos"]'); if (ref) ref.before(muroIt); }
   }
   const fl = document.getElementById('sb-flota-lbl'); if (fl) fl.textContent = currentUser.role === 'chofer' ? 'Mi unidad' : 'Flota';
+  if (typeof opBadges === 'function') setTimeout(opBadges, 1500);
   document.querySelectorAll('.sb-sec').forEach(sec=>{
     let n = sec.nextElementSibling, vis = false;
     while(n && n.classList.contains('sb-item')){ if(!n.classList.contains('hidden-by-role')) vis = true; n = n.nextElementSibling; }
@@ -5254,7 +5304,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil' };
+  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Informe de mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score' };
   if (currentUser.role === 'chofer'){ titles.flota = 'Mi unidad'; titles.unidad = 'Mi unidad'; }
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
@@ -5273,6 +5323,10 @@ function nav(page, el){
   if (page === 'miasistencia') renderMiAsistencia();
   if (page === 'rutas') renderRutas(); else rtDetener();
   if (page === 'miperfil') renderMiPerfil();
+  if (page === 'seguridad'){ renderSeg(); renderRojosMuro(); }
+  if (page === 'mantenimiento') renderMantenimiento();
+  if (page === 'solicitudes') renderSolicitudes();
+  if (page === 'insignias') renderInsignias();
   if (page === 'equipoasis') renderEquipoAsistencia();
   if (page === 'compliance') renderCompliance();
   if (page === 'auditoria') renderAuditoria();
@@ -5868,6 +5922,8 @@ async function guardarColab(){
   const mecanicoSubtipo = document.getElementById('ac-mecanico-subtipo').value || null;
   const mecanicoOtrosComentario = document.getElementById('ac-mecanico-otros-comentario').value.trim() || null;
   if (puesto === 'Operador' && !operadorSubtipo) { toast('Selecciona el tipo de Operador', 'error'); ok = false; }
+  const perfilOperativo = puesto === 'Operador' ? (document.getElementById('ac-perfil-operativo').value || null) : (puesto === 'Ayudante general' ? 'ayudante_general' : null);
+  if (puesto === 'Operador' && !perfilOperativo) { toast('Selecciona el perfil operativo del Operador', 'error'); ok = false; }
   if (puesto === 'Mecánico' && !mecanicoSubtipo) { toast('Selecciona el tipo de Mecánico', 'error'); ok = false; }
   if (puesto === 'Mecánico' && mecanicoSubtipo === 'Otros' && !mecanicoOtrosComentario) { toast('Especifica la situación del Mecánico (obligatorio en "Otros")', 'error'); ok = false; }
   if (!ok) return;
@@ -5876,6 +5932,7 @@ async function guardarColab(){
   const payload = {
     nombre, puesto, curp,
     operador_subtipo: puesto === 'Operador' ? operadorSubtipo : null,
+    perfil_operativo: perfilOperativo,
     mecanico_subtipo: puesto === 'Mecánico' ? mecanicoSubtipo : null,
     mecanico_otros_comentario: (puesto === 'Mecánico' && mecanicoSubtipo === 'Otros') ? mecanicoOtrosComentario : null,
     rfc: document.getElementById('ac-rfc').value.trim().toUpperCase(),
@@ -6047,6 +6104,7 @@ function limpiarFormColab(){
   }
   document.getElementById('ac-puesto').value = '';
   document.getElementById('ac-operador-subtipo').value = '';
+  document.getElementById('ac-perfil-operativo').value = '';
   document.getElementById('ac-mecanico-subtipo').value = '';
   document.getElementById('ac-mecanico-otros-comentario').value = '';
   actualizarSubtipoPuesto();
@@ -6671,6 +6729,7 @@ async function editarColab(){
   document.getElementById('ac-nacimiento').value = c.fechaNacimiento||'';
   document.getElementById('ac-puesto').value = c.puesto;
   document.getElementById('ac-operador-subtipo').value = c.operadorSubtipo || '';
+  document.getElementById('ac-perfil-operativo').value = (c.perfilOperativo && c.perfilOperativo !== 'ayudante_general') ? c.perfilOperativo : '';
   document.getElementById('ac-mecanico-subtipo').value = c.mecanicoSubtipo || '';
   document.getElementById('ac-mecanico-otros-comentario').value = c.mecanicoOtrosComentario || '';
   actualizarSubtipoPuesto();
@@ -9018,7 +9077,7 @@ async function renderMuro(){
     document.getElementById('muro-comp-av').innerHTML = avatarHtml(currentUser.userId, currentUser.name, 40);
     document.getElementById('muro-comp-txt').textContent = `¿Qué quieres compartir, ${currentUser.name.split(' ')[0]}?`;
   }
-  sheAplicarTab(); renderRojosMuro(); if (SHE.tab === 'seg') renderSeg();
+  renderRojosMuro();
   renderAvisoAsistenciaMuro();
   await renderCelebracionesMuro();
 
@@ -9156,21 +9215,6 @@ const sheGestiona  = () => ['she','direccion_ceo'].includes(currentUser.role);
 const sheVeSalud   = () => ['she','direccion_ceo','rh'].includes(currentUser.role);
 const shePuedeGasto = () => sheGestiona() || (currentUser.role === 'administrativo' && (currentUser.areaAdmin || 'finanzas') === 'finanzas');
 
-function muroTab(t){
-  SHE.tab = t === 'seg' ? 'seg' : 'muro';
-  sheAplicarTab();
-  if (SHE.tab === 'seg') renderSeg();
-}
-function sheAplicarTab(){
-  const seg = SHE.tab === 'seg';
-  const g = document.getElementById('muro-general'), s = document.getElementById('muro-seg');
-  if (g) g.style.display = seg ? 'none' : 'block';
-  if (s) s.style.display = seg ? 'block' : 'none';
-  const a = document.getElementById('mtab-muro'), b = document.getElementById('mtab-seg');
-  if (a) a.classList.toggle('active', !seg);
-  if (b) b.classList.toggle('active', seg);
-}
-
 /* Tarjetas rojas fijadas arriba del Bio-Muro (Gerentes Operativos, Dirección, SHE y RH) */
 async function renderRojosMuro(){
   const cont = document.getElementById('muro-rojos'); if (!cont) return;
@@ -9178,9 +9222,9 @@ async function renderRojosMuro(){
   const { data } = await sb.from('she_reportes').select('id,folio,tipo,lugar,descripcion,created_at,reportado_por_nombre,hubo_lesionados')
     .eq('semaforo', 'rojo').neq('estatus', 'cerrado').order('created_at', { ascending:false }).limit(5);
   const n = (data || []).length;
-  const bd = document.getElementById('mtab-seg-n');
+  const bd = document.getElementById('bdg-seg');
   if (bd){ bd.textContent = n || ''; bd.style.display = n ? 'inline-flex' : 'none'; }
-  cont.innerHTML = (data || []).map(r => `<div class="panel" onclick="muroTab('seg')" style="cursor:pointer;border:1px solid #d64545;border-left:6px solid #d64545;padding:12px 14px;margin-bottom:10px;background:rgba(214,69,69,.08)">
+  cont.innerHTML = (data || []).map(r => `<div class="panel" onclick="nav('seguridad')" style="cursor:pointer;border:1px solid #d64545;border-left:6px solid #d64545;padding:12px 14px;margin-bottom:10px;background:rgba(214,69,69,.08)">
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><span class="tag r">Riesgo rojo</span><span style="font-size:11px;color:var(--text3)">${esc(r.folio)} · ${tiempoRel(r.created_at)}</span></div>
     <div style="font-size:13px;font-weight:700">${esc(SHE_TIPOS[r.tipo] || r.tipo)} — ${esc(r.lugar)}</div>
     <div style="font-size:12px;color:var(--text2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(r.descripcion)}</div>
@@ -9792,6 +9836,306 @@ async function sheRenderKpi(ex){
     ${tile('Capacitación', asMes, `asistentes en ${(cap.data || []).length} curso(s) este mes`)}</div>
     ${barras('Residuos por mes', kgS, 'kg')}${barras('Agua por mes', aguaS, '')}${barras('Energía por mes', enS, '')}`;
 }
+/* ═══════════════════════════════════════════════════════════════════
+   OPERATIVOS — Informe de mantenimiento, Insignias y Solicitudes
+   Las reglas (nivel de falla, plazos, puntos, quién aprueba) las calcula y exige el servidor.
+   ═══════════════════════════════════════════════════════════════════ */
+const MANT = { inf:[], resp:{}, unidades:[] };
+const MANT_GRUPOS = [
+  ['Puntos críticos (si fallan, la unidad no debe salir)', [['frenos','Frenos'],['direccion','Dirección'],['llantas','Llantas y presión'],['luces','Luces y direccionales'],['fugas','Fugas (aceite, combustible, hidráulico)'],['suspension','Suspensión']]],
+  ['Mecánica y sistemas', [['motor','Motor (ruido, humo, temperatura)'],['aceite','Nivel de aceite'],['refrigerante','Refrigerante'],['bateria','Batería'],['hidraulico','Sistema hidráulico / compactador / brazo'],['escape','Escape']]],
+  ['Seguridad y condición física', [['espejos','Espejos y parabrisas'],['alarma_reversa','Claxon y alarma de reversa'],['cinturones','Cinturones'],['extintor_botiquin','Extintor y botiquín'],['carroceria','Carrocería, caja o contenedor'],['limpieza','Limpieza de cabina']]]
+];
+const MANT_NOMBRES = {}; MANT_GRUPOS.forEach(g => g[1].forEach(([k, n]) => { MANT_NOMBRES[k] = n; }));
+const MANT_NIVEL = { ok:['g','Sin fallas'], atencion:['a','Requiere atención'], critico:['r','Falla crítica'] };
+
+const opEsDireccion = () => currentUser.role === 'direccion_ceo';
+const opEsAdminOp = () => currentUser.role === 'administrativo' && currentUser.areaAdmin === 'operativa';
+const mantEsGerencia = () => currentUser.role === 'supervisor' || opEsDireccion() || opEsAdminOp();
+const mantPuedeLlenar = () => currentUser.role === 'chofer' || opEsDireccion();
+const opFechaHora = iso => new Date(iso).toLocaleString('es-MX', { timeZone:TZ_MX, day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+
+function opPlazo(iso){
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return '<span class="tag r">Plazo vencido</span>';
+  const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+  return `<span class="tag ${h < 4 ? 'r' : 'a'}">Vence en ${h} h ${m} min</span>`;
+}
+async function opSubirFotos(bucket, id, files){
+  const paths = [];
+  for (let i = 0; i < files.length; i++){
+    const blob = await redimensionarImagen(files[i], 1600, 0.82, false);
+    const p = `${currentUser.userId}/${id}/${i + 1}.jpg`;
+    const { error } = await sb.storage.from(bucket).upload(p, blob, { contentType:'image/jpeg' });
+    if (error){ if (paths.length) await sb.storage.from(bucket).remove(paths); throw error; }
+    paths.push(p);
+  }
+  return paths;
+}
+function opValidarFotos(files, max){
+  if (files.length > max) return `Máximo ${max} fotos`;
+  for (const f of files) if (!/^image\/(jpeg|png|webp)$/.test(f.type)) return 'Las fotos deben ser JPG, PNG o WebP';
+  return '';
+}
+function opVerFotos(bucket, paths){
+  const u = (paths || []).map(p => AV.blobs[bucket + '/' + p]).filter(Boolean);
+  if (u.length) verImagenMuro(u[0]);
+}
+function opMiniaturas(bucket, paths){
+  const u = (paths || []).map(p => ({ p, b:AV.blobs[bucket + '/' + p] })).filter(x => x.b);
+  if (!u.length) return '';
+  return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${u.slice(0, 4).map(x => `<img src="${x.b}" alt="" onclick="verImagenMuro(this.src)" style="width:72px;height:72px;object-fit:cover;border-radius:8px;cursor:zoom-in">`).join('')}${u.length > 4 ? `<span style="font-size:11px;color:var(--text3);align-self:center">+${u.length - 4}</span>` : ''}</div>`;
+}
+
+/* ── Informe de mantenimiento ── */
+async function renderMantenimiento(){
+  const cont = document.getElementById('mant-body'); if (!cont) return;
+  const ger = mantEsGerencia(), llena = mantPuedeLlenar();
+  if (ger){ try { await sb.rpc('mant_aplicar_vencidos'); } catch(e){} }
+  const [inf, uni] = await Promise.all([
+    sb.from('mant_informes').select('*').order('created_at', { ascending:false }).limit(60),
+    sb.from('unidades').select('id,bak,chofer_id').order('bak')
+  ]);
+  MANT.inf = inf.data || []; MANT.unidades = uni.data || [];
+  const ids = MANT.inf.map(i => i.id);
+  const rs = ids.length ? (await sb.from('mant_respuestas').select('*').in('informe_id', ids)).data : [];
+  MANT.resp = {}; (rs || []).forEach(r => { (MANT.resp[r.informe_id] = MANT.resp[r.informe_id] || []).push(r); });
+  const fotos = []; MANT.inf.slice(0, 25).forEach(i => (i.fotos || []).slice(0, 4).forEach(p => fotos.push(['mant', p])));
+  (rs || []).forEach(r => (r.fotos || []).slice(0, 4).forEach(p => fotos.push(['mant', p])));
+  await Promise.all(fotos.map(([b, p]) => avBlob(b, p)));
+  const uni1 = id => (MANT.unidades.find(u => u.id === id) || {}).bak || '—';
+  const hoy = hoyLocal();
+  const mios = MANT.inf.filter(i => i.chofer_user === currentUser.userId);
+  const hoyHecho = mios.some(i => i.fecha === hoy);
+  const pend = MANT.inf.filter(i => i.nivel !== 'ok' && !(MANT.resp[i.id] || []).length);
+  const tarjeta = i => {
+    const n = MANT_NIVEL[i.nivel] || MANT_NIVEL.ok, rr = MANT.resp[i.id] || [];
+    const fallas = Object.entries(i.checklist || {}).filter(([, v]) => v !== 'ok').map(([k, v]) => `<span class="tag ${v === 'falla' ? 'r' : 'a'}">${esc(MANT_NOMBRES[k] || k)}: ${v === 'falla' ? 'falla' : 'atención'}</span>`).join(' ');
+    return `<div class="panel" style="padding:14px;margin-bottom:0;border-left:5px solid ${i.nivel === 'critico' ? '#d64545' : i.nivel === 'atencion' ? '#e0a100' : '#2e9e5b'}">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><span class="tag ${n[0]}">${n[1]}</span><span class="tag b">${esc(uni1(i.unidad_id))}</span>
+        ${i.nivel !== 'ok' && !rr.length && i.vence_respuesta ? opPlazo(i.vence_respuesta) : ''}
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(i.created_at)}</span></div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px">Chofer: ${esc(i.chofer_nombre || 'Chofer')}${i.odometro != null ? ' · ' + Number(i.odometro).toLocaleString('es-MX') + ' km' : ''}</div>
+      ${fallas ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${fallas}</div>` : '<div style="font-size:12px;color:var(--text2)">Todos los puntos del checklist en buen estado.</div>'}
+      ${i.observaciones ? `<div style="font-size:13px;white-space:pre-wrap;margin-top:6px">${esc(i.observaciones)}</div>` : ''}
+      ${opMiniaturas('mant', i.fotos)}
+      ${rr.map(r => `<div style="margin-top:10px;background:var(--surface2,#2a2a2a);border-radius:8px;padding:10px 12px;font-size:12px"><strong>Respuesta con evidencia</strong> · ${opFechaHora(r.created_at)}${i.vence_respuesta && new Date(r.created_at) > new Date(i.vence_respuesta) ? ' <span class="tag a">Fuera de plazo</span>' : ''}<div style="margin-top:4px;white-space:pre-wrap">${esc(r.accion)}</div>${r.folio ? `<div style="margin-top:2px;color:var(--text3)">Folio / número: ${esc(r.folio)}</div>` : ''}${opMiniaturas('mant', r.fotos)}</div>`).join('')}
+      ${ger && i.nivel !== 'ok' && !rr.length ? `<div style="margin-top:10px"><button class="btn sm primary" onclick="mantResponder('${esc(i.id)}')">Responder con evidencia</button></div>` : ''}
+    </div>`;
+  };
+  cont.innerHTML = `
+    ${llena ? `<div class="panel" style="padding:14px 16px;margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px"><div style="font-family:var(--head);font-weight:800;font-size:13px">${hoyHecho ? 'Hoy ya entregaste tu checklist ✓' : 'Falta tu checklist de hoy'}</div>
+      <div style="font-size:12px;color:var(--text3)">Revisa las condiciones físico-mecánicas de tu unidad antes de salir. Cada checklist suma puntos a tu score.</div></div>
+      <button class="btn primary" onclick="mantNuevo()">${hoyHecho ? 'Nuevo informe' : 'Llenar checklist'}</button></div>` : ''}
+    ${ger ? `<div class="panel" style="padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--text2)">Las fallas deben atenderse con <strong>evidencia</strong> (fotos, folio de orden de taller, número de factura o cotización). Falla crítica: <strong>4 horas</strong> · requiere atención: <strong>24 horas</strong>. Si el plazo vence sin respuesta, el score de la gerencia operativa y del administrativo operativo baja.</div>` : ''}
+    ${ger && pend.length ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:4px 0 8px">Pendientes de respuesta <span class="tag r">${pend.length}</span></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">${pend.map(tarjeta).join('')}</div>` : ''}
+    <div style="font-family:var(--head);font-size:12px;font-weight:800;margin:4px 0 8px">${ger ? 'Informes recientes' : 'Mis informes'}</div>
+    <div style="display:flex;flex-direction:column;gap:10px">${(ger ? MANT.inf.filter(i => !pend.includes(i)) : mios).map(tarjeta).join('') || '<div class="empty-sub" style="padding:16px">Todavía no hay informes.</div>'}</div>`;
+  opBadges();
+}
+function mantNuevo(){
+  const yo = currentUser.colaboradorId;
+  const propias = MANT.unidades.filter(u => u.chofer_id && u.chofer_id === yo);
+  const lista = (propias.length && !opEsDireccion()) ? propias : MANT.unidades;
+  if (!lista.length){ toast('No tienes una unidad asignada. Pide a tu Gerente Operativo que te la asigne.', 'error'); return; }
+  const sel = (id, v) => `<select class="form-input mant-it" data-k="${id}" style="margin:0;width:150px"><option value="ok" ${v === 'ok' ? 'selected' : ''}>Bien</option><option value="atencion">Atención</option><option value="falla">Falla</option></select>`;
+  const grupos = MANT_GRUPOS.map(([t, its]) => `<div style="font-family:var(--head);font-size:11px;font-weight:800;margin:12px 0 6px;color:var(--text2)">${esc(t)}</div>` +
+    its.map(([k, n]) => `<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${esc(n)}</span>${sel(k, 'ok')}</div>`).join('')).join('');
+  finModal('Checklist de la unidad',
+    finSelect('Unidad', 'mn-uni', lista.map(u => [u.id, u.bak]), lista[0].id) +
+    finCampo('Kilometraje (opcional)', 'mn-odo', 'number', '', 'min="0" inputmode="numeric"') +
+    grupos +
+    '<div style="height:10px"></div>' + finArea('Observaciones (obligatorio si hay una falla)', 'mn-obs', '') +
+    `<label class="form-lbl">Fotos de la falla (hasta 6; obligatorias si marcas “Falla”)</label><input class="form-input" type="file" id="mn-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">`,
+    mantEnviar, 'Enviar checklist');
+}
+async function mantEnviar(){
+  const checklist = {}; document.querySelectorAll('#fin-m-body .mant-it').forEach(s => { checklist[s.dataset.k] = s.value; });
+  const hayFalla = Object.values(checklist).includes('falla'), hayAlgo = Object.values(checklist).some(v => v !== 'ok');
+  const obs = fv('mn-obs').trim(), files = [...(document.getElementById('mn-fotos').files || [])];
+  const ef = opValidarFotos(files, 6); if (ef) return finErr(ef);
+  if (hayAlgo && obs.length < 5) return finErr('Describe brevemente lo que encontraste');
+  if (hayFalla && !files.length) return finErr('Agrega al menos una foto de la falla');
+  const id = crypto.randomUUID(), odo = fv('mn-odo');
+  const paths = await opSubirFotos('mant', id, files);
+  const { data, error } = await sb.from('mant_informes').insert({
+    id, unidad_id: fv('mn-uni'), checklist, observaciones: obs || null, fotos: paths, odometro: odo === '' ? null : Number(odo)
+  }).select('nivel').single();
+  if (error){ if (paths.length) await sb.storage.from('mant').remove(paths); return finErr(error.message); }
+  toast(data.nivel === 'ok' ? 'Checklist enviado. ¡Gracias! (+5 puntos)' : 'Reporte enviado. Tu gerencia ya fue notificada.', 'success');
+  await audit('config', 'Informe de mantenimiento enviado (' + (MANT_NIVEL[data.nivel] || [])[1] + ')', 'b');
+  renderMantenimiento();
+}
+function mantResponder(id){
+  const i = MANT.inf.find(x => x.id === id); if (!i) return;
+  finModal('Responder con evidencia',
+    `<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Adjunta la evidencia de lo que se hizo: fotos de la reparación, folio de la orden de taller, número de factura o cotización. Sin foto ni folio, tu score baja.</div>` +
+    finArea('¿Qué acción se tomó?', 'mr-acc', '') + finCampo('Folio o número (orden de taller, factura, cotización)', 'mr-folio', 'text', '', 'maxlength="80"') +
+    `<label class="form-lbl">Fotos de evidencia (hasta 4)</label><input class="form-input" type="file" id="mr-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">`,
+    async () => {
+      const acc = fv('mr-acc').trim(); if (acc.length < 5) return finErr('Describe la acción tomada');
+      const files = [...(document.getElementById('mr-fotos').files || [])], ef = opValidarFotos(files, 4); if (ef) return finErr(ef);
+      const rid = crypto.randomUUID(), paths = await opSubirFotos('mant', rid, files);
+      const { error } = await sb.from('mant_respuestas').insert({ id:rid, informe_id:id, accion:acc, folio:fv('mr-folio').trim() || null, fotos:paths });
+      if (error){ if (paths.length) await sb.storage.from('mant').remove(paths); return finErr(error.message); }
+      toast('Respuesta registrada', 'success'); renderMantenimiento();
+    }, 'Enviar respuesta');
+}
+
+/* ── Score e insignias ── */
+const INS_DEF = [
+  { t:'checklist_llenado', min:1,   n:'Primer checklist',      d:'Entregaste tu primer checklist', c:'#2e9e5b' },
+  { t:'checklist_llenado', min:10,  n:'Constancia',            d:'10 checklists entregados',       c:'#2f7de1' },
+  { t:'checklist_llenado', min:30,  n:'Inspector estrella',    d:'30 checklists entregados',       c:'#e0a100' },
+  { t:'checklist_llenado', min:100, n:'Guardián de la unidad', d:'100 checklists entregados',      c:'#8a4fd6' },
+  { t:'reporte_con_evidencia', min:1, n:'Ojo clínico',         d:'Reportaste una falla con fotos', c:'#2e9e5b' },
+  { t:'reporte_con_evidencia', min:5, n:'Prevención activa',   d:'5 fallas reportadas con fotos',  c:'#e0a100' },
+  { t:'mant_respuesta_a_tiempo', min:1,  n:'Respuesta puntual',    d:'Respondiste una falla en plazo con evidencia', c:'#2e9e5b' },
+  { t:'mant_respuesta_a_tiempo', min:10, n:'Gerencia ágil',        d:'10 respuestas en plazo',  c:'#2f7de1' },
+  { t:'mant_respuesta_a_tiempo', min:25, n:'Mantenimiento al día', d:'25 respuestas en plazo',  c:'#8a4fd6' }
+];
+const INS_EV = { checklist_llenado:'Checklist entregado', reporte_con_evidencia:'Falla reportada con fotos', mant_respuesta_a_tiempo:'Respuesta en plazo con evidencia', mant_respuesta_tarde:'Respuesta fuera de plazo', mant_sin_respuesta:'Falla sin respuesta en plazo', mant_sin_evidencia_adjunta:'Respuesta sin foto ni folio' };
+function insNivel(t){
+  if (t >= 125) return ['Oro', '#e0a100']; if (t >= 110) return ['Plata', '#8a97a8']; if (t >= 90) return ['Bronce', '#b8733a'];
+  if (t >= 70) return ['En observación', '#e0a100']; return ['Requiere atención', '#d64545'];
+}
+function insMedalla(b, n, ganada){
+  const c = ganada ? b.c : '#6b7280';
+  return `<div style="text-align:center;width:110px;opacity:${ganada ? 1 : .45}"><div style="width:54px;height:54px;border-radius:50%;margin:0 auto 6px;background:${c};display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px ${c}33"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg></div>
+    <div style="font-size:11px;font-weight:800">${esc(b.n)}</div><div style="font-size:10px;color:var(--text3)">${ganada ? esc(b.d) : Math.min(n, b.min) + ' / ' + b.min}</div></div>`;
+}
+async function renderInsignias(){
+  const cont = document.getElementById('ins-body'); if (!cont) return;
+  const equipoOk = currentUser.role === 'supervisor' || currentUser.role === 'rh' || opEsDireccion();
+  const [r, ev, eq] = await Promise.all([
+    sb.rpc('score_resumen'),
+    sb.from('score_eventos').select('tipo,puntos,nota,created_at').eq('user_id', currentUser.userId).order('created_at', { ascending:false }).limit(25),
+    equipoOk ? sb.rpc('score_equipo') : Promise.resolve({ data:[] })
+  ]);
+  const res = r.data || { total:100, por_tipo:{} }, total = res.total ?? 100, pt = res.por_tipo || {};
+  const niv = insNivel(total);
+  const medallas = INS_DEF.map(b => insMedalla(b, pt[b.t] || 0, (pt[b.t] || 0) >= b.min)).join('');
+  const roles = { chofer:'Chofer', supervisor:'Gerente Operativo', administrativo:'Administrativo operativo' };
+  cont.innerHTML = `
+    <div class="panel" style="padding:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+      <div style="width:96px;height:96px;border-radius:50%;border:6px solid ${niv[1]};display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:var(--head);font-size:28px;font-weight:900;line-height:1">${total}</div><div style="font-size:10px;color:var(--text3)">puntos</div></div>
+      <div style="flex:1;min-width:200px"><div style="font-family:var(--head);font-size:16px;font-weight:900;color:${niv[1]}">${niv[0]}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">Todos empiezan en 100 puntos. Sube con checklists completos, fallas reportadas con evidencia y respuestas a tiempo; baja cuando una falla se queda sin respuesta en plazo o sin evidencia.</div></div>
+    </div>
+    <div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Insignias</div>
+    <div class="panel" style="padding:16px;display:flex;gap:14px;flex-wrap:wrap">${medallas}</div>
+    <div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Mi historial</div>
+    <div class="panel" style="padding:6px 16px">${(ev.data || []).map(e => `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="flex:1">${esc(INS_EV[e.tipo] || e.nota || e.tipo)}</span><span style="color:var(--text3);font-size:11px">${opFechaHora(e.created_at)}</span><span class="tag ${e.puntos >= 0 ? 'g' : 'r'}">${e.puntos > 0 ? '+' : ''}${e.puntos}</span></div>`).join('') || '<div class="empty-sub" style="padding:14px">Aún no tienes movimientos.</div>'}</div>
+    ${equipoOk ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Score del equipo operativo</div>
+    <div class="panel" style="padding:6px 16px">${(eq.data || []).map(p => { const n = insNivel(p.total); return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="flex:1;min-width:0"><strong>${esc(p.nombre)}</strong> <span style="color:var(--text3)">· ${esc(roles[p.rol] || p.rol)}</span></span><span style="font-size:11px;color:${n[1]};font-weight:700">${n[0]}</span><span class="tag b">${p.total}</span></div>`; }).join('') || '<div class="empty-sub" style="padding:14px">Sin datos.</div>'}</div>` : ''}`;
+}
+
+/* ── Solicitudes operativas ── */
+const SOL_TIPOS = {
+  combustible:          { t:'Carga de combustible',         ap:'operativo', campos:[['litros','Litros solicitados','number'],['km','Kilometraje actual','number']] },
+  permiso:              { t:'Permiso',                      ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta','date'],['goce','Con goce de sueldo','sel:Sí,No,Por definir']] },
+  vacaciones:           { t:'Vacaciones',                   ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta','date']] },
+  cambio_ruta:          { t:'Cambio de ruta',               ap:'operativo', campos:[['fecha','Fecha','date'],['ruta','Ruta que solicitas','text']] },
+  cambio_unidad:        { t:'Cambio de unidad',             ap:'operativo', campos:[['unidad','Unidad que solicitas','text']] },
+  cambio_turno:         { t:'Cambio de turno',              ap:'operativo', campos:[['fecha','Fecha','date'],['turno','Turno que solicitas','text']] },
+  falla_urgente:        { t:'Falla o reparación urgente',   ap:'operativo', campos:[] },
+  epp_uniforme:         { t:'EPP o uniforme',               ap:'she',       campos:[['articulo','Artículo','text'],['talla','Talla','text']] },
+  viaticos:             { t:'Viáticos, anticipo o reembolso', ap:'finanzas', campos:[['monto','Monto (MXN)','number'],['concepto','Concepto','text']] },
+  material_unidad:      { t:'Material para la unidad',      ap:'operativo', campos:[['material','Material','text'],['cantidad','Cantidad','number']] },
+  lavado_mantenimiento: { t:'Lavado o mantenimiento programado', ap:'operativo', campos:[['servicio','Servicio','sel:Lavado,Servicio preventivo,Otro'],['fecha','Fecha deseada','date']] },
+  incapacidad:          { t:'Aviso de incapacidad',         ap:'rh',        campos:[['desde','Desde','date'],['hasta','Hasta (si la sabes)','date']] },
+  constancia:           { t:'Constancia laboral',           ap:'rh',        campos:[['para','¿Para qué trámite?','text']] },
+  capacitacion:         { t:'Capacitación',                 ap:'rh',        campos:[['curso','Curso o tema','text']] },
+  cambio_ayudante:      { t:'Cambio de ayudante',           ap:'operativo', campos:[['ayudante','Ayudante que solicitas (opcional)','text']] },
+  sugerencia_queja:     { t:'Sugerencia o queja',           ap:'rh',        campos:[] }
+};
+const SOL_AP = { operativo:'Gerente Operativo', rh:'Recursos Humanos', finanzas:'Gerente Administrativo', she:'SHE' };
+const SOL = { lista:[] };
+function solPuedeResolver(ap){
+  if (opEsDireccion()) return true;
+  return { operativo:'supervisor', finanzas:'administracion', she:'she', rh:'rh' }[ap] === currentUser.role;
+}
+async function renderSolicitudes(){
+  const cont = document.getElementById('sol-body'); if (!cont) return;
+  const { data, error } = await sb.from('solicitudes_op').select('*').order('created_at', { ascending:false }).limit(150);
+  if (error){ cont.innerHTML = `<div class="empty-sub" style="padding:20px">No se pudieron cargar las solicitudes.</div>`; return; }
+  SOL.lista = data || [];
+  const tag = e => e === 'aprobada' ? '<span class="tag g">Aprobada</span>' : e === 'rechazada' ? '<span class="tag r">Rechazada</span>' : '<span class="tag a">Pendiente</span>';
+  const resumen = d => Object.entries(d || {}).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${esc(k)}: ${esc(String(v))}`).join(' · ');
+  const fila = s => { const def = SOL_TIPOS[s.tipo] || { t:s.tipo }, puede = s.estatus === 'pendiente' && solPuedeResolver(s.aprobador);
+    return `<div class="panel" style="padding:14px;margin-bottom:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px"><span class="tag b">${esc(def.t)}</span>${tag(s.estatus)}<span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(s.created_at)}</span></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${esc(s.solicitante_nombre || '—')} · Aprueba: ${esc(SOL_AP[s.aprobador] || s.aprobador)}</div>
+      <div style="font-size:13px;white-space:pre-wrap">${esc(s.detalle)}</div>
+      ${resumen(s.datos) ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${resumen(s.datos)}</div>` : ''}
+      ${s.motivo ? `<div style="font-size:12px;margin-top:6px"><strong>Motivo:</strong> ${esc(s.motivo)}</div>` : ''}
+      ${puede ? `<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="solResolver('${esc(s.id)}',true)">Aprobar</button><button class="btn sm danger" onclick="solResolver('${esc(s.id)}',false)">Rechazar</button></div>` : ''}</div>`; };
+  const porRes = SOL.lista.filter(s => s.estatus === 'pendiente' && solPuedeResolver(s.aprobador));
+  const mias = SOL.lista.filter(s => s.solicitante === currentUser.userId);
+  const otras = SOL.lista.filter(s => s.solicitante !== currentUser.userId && !porRes.includes(s));
+  const bloque = (t, arr) => arr.length ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">${t}</div><div style="display:flex;flex-direction:column;gap:10px">${arr.map(fila).join('')}</div>` : '';
+  cont.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="solNueva()">Nueva solicitud</button></div>` +
+    bloque(`Por resolver <span class="tag a">${porRes.length}</span>`, porRes) + bloque('Mis solicitudes', mias) +
+    (opEsDireccion() || opEsAdminOp() || currentUser.role === 'supervisor' || currentUser.role === 'rh' ? bloque('Otras solicitudes', otras) : '') +
+    (!SOL.lista.length ? '<div class="empty-sub" style="padding:20px">Aún no hay solicitudes. Usa “Nueva solicitud”.</div>' : '');
+  opBadges();
+}
+function solNueva(){
+  finModal('Nueva solicitud',
+    finSelect('¿Qué necesitas?', 'sl-tipo', Object.entries(SOL_TIPOS).map(([k, v]) => [k, v.t]), 'combustible').replace('<select ', '<select onchange="solCampos()" ') +
+    '<div id="sl-campos"></div>' + finArea('Detalle de tu solicitud', 'sl-det', ''), solEnviar, 'Enviar solicitud');
+  solCampos();
+}
+function solCampos(){
+  const def = SOL_TIPOS[fv('sl-tipo')]; if (!def) return;
+  document.getElementById('sl-campos').innerHTML = `<div style="font-size:11px;color:var(--text3);margin:-4px 0 10px">La aprueba: <strong>${esc(SOL_AP[def.ap])}</strong></div>` +
+    def.campos.map(([k, l, t]) => t.startsWith('sel:') ? finSelect(l, 'sl-f-' + k, t.slice(4).split(',').map(x => [x, x]), '') : finCampo(l, 'sl-f-' + k, t, '', t === 'number' ? 'min="0" step="any" inputmode="decimal"' : 'maxlength="120"')).join('');
+}
+async function solEnviar(){
+  const tipo = fv('sl-tipo'), def = SOL_TIPOS[tipo], det = fv('sl-det').trim();
+  if (det.length < 5) return finErr('Escribe el detalle de tu solicitud');
+  const datos = {}; def.campos.forEach(([k, , t]) => { const v = fv('sl-f-' + k); if (v !== '') datos[k] = t === 'number' ? Number(v) : v; });
+  if (datos.desde && datos.hasta && datos.hasta < datos.desde) return finErr('La fecha final no puede ser anterior a la inicial');
+  const { error } = await sb.from('solicitudes_op').insert({ tipo, detalle: det, datos });
+  if (error) return finErr(error.message);
+  toast('Solicitud enviada', 'success'); renderSolicitudes();
+}
+async function solResolver(id, aprobar){
+  if (aprobar){
+    confirmar('¿Aprobar esta solicitud?', 'Aprobar solicitud', async () => {
+      const { error } = await sb.rpc('resolver_solicitud_op', { p_id:id, p_aprobar:true, p_motivo:null });
+      if (error) return toast(error.message, 'error');
+      toast('Solicitud aprobada', 'success'); renderSolicitudes();
+    });
+    return;
+  }
+  finModal('Rechazar solicitud', finArea('Motivo del rechazo', 'sl-mot', ''), async () => {
+    const m = fv('sl-mot').trim(); if (m.length < 3) return finErr('Indica el motivo');
+    const { error } = await sb.rpc('resolver_solicitud_op', { p_id:id, p_aprobar:false, p_motivo:m });
+    if (error) return finErr(error.message);
+    toast('Solicitud rechazada', 'success'); renderSolicitudes();
+  }, 'Rechazar');
+}
+
+/* ── Insignias en el menú (conteos) ── */
+async function opBadges(){
+  try {
+    const set = (id, n) => { const e = document.getElementById(id); if (e){ e.textContent = n || ''; e.style.display = n ? 'inline-flex' : 'none'; } };
+    if (caps().pages.includes('mantenimiento') && mantEsGerencia()){
+      const { data } = await sb.from('mant_informes').select('id,nivel').neq('nivel', 'ok').gt('created_at', new Date(Date.now() - 7 * 864e5).toISOString());
+      const ids = (data || []).map(x => x.id);
+      const rs = ids.length ? (await sb.from('mant_respuestas').select('informe_id').in('informe_id', ids)).data : [];
+      const resp = new Set((rs || []).map(x => x.informe_id));
+      set('bdg-mant', ids.filter(i => !resp.has(i)).length);
+    }
+    if (caps().pages.includes('solicitudes')){
+      const { data } = await sb.from('solicitudes_op').select('aprobador').eq('estatus', 'pendiente');
+      set('bdg-sol', (data || []).filter(s => solPuedeResolver(s.aprobador)).length);
+    }
+    if (typeof sheVeTodo === 'function' && sheVeTodo()) renderRojosMuro();
+  } catch(e){}
+}
+
 /* ── Filtro de palabras (solo Dirección): lista que el servidor usa para censurar ── */
 async function abrirFiltroPalabras(){
   if (currentUser.role !== 'direccion_ceo') return;
@@ -9897,7 +10241,7 @@ async function renderBell(marcarLeidas){
   const cont = document.getElementById('bell-list');
   let rojos = [];
   if (sheVeTodo()){ const rr = await sb.from('she_reportes').select('id,folio,lugar,created_at').eq('semaforo','rojo').neq('estatus','cerrado').order('created_at',{ascending:false}).limit(10); rojos = rr.data || []; }
-  const rojosHtml = rojos.map(r=>`<div onclick="toggleBellWidget();nav('muro',null);muroTab('seg')" style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px;cursor:pointer;border-left:4px solid #d64545"><strong>Riesgo rojo abierto</strong> · ${esc(r.lugar)}<div style="color:var(--text3);font-size:9px;margin-top:2px">${esc(r.folio)} · ${new Date(r.created_at).toLocaleString('es-MX')}</div></div>`).join('');
+  const rojosHtml = rojos.map(r=>`<div onclick="toggleBellWidget();nav('seguridad',null)" style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px;cursor:pointer;border-left:4px solid #d64545"><strong>Riesgo rojo abierto</strong> · ${esc(r.lugar)}<div style="color:var(--text3);font-size:9px;margin-top:2px">${esc(r.folio)} · ${new Date(r.created_at).toLocaleString('es-MX')}</div></div>`).join('');
   cont.innerHTML = rojosHtml + ((data||[]).length ? data.map(f=>`<div style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px">
       ${esc(f.mensaje)}
       <div style="color:var(--text3);font-size:9px;margin-top:2px">${new Date(f.created_at).toLocaleString('es-MX')}</div>
@@ -10715,15 +11059,16 @@ async function abrirCrearRuta(){
     sb.from('unidades').select('id,bak,estatus').order('bak')
   ]);
   RC.rutas = r1.data || []; RC.clientes = r2.data || []; RC.personal = r3.data || []; RC.unidades = r4.data || []; RC.items = []; RC.base = '';
+  RC.perfiles = {}; try { const pf = await sb.rpc('rutas_perfiles_operativos'); (pf.data || []).forEach(x => { RC.perfiles[x.id] = x.perfil_operativo; }); } catch(e){}
   const ops = RC.personal.filter(p => p.puesto === 'Operador').map(p => [p.id, p.nombre]);
   const ays = RC.personal.filter(p => p.puesto === 'Ayudante general');
   const aviso = rcEsDirecto() ? '' : '<div style="font-size:12px;color:var(--amber);margin-bottom:10px">Tu ruta se enviará como solicitud: el Gerente Operativo (o Dirección) debe aprobarla antes de que se programe.</div>';
   const cuerpo = aviso +
     finSelect('Ruta', 'rc-base', [['nueva', '＋ Ruta nueva (desde cero)'], ...RC.rutas.map(r => [r.id, r.nombre])], '', 'Elige una ruta precargada…').replace('<select ', '<select onchange="rcCambiarBase()" ') +
-    finCampo('Fecha', 'rc-fecha', 'date', hoyLocal(), 'onchange="rcActualizarDia()"') +
+    finCampo('Fecha', 'rc-fecha', 'date', hoyLocal(), 'onchange="rcActualizarDia();rcHintPerfil()"') +
     finCampo('Nombre de la ruta', 'rc-nombre', 'text', '', 'maxlength="120" placeholder="Ej. RUTA 11 (BAK-30)"') +
     finSelect('Unidad', 'rc-unidad', RC.unidades.map(u => [u.id, u.bak + (u.estatus && u.estatus !== 'activo' ? ' (' + u.estatus + ')' : '')]), '', 'Sin unidad') +
-    finSelect('Titular', 'rc-titular', ops, '', 'Sin titular') +
+    finSelect('Titular', 'rc-titular', ops, '', 'Sin titular').replace('<select ', '<select onchange="rcHintPerfil()" ') + '<div id="rc-hint" style="font-size:11px;color:var(--text3);margin:-4px 0 10px"></div>' +
     `<label class="form-lbl">Ayudante(s)</label><div style="display:flex;gap:8px"><input class="form-input" id="rc-ay1" list="rc-ay-list" maxlength="80" placeholder="Ayudante 1" style="margin-bottom:10px"><input class="form-input" id="rc-ay2" list="rc-ay-list" maxlength="80" placeholder="Ayudante 2" style="margin-bottom:10px"></div><datalist id="rc-ay-list">${ays.map(a => `<option value="${esc(a.nombre)}">`).join('')}</datalist>` +
     `<label class="form-lbl">Clientes de la ruta</label><div id="rc-clientes" style="border:1px solid var(--border);border-radius:8px;max-height:230px;overflow:auto;margin-bottom:8px"></div>` +
     `<div style="display:flex;gap:8px;margin-bottom:6px"><select class="form-input" id="rc-add-cli" style="margin-bottom:0;flex:1"><option value="">Agregar cliente existente…</option>${RC.clientes.map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('')}</select><button class="btn sm" type="button" onclick="rcAgregarExistente()">Agregar</button></div>` +
@@ -10743,6 +11088,15 @@ async function rcCambiarBase(){
   const { data } = await sb.from('ruta_clientes').select('*').eq('ruta_id', v).order('orden');
   RC.items = (data || []).map(c => ({ sel:false, nombre:c.nombre, direccion:c.direccion || '', horario:c.horario || '', m3:c.m3, codigo:c.codigo || '', cliente_id:c.cliente_id || null, dias:c.dias || {} }));
   rcActualizarDia();
+}
+function rcHintPerfil(){
+  const h = document.getElementById('rc-hint'); if (!h) return;
+  const pf = (RC.perfiles || {})[document.getElementById('rc-titular').value], f = document.getElementById('rc-fecha').value;
+  if (pf === 'hooklift_skiploader'){
+    const mal = f && f <= hoyLocal() && !esDireccionReal();
+    h.innerHTML = mal ? '<span style="color:#d64545">Chofer Hooklift/Skiploader: su ruta se programa un día antes. Elige una fecha posterior a hoy.</span>' : 'Chofer Hooklift/Skiploader: ruta programada con un día de anticipación ✓';
+  } else if (pf === 'recolector') h.textContent = 'Chofer Recolector: su ruta viene precargada; elige la ruta base.';
+  else h.textContent = '';
 }
 function rcActualizarDia(){
   const k = rcDiaClave(document.getElementById('rc-fecha')?.value);
@@ -10779,6 +11133,7 @@ async function rcGuardar(){
   const k = rcDiaClave(fecha), sel = RC.items.filter(i => i.sel);
   if (!sel.length) return finErr('Selecciona al menos un cliente');
   const tit = document.getElementById('rc-titular').value || null;
+  if (tit && (RC.perfiles || {})[tit] === 'hooklift_skiploader' && fecha <= hoyLocal() && !esDireccionReal()) return finErr('Las rutas Hooklift/Skiploader se programan un día antes. Elige una fecha posterior a hoy.');
   const payload = {
     fecha, nombre, ruta_id: RC.base === 'nueva' ? null : RC.base,
     unidad_id: document.getElementById('rc-unidad').value || null, operador_id: tit,
