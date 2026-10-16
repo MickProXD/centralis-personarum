@@ -684,6 +684,30 @@ select.form-input option{background:var(--bg2)}
         <div class="form-err" id="err-login" style="margin-bottom:8px">—</div>
         <button class="btn primary" id="login-btn" style="width:100%;justify-content:center;height:38px" onclick="intentarLogin()">Entrar</button>
         <button class="btn" style="width:100%;justify-content:center;height:34px;margin-top:8px" onclick="mostrarPantalla('solicitud-screen')">Solicitar una cuenta</button>
+        <div style="text-align:center;margin-top:12px"><a href="#" style="font-size:12px;color:var(--green);text-decoration:none" onclick="event.preventDefault();abrirReset()">Olvidé mi contraseña</a></div>
+      </div>
+    </div>
+
+    <!-- OLVIDÉ MI CONTRASEÑA (Dirección autoriza; la persona elige su nueva contraseña con un código de un solo uso) -->
+    <div id="reset-screen" style="display:none" class="panel">
+      <div class="ph"><div class="ph-title">Restablecer mi contraseña</div></div>
+      <div style="padding:18px">
+        <label class="form-lbl req">Correo institucional</label>
+        <input class="form-input" type="email" id="reset-correo" autocomplete="username" style="margin-bottom:12px">
+        <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:8px"><strong>Paso 1.</strong> Pide autorización. Dirección recibirá tu solicitud y, si la aprueba, te dará un código.</div>
+        <button class="btn primary" id="reset-btn-sol" style="width:100%;justify-content:center;height:36px" onclick="resetSolicitar()">Pedir autorización a Dirección</button>
+        <div id="reset-msg" style="display:none;color:var(--green);font-size:11px;line-height:1.5;margin-top:8px"></div>
+        <div style="border-top:1px solid var(--border);margin:16px 0 12px"></div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:8px"><strong>Paso 2.</strong> Cuando Dirección te dé tu código (vale 30 minutos), escríbelo aquí y elige tu nueva contraseña.</div>
+        <label class="form-lbl req">Código</label>
+        <input class="form-input" id="reset-codigo" autocomplete="off" maxlength="9" placeholder="XXXX-XXXX" style="margin-bottom:10px;text-align:center;font-size:16px;letter-spacing:3px;text-transform:uppercase">
+        <label class="form-lbl req">Nueva contraseña <span style="font-weight:400;color:var(--text3)">(mínimo 8; 12 para RH y Dirección)</span></label>
+        <input class="form-input" type="password" id="reset-pass" autocomplete="new-password" style="margin-bottom:10px">
+        <label class="form-lbl req">Confirmar contraseña</label>
+        <input class="form-input" type="password" id="reset-pass2" autocomplete="new-password" style="margin-bottom:6px" onkeydown="if(event.key==='Enter')resetCanjear()">
+        <div class="form-err" id="err-reset" style="margin-bottom:8px">—</div>
+        <button class="btn primary" id="reset-btn-canj" style="width:100%;justify-content:center;height:38px" onclick="resetCanjear()">Cambiar contraseña</button>
+        <button class="btn" style="width:100%;justify-content:center;height:34px;margin-top:8px" onclick="mostrarPantalla('login-form')">← Volver a iniciar sesión</button>
       </div>
     </div>
 
@@ -1927,6 +1951,23 @@ select.form-input option{background:var(--bg2)}
 </div>
 
 <!-- QR DE SEDE -->
+<div class="overlay" id="modal-reset-codigo" onclick="if(event.target===this)closeModal('modal-reset-codigo')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Código de restablecimiento</div>
+      <button class="modal-close" onclick="closeModal('modal-reset-codigo')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <div id="rc-quien" style="font-size:12px;color:var(--text2);margin-bottom:10px"></div>
+      <div id="rc-codigo" style="font-family:monospace;font-size:30px;font-weight:800;letter-spacing:6px;background:var(--surface);border-radius:10px;padding:14px;user-select:all">—</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.6">Entrégaselo en persona o por un medio privado. Vale <strong>30 minutos</strong>, se usa una sola vez y esta es la única vez que se muestra. La persona entra a "Olvidé mi contraseña", pone su correo, este código y elige su nueva contraseña. Tú nunca la ves.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="navigator.clipboard?.writeText(document.getElementById('rc-codigo').textContent).then(()=>toast('Código copiado','success'))">Copiar</button>
+      <button class="btn primary" onclick="closeModal('modal-reset-codigo')">Listo</button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="modal-qr-sede" onclick="if(event.target===this)closeModal('modal-qr-sede')">
   <div class="modal">
     <div class="modal-head">
@@ -4147,9 +4188,53 @@ let _lastActivity = Date.now();
 let _mfaFactorId = null;
 
 function mostrarPantalla(id){
-  ['login-setup','login-form','mfa-enroll-screen','mfa-challenge-screen','solicitud-screen'].forEach(x=>{
+  ['login-setup','login-form','mfa-enroll-screen','mfa-challenge-screen','solicitud-screen','reset-screen'].forEach(x=>{
     const el = document.getElementById(x); if (el) el.style.display = (x===id) ? 'block' : 'none';
   });
+}
+
+function abrirReset(){
+  const c = (document.getElementById('login-correo')?.value || '').trim();
+  ['reset-codigo','reset-pass','reset-pass2'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('reset-correo').value = c;
+  document.getElementById('reset-msg').style.display = 'none';
+  document.getElementById('err-reset').classList.remove('show');
+  mostrarPantalla('reset-screen');
+}
+async function resetSolicitar(){
+  const correo = document.getElementById('reset-correo').value.trim().toLowerCase();
+  const err = document.getElementById('err-reset'), msg = document.getElementById('reset-msg');
+  err.classList.remove('show'); msg.style.display = 'none';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){ err.textContent = 'Escribe tu correo institucional'; err.classList.add('show'); return; }
+  const btn = document.getElementById('reset-btn-sol'); btn.disabled = true; btn.textContent = 'Enviando...';
+  const { data, error } = await sb.functions.invoke('recuperar-password', { body: { accion:'solicitar', correo } });
+  btn.disabled = false; btn.textContent = 'Pedir autorización a Dirección';
+  const m = data?.error || (error ? await errorFuncion(error, data) : '');
+  if (m){ err.textContent = m; err.classList.add('show'); return; }
+  msg.textContent = data?.mensaje || 'Solicitud enviada.'; msg.style.display = 'block';
+}
+async function resetCanjear(){
+  const correo = document.getElementById('reset-correo').value.trim().toLowerCase();
+  const codigo = document.getElementById('reset-codigo').value.trim();
+  const p1 = document.getElementById('reset-pass').value, p2 = document.getElementById('reset-pass2').value;
+  const err = document.getElementById('err-reset'); err.classList.remove('show');
+  const fail = m => { err.textContent = m; err.classList.add('show'); };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return fail('Escribe tu correo institucional');
+  if (codigo.replace(/[^A-Za-z0-9]/g,'').length !== 8) return fail('El código tiene 8 letras y números (XXXX-XXXX)');
+  if (p1.length < 8) return fail('La contraseña debe tener mínimo 8 caracteres');
+  if (p1 !== p2) return fail('Las contraseñas no coinciden');
+  const btn = document.getElementById('reset-btn-canj'); btn.disabled = true; btn.textContent = 'Guardando...';
+  const { data, error } = await sb.functions.invoke('recuperar-password', { body: { accion:'canjear', correo, codigo, password:p1 } });
+  btn.disabled = false; btn.textContent = 'Cambiar contraseña';
+  const m = data?.error || (error ? await errorFuncion(error, data) : '');
+  if (m) return fail(m);
+  ['reset-codigo','reset-pass','reset-pass2'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('login-correo').value = correo;
+  document.getElementById('login-pass').value = '';
+  mostrarPantalla('login-form');
+  const e2 = document.getElementById('err-login'); e2.textContent = '✓ Contraseña cambiada. Ya puedes iniciar sesión.'; e2.classList.add('show'); e2.style.color = 'var(--green)';
+  setTimeout(()=>{ e2.style.color=''; }, 8000);
+  document.getElementById('login-pass').focus();
 }
 
 async function enviarSolicitudCuenta(){
@@ -4422,14 +4507,19 @@ async function renderUsuariosConfig(){
   if (!cont) return;
   const { data: usuarios, error } = await sb.from('profiles').select('*').order('nombre');
   if (error){ cont.innerHTML = '<div class="empty" style="padding:24px">Error al cargar cuentas</div>'; return; }
+  const esDir = esDireccionReal();
+  const abiertas = {};
+  if (esDir){ const { data: rs } = await sb.from('reset_password').select('id,user_id,estado,created_at,codigo_vence').in('estado', ['pendiente','autorizada']); (rs || []).forEach(r => { if (r.user_id) abiertas[r.user_id] = r; }); }
+  const pend = (usuarios || []).filter(u => abiertas[u.id]?.estado === 'pendiente');
+  const bannerReset = pend.length ? `<div style="background:var(--amber-bg,#fff7e0);border:1px solid var(--amber,#e0a800);border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:12px"><strong>Piden restablecer su contraseña:</strong> ${pend.map(u => esc(u.nombre)).join(', ')}. Usa el botón "Contraseña" de cada persona para autorizar o rechazar.</div>` : '';
   if (!usuarios.length){ cont.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">Sin cuentas registradas</div></div>'; return; }
-  cont.innerHTML = usuarios.map(u=>`<div class="doc-row">
+  cont.innerHTML = bannerReset + usuarios.map(u=>`<div class="doc-row">
     <div class="av g" style="width:30px;height:30px;font-size:11px;${u.activo?'':'opacity:.35'}">${esc(u.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase())}</div>
     <div style="flex:1">
       <div class="doc-name" style="${u.activo?'':'opacity:.5'}">${esc(u.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(u.usuario)}</span></div>
       <div class="doc-meta">${ROLES[u.role]?.label||u.role} · ${u.activo?'Activo':'Desactivado'}</div>
     </div>
-    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button><button class="btn sm" onclick="confirmarResetMFA('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Si perdió acceso a su autenticador">Restablecer 2FA</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
+    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button>${esDir ? `<button class="btn sm ${abiertas[u.id]?.estado==='pendiente'?'primary':''}" onclick="abrirResetPassword('${u.id}','${esc(u.nombre)}','${abiertas[u.id]?.id||''}','${abiertas[u.id]?.estado||''}')" style="margin-right:4px" title="Autorizar que esta persona restablezca su contraseña">Contraseña${abiertas[u.id]?.estado==='pendiente'?' (pidió)':''}</button>` : ''}<button class="btn sm" onclick="confirmarResetMFA('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Si perdió acceso a su autenticador">Restablecer 2FA</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
   </div>`).join('');
 }
 
@@ -4516,6 +4606,32 @@ async function guardarEdicionPerfil(){
   _epUsuarioId = null;
   toast('Cuenta actualizada','success');
   renderUsuariosConfig();
+}
+
+async function llamarResetAdmin(body){
+  const { data: { session } } = await sb.auth.getSession();
+  const { data, error } = await sb.functions.invoke('admin-reset-password', { body, headers:{ Authorization:`Bearer ${session.access_token}` } });
+  if (error || data?.error){ toast(data?.error || await errorFuncion(error, data), 'error'); return null; }
+  return data;
+}
+function abrirResetPassword(userId, nombre, reqId, estado){
+  if (!esDireccionReal()) return;
+  const aviso = estado === 'pendiente' ? 'Esta persona pidió restablecer su contraseña.' : (estado === 'autorizada' ? 'Ya hay un código vigente; si generas otro, el anterior deja de servir.' : 'Nadie lo pidió todavía; puedes autorizarlo tú si te lo solicitó por otro medio.');
+  confirmar(`¿Autorizar que <strong>${nombre}</strong> restablezca su contraseña? ${aviso} Se genera un código de un solo uso que le entregarás tú.${reqId ? ' <br><br><a href="#" style="color:var(--red)" onclick="event.preventDefault();rechazarResetPassword(\''+reqId+'\',\''+nombre+'\')">Rechazar esta solicitud</a>' : ''}`, 'Generar código', async () => {
+    const r = await llamarResetAdmin({ accion:'autorizar', user_id:userId });
+    if (!r) return;
+    await audit('config', `Restablecimiento de contraseña autorizado para <strong>${nombre}</strong>`, 'a');
+    document.getElementById('rc-quien').innerHTML = 'Para <strong>' + esc(r.nombre) + '</strong>';
+    document.getElementById('rc-codigo').textContent = r.codigo;
+    openModal('modal-reset-codigo');
+    renderUsuariosConfig();
+  });
+}
+async function rechazarResetPassword(id, nombre){
+  const r = await llamarResetAdmin({ accion:'rechazar', id });
+  if (!r) return;
+  await audit('config', `Restablecimiento de contraseña rechazado para <strong>${nombre}</strong>`, 'a');
+  toast('Solicitud rechazada','success'); renderUsuariosConfig(); closeModal('modal-confirm');
 }
 
 function confirmarResetMFA(userId, nombre){
@@ -10762,6 +10878,11 @@ async function bellPendientes(){
     if ((u.data || []).length && !(inf.data || []).length) add(1, 'Entrega el checklist de tu unidad de hoy', 'mantenimiento');
     const nl = (lav.data || []).length;
     add(nl, nl === 1 ? 'Tienes un lavado pendiente de evidencia' : 'Tienes lavados pendientes de evidencia', 'mantenimiento');
+  }
+  if (esDireccionReal()){
+    const { data } = await sb.from('reset_password').select('id').eq('estado', 'pendiente');
+    const n = (data || []).length;
+    add(n, n === 1 ? 'Una persona pide restablecer su contraseña' : n + ' personas piden restablecer su contraseña', 'configuracion');
   }
   if (caps().pages.includes('solicitudes')){
     const { data } = await sb.from('solicitudes_op').select('aprobador').eq('estatus', 'pendiente');
