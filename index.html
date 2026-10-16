@@ -4519,7 +4519,7 @@ async function renderUsuariosConfig(){
       <div class="doc-name" style="${u.activo?'':'opacity:.5'}">${esc(u.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(u.usuario)}</span></div>
       <div class="doc-meta">${ROLES[u.role]?.label||u.role} · ${u.activo?'Activo':'Desactivado'}</div>
     </div>
-    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button>${esDir ? `<button class="btn sm ${abiertas[u.id]?.estado==='pendiente'?'primary':''}" onclick="abrirResetPassword('${u.id}','${esc(u.nombre)}','${abiertas[u.id]?.id||''}','${abiertas[u.id]?.estado||''}')" style="margin-right:4px" title="Autorizar que esta persona restablezca su contraseña">Contraseña${abiertas[u.id]?.estado==='pendiente'?' (pidió)':''}</button>` : ''}<button class="btn sm" onclick="confirmarResetMFA('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Si perdió acceso a su autenticador">Restablecer 2FA</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
+    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button>${esDir ? `<button class="btn sm ${abiertas[u.id]?.estado==='pendiente'?'primary':''}" onclick="abrirResetPassword('${u.id}','${esc(u.nombre)}','${abiertas[u.id]?.id||''}','${abiertas[u.id]?.estado||''}')" style="margin-right:4px" title="Autorizar que esta persona restablezca su contraseña">Contraseña${abiertas[u.id]?.estado==='pendiente'?' (pidió)':''}</button>${abiertas[u.id]?.estado==='pendiente' ? `<button class="btn sm danger" onclick="rechazarResetPassword('${abiertas[u.id].id}','${esc(u.nombre)}')" style="margin-right:4px">Rechazar</button>` : ''}` : ''}<button class="btn sm" onclick="confirmarResetMFA('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Si perdió acceso a su autenticador">Restablecer 2FA</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
   </div>`).join('');
 }
 
@@ -4617,7 +4617,7 @@ async function llamarResetAdmin(body){
 function abrirResetPassword(userId, nombre, reqId, estado){
   if (!esDireccionReal()) return;
   const aviso = estado === 'pendiente' ? 'Esta persona pidió restablecer su contraseña.' : (estado === 'autorizada' ? 'Ya hay un código vigente; si generas otro, el anterior deja de servir.' : 'Nadie lo pidió todavía; puedes autorizarlo tú si te lo solicitó por otro medio.');
-  confirmar(`¿Autorizar que <strong>${nombre}</strong> restablezca su contraseña? ${aviso} Se genera un código de un solo uso que le entregarás tú.${reqId ? ' <br><br><a href="#" style="color:var(--red)" onclick="event.preventDefault();rechazarResetPassword(\''+reqId+'\',\''+nombre+'\')">Rechazar esta solicitud</a>' : ''}`, 'Generar código', async () => {
+  confirmar(`¿Autorizar que ${nombre} restablezca su contraseña? ${aviso} Se genera un código de un solo uso que le entregarás tú.`, 'Generar código', async () => {
     const r = await llamarResetAdmin({ accion:'autorizar', user_id:userId });
     if (!r) return;
     await audit('config', `Restablecimiento de contraseña autorizado para <strong>${nombre}</strong>`, 'a');
@@ -4631,11 +4631,11 @@ async function rechazarResetPassword(id, nombre){
   const r = await llamarResetAdmin({ accion:'rechazar', id });
   if (!r) return;
   await audit('config', `Restablecimiento de contraseña rechazado para <strong>${nombre}</strong>`, 'a');
-  toast('Solicitud rechazada','success'); renderUsuariosConfig(); closeModal('modal-confirm');
+  toast('Solicitud rechazada','success'); renderUsuariosConfig();
 }
 
 function confirmarResetMFA(userId, nombre){
-  confirmar(`¿Restablecer la verificación en dos pasos de <strong>${nombre}</strong>? Su código actual dejará de funcionar y tendrá que registrar uno nuevo en su siguiente inicio de sesión — úsalo solo si perdió acceso a su autenticador.`, 'Restablecer verificación', async () => {
+  confirmar(`¿Restablecer la verificación en dos pasos de ${nombre}? Su código actual dejará de funcionar y tendrá que registrar uno nuevo en su siguiente inicio de sesión — úsalo solo si perdió acceso a su autenticador.`, 'Restablecer verificación', async () => {
     const { data: { session } } = await sb.auth.getSession();
     const { data, error } = await sb.functions.invoke('admin-reset-mfa', {
       body: { target_user_id: userId },
@@ -5574,7 +5574,8 @@ function toast(msg, tipo='success'){
 
 function confirmar(msg, title, onOk){
   document.getElementById('conf-title').textContent = title || 'Confirmar acción';
-  document.getElementById('conf-msg').textContent = msg;
+  // seguro: se escapa todo y solo se permiten <strong> y <br> (negritas y saltos de línea)
+  document.getElementById('conf-msg').innerHTML = String(msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&lt;(\/?)strong&gt;/g,'<$1strong>').replace(/&lt;br\s*\/?&gt;/g,'<br>');
   document.getElementById('conf-ok-btn').onclick = () => { closeModal('modal-confirm'); onOk(); };
   openModal('modal-confirm');
 }
