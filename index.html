@@ -4621,7 +4621,7 @@ function abrirResetPassword(userId, nombre, reqId, estado){
     const r = await llamarResetAdmin({ accion:'autorizar', user_id:userId });
     if (!r) return;
     await audit('config', `Restablecimiento de contraseña autorizado para <strong>${nombre}</strong>`, 'a');
-    document.getElementById('rc-quien').innerHTML = 'Para <strong>' + esc(r.nombre) + '</strong>';
+    document.getElementById('rc-quien').innerHTML = 'Para <strong>' + esc(r.nombre) + '</strong><br>Correo que debe escribir: <strong>' + esc(r.correo || '') + '</strong>';
     document.getElementById('rc-codigo').textContent = r.codigo;
     openModal('modal-reset-codigo');
     renderUsuariosConfig();
