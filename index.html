@@ -5765,7 +5765,7 @@ function getAlertas(){
   const alertas = [];
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   (verDocsUnidades() ? DB.unidades : []).forEach(u => {
-    ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia'].forEach(tipo => {
+    ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación'].forEach(tipo => {
       const key = `unidad-${u.id}-${tipo}`;
       const doc = DB.documentos[key];
       if (!doc) { alertas.push({ entidadId:u.id, entidadTipo:'unidad', entidadNombre:u.bak, docTipo:tipo, nivel:'faltante', diasStr:'Faltante', dias:9999 }); return; }
@@ -5807,7 +5807,7 @@ function getFaltantes(){
     docs.forEach(t => { if (!DB.documentos[`colab-${c.id}-${t}`]) n++; });
   });
   (verDocsUnidades() ? DB.unidades : []).forEach(u => {
-    ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia'].forEach(t => { if (!DB.documentos[`unidad-${u.id}-${t}`]) n++; });
+    ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación'].forEach(t => { if (!DB.documentos[`unidad-${u.id}-${t}`]) n++; });
   });
   return n;
 }
@@ -7379,12 +7379,13 @@ async function renderUnidadDocs(){
   if (!u || currentUser.role === 'chofer') return;
   await cargarDocumentosEntidad('unidad', u.id);
   const esOp = currentUser.role === 'chofer';
-  const tipos = ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia','Revista de transporte'];
+  const tipos = ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia','TAG','Revista de transporte'];
+  const OPC_UNI = ['Tenencia','TAG','Revista de transporte'];
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   document.getElementById('unidad-docs').innerHTML = tipos.map(tipo=>{
     const key = `unidad-${u.id}-${tipo}`;
     const doc = DB.documentos[key];
-    if (!doc) return `<div class="doc-row"><div class="doc-ico m"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><path d="M4 1h4l2 2v9a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z"/></svg></div><div style="flex:1"><div class="doc-name">${tipo}</div><div class="doc-meta" style="color:var(--red)">${esOp ? 'Sin documento cargado' : 'Sin documento — obligatorio'}</div></div><button class="btn sm" onclick="openSubirDocEspecifico('unidad','${u.id}','${tipo}')" data-min-role="supervisor">Subir</button></div>`;
+    if (!doc) return `<div class="doc-row"><div class="doc-ico m"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><path d="M4 1h4l2 2v9a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z"/></svg></div><div style="flex:1"><div class="doc-name">${tipo}</div><div class="doc-meta" style="color:var(--red)">${esOp ? 'Sin documento cargado' : (OPC_UNI.includes(tipo) ? 'Sin documento — opcional' : 'Sin documento — obligatorio')}</div></div><button class="btn sm" onclick="openSubirDocEspecifico('unidad','${u.id}','${tipo}')" data-min-role="supervisor">Subir</button></div>`;
     let cls='ok', diasStr='Sin vigencia', diasColor='ok';
     if (doc.vigencia){
       const vig = parseFecha(doc.vigencia);
@@ -8194,7 +8195,7 @@ function openSubirDoc(ctx){
   currentDocCtx = ctx;
   const tipos = ctx==='colab' ?
     ['Licencia de conducir','Alta IMSS','Identificación oficial','Comprobante domicilio','Examen médico','Otro'] :
-    ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia','Revista de transporte','Otro'];
+    ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia','TAG','Revista de transporte','Otro'];
   document.getElementById('sd-tipo').innerHTML = tipos.map(t=>`<option>${t}</option>`).join('');
   document.getElementById('subir-doc-title').textContent = ctx==='colab' ? 'Subir documento — colaborador' : 'Subir documento — unidad';
   document.getElementById('sd-ut').textContent = 'Seleccionar PDF';
@@ -11137,7 +11138,7 @@ async function renderCompliance(){
   await Promise.all([ cargarTodosDocumentos(), cargarContratosVigentes() ]);
   const verUni = verDocsUnidades();
   const cats = [
-    { titulo: 'Documentos vehiculares', tipos: ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia'], scope: 'unidad' },
+    { titulo: 'Documentos vehiculares', tipos: ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación'], scope: 'unidad' },
     { titulo: 'Documentos laborales', tipos: ['Licencia de conducir','Contrato laboral','Alta IMSS','Identificación oficial'], scope: 'colab' }
   ].filter(c => c.scope !== 'unidad' || verUni);
   const cardUni = document.getElementById('comp-unid-ok')?.closest('.mcard'); if (cardUni) cardUni.style.display = verUni ? '' : 'none';
