@@ -902,13 +902,12 @@ select.form-input option{background:var(--bg2)}
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="4" y="1" width="8" height="14" rx="1.5"/><line x1="6" y1="13" x2="10" y2="13"/></svg>
       Equipos CEL
     </div>
-    <div class="sb-item" data-page="configuracion" onclick="nav('configuracion',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
-      Configuración
-    </div>
   </nav>
   <div class="sb-foot">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+    <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:6px">
+      <button onclick="nav('ajustes',null)" title="Ajustes" aria-label="Ajustes" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" style="width:15px;height:15px"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+      </button>
       <div style="position:relative" onmouseenter="document.getElementById('bug-tip').style.opacity='1'" onmouseleave="document.getElementById('bug-tip').style.opacity='0'">
         <div id="bug-tip" style="position:absolute;bottom:calc(100% + 8px);right:0;background:var(--surface2,#2a2a2a);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:10px;color:var(--text2);white-space:nowrap;opacity:0;transition:opacity .15s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.4)">Reportar bug, error o crash<div style="position:absolute;top:100%;right:12px;border:5px solid transparent;border-top-color:var(--border)"></div></div>
         <button onclick="abrirReporteBug()" title="" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer">
@@ -1344,6 +1343,39 @@ select.form-input option{background:var(--bg2)}
   </div>
 
   <!-- MI PERFIL -->
+  <div id="page-ajustes" class="page fadein" style="max-width:760px;margin:0 auto">
+    <div class="panel" style="margin-bottom:14px">
+      <div class="ph"><div class="ph-title">Mi foto de perfil</div></div>
+      <div style="padding:14px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+        <div id="aj-foto" style="width:80px;height:80px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:220px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <label class="btn primary" style="cursor:pointer;display:inline-flex;align-items:center">Subir o cambiar foto<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="elegirFotoPerfil(this)"></label>
+            <button class="btn" onclick="quitarFotoPerfil()">Quitar</button>
+          </div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6"><strong>Debes ser tú quien aparezca en la foto</strong>, con el rostro visible. No uses logos, caricaturas, mascotas, paisajes ni fotos de otras personas.</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:14px">
+      <div class="ph"><div class="ph-title">Mi cuenta</div></div>
+      <div style="padding:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="abrirMiCuenta()">Nombre, usuario, correo y apariencia</button>
+        <button class="btn" onclick="abrirCambiarPassword(false)">Cambiar contraseña</button>
+        <button class="btn" onclick="iniciarTour()">Ver recorrido de la plataforma</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:14px">
+      <div class="ph"><div class="ph-title">Mis documentos</div></div>
+      <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.6">Sube tus documentos en PDF o foto (máximo 10 MB cada uno). Los ve únicamente el personal autorizado de la empresa. Si algo ya lo cargó Recursos Humanos, aparecerá aquí y solo RH puede cambiarlo.</div>
+      <div id="aj-docs" style="padding:6px 14px 14px"></div>
+    </div>
+    <div class="panel" id="aj-cfg-panel" style="margin-bottom:14px;display:none">
+      <div class="ph"><div class="ph-title">Configuración de la empresa</div></div>
+      <div style="padding:14px"><button class="btn primary" onclick="nav('configuracion',null)">Abrir configuración</button></div>
+    </div>
+  </div>
+
   <div id="page-miperfil" class="page fadein" style="max-width:720px;margin:0 auto">
     <div class="panel" style="padding:18px" id="mp-cabecera"></div>
     <div id="mp-asistencia"></div>
@@ -2039,6 +2071,20 @@ select.form-input option{background:var(--bg2)}
 </div>
 
 <!-- MI CUENTA — configuración personal, disponible para cualquier cuenta -->
+<div class="overlay" id="modal-foto-invita" onclick="if(event.target===this)closeModal('modal-foto-invita')">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-body" style="text-align:center;padding:26px 22px 8px">
+      <div style="font-size:40px;margin-bottom:6px">📸</div>
+      <div style="font-family:var(--head);font-weight:900;font-size:17px;margin-bottom:8px">Pon tu foto de perfil</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">Así tus compañeros te reconocen en el chat, el Bio-Muro y la plataforma. <strong>Debes ser tú quien salga en la foto</strong>, con el rostro visible: sin logos, caricaturas, mascotas ni fotos de otras personas.<br>Además desbloqueas una insignia. 🏅</div>
+    </div>
+    <div class="modal-foot" style="justify-content:center">
+      <button class="btn" onclick="closeModal('modal-foto-invita')">Ahora no</button>
+      <label class="btn primary" style="cursor:pointer;display:inline-flex;align-items:center">Subir mi foto<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="closeModal('modal-foto-invita');elegirFotoPerfil(this)"></label>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-mi-cuenta" onclick="if(event.target===this)closeModal('modal-mi-cuenta')">
   <div class="modal">
     <div class="modal-head">
@@ -2051,7 +2097,7 @@ select.form-input option{background:var(--bg2)}
         <div>
           <label class="btn sm" style="cursor:pointer;display:inline-flex;align-items:center">Cambiar foto<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="elegirFotoPerfil(this)"></label>
           <button class="btn sm" onclick="quitarFotoPerfil()" style="margin-left:6px">Quitar</button>
-          <div style="font-size:10px;color:var(--text3);margin-top:6px">Foto de rostro, de preferencia con fondo claro. Se recorta en círculo.</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px">Debes ser tú en la foto, con el rostro visible (sin logos, caricaturas ni otras personas). Se recorta en círculo.</div>
         </div>
       </div>
       <label class="form-lbl req">Nombre para mostrar</label>
@@ -4397,7 +4443,7 @@ async function cargarPerfilYActivarSesion(){
     name: profile.nombre, role: profile.role, userId: profile.id,
     colaboradorId: profile.colaborador_id,
     realRole: profile.role, realAreaAdmin: profile.area_admin || null,
-    areaAdmin: profile.area_admin || null, gerenteId: profile.gerente_id || null, tourCompletado: !!profile.tour_completado,
+    areaAdmin: profile.area_admin || null, gerenteId: profile.gerente_id || null, tourCompletado: !!profile.tour_completado, fotoInvitada: !!profile.foto_invitada,
     initials: profile.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()
   };
   _sesionActiva = true; _lastActivity = Date.now();
@@ -4418,7 +4464,7 @@ async function cargarPerfilYActivarSesion(){
   updateBadges();
   insigniasEvaluar(true);
   nav(paginaInicio(), null);
-  if (!currentUser.tourCompletado) iniciarTour(); else avisoAsistenciaInicio();
+  if (!currentUser.tourCompletado) iniciarTour(); else { avisoAsistenciaInicio(); setTimeout(invitarFotoPerfil, 3500); }
   toast(`Bienvenido, ${currentUser.name.split(' ')[0]}`, 'success');
 
   // Aviso a Dirección: solicitudes de cuenta pendientes de revisar
@@ -5474,7 +5520,7 @@ function nav(page, el){
   cerrarMenuMovil();
   marcarInicioModulo(page);
   // Guardia de seguridad por rol (las sub-vistas heredan acceso de su página padre)
-  const subvistas = ['expediente','unidad','sitedetail'];
+  const subvistas = ['expediente','unidad','sitedetail','ajustes'];
   if (!subvistas.includes(page) && !caps().pages.includes(page)){
     toast('Tu rol no tiene acceso a esa sección','error');
     page = caps().pages[0] || 'dashboard'; el = null;
@@ -5486,7 +5532,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score' };
+  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score' };
   if (currentUser.role === 'chofer'){ titles.flota = 'Mi unidad'; titles.unidad = 'Mi unidad'; }
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
@@ -5505,6 +5551,7 @@ function nav(page, el){
   if (page === 'miasistencia') renderMiAsistencia();
   if (page === 'rutas') renderRutas(); else rtDetener();
   if (page === 'miperfil') renderMiPerfil();
+  if (page === 'ajustes') renderAjustes();
   if (page === 'seguridad'){ renderSeg(); renderRojosMuro(); }
   if (page === 'mantenimiento'){ MANT.sel = null; renderMantenimiento(); }
   if (page === 'solicitudes') renderSolicitudes();
@@ -6896,6 +6943,7 @@ async function renderExpDocs(){
   const tipos = c.puesto === 'Operador'
     ? ['Licencia de conducir','Alta IMSS','Identificación oficial','Comprobante de domicilio']
     : ['Alta IMSS','Identificación oficial','Comprobante de domicilio'];
+  ['CURP (constancia)','RFC (constancia fiscal)','Licencia de conducir'].forEach(t => { if (!tipos.includes(t) && DB.documentos[`colab-${c.id}-${t}`]) tipos.push(t); });
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   document.getElementById('exp-docs').innerHTML = contratoHtml + tipos.map(tipo => {
     const key = `colab-${c.id}-${tipo}`;
@@ -9135,6 +9183,123 @@ function avatarHtml(userId, nombre, size){
   if (url) return `<img src="${url}" alt="" style="${st}object-fit:cover;background:var(--surface)">`;
   return `<span style="${st}display:inline-flex;align-items:center;justify-content:center;background:var(--green3);color:#fff;font-family:var(--head);font-weight:900;font-size:${Math.round(size*.38)}px">${esc(avIniciales(nombre || AV.dir[userId]?.nombre))}</span>`;
 }
+/* ── Ajustes: foto de perfil + mis documentos (cada persona carga lo suyo; RH lo ve en el expediente) ── */
+const MD_TIPOS = [
+  { t:'Identificación oficial',   n:'INE o identificación oficial', ayuda:'Por ambos lados, legible' },
+  { t:'CURP (constancia)',        n:'CURP (constancia)',            ayuda:'Constancia o impresión oficial' },
+  { t:'RFC (constancia fiscal)',  n:'RFC (constancia de situación fiscal)', ayuda:'Del SAT' },
+  { t:'Comprobante de domicilio', n:'Comprobante de domicilio',     ayuda:'Máximo 3 meses de antigüedad' },
+  { t:'Licencia de conducir',     n:'Licencia de conducir',         ayuda:'Por ambos lados', solo:['chofer'] }
+];
+const MD = { datos:null, docs:{} };
+function ajRefrescarFoto(){ const c = document.getElementById('aj-foto'); if (c && currentUser) c.innerHTML = avatarHtml(currentUser.userId, currentUser.name, 80); }
+async function renderAjustes(){
+  ajRefrescarFoto();
+  const cp = document.getElementById('aj-cfg-panel'); if (cp) cp.style.display = caps().pages.includes('configuracion') ? '' : 'none';
+  const cont = document.getElementById('aj-docs'); if (!cont) return;
+  if (!currentUser.colaboradorId){
+    cont.innerHTML = '<div class="empty-sub" style="padding:8px 0">Tu cuenta todavía no está ligada a tu expediente de Personal. Pide a Recursos Humanos que la vincule para poder cargar tus documentos.</div>';
+    return;
+  }
+  cont.innerHTML = '<div class="empty-sub">Cargando…</div>';
+  const [d, p] = await Promise.all([ sb.rpc('mis_documentos'), sb.rpc('mis_datos_personales') ]);
+  MD.docs = {}; (d.data || []).forEach(x => MD.docs[x.tipo_documento] = x);
+  MD.datos = (p.data || [])[0] || {};
+  const x = MD.datos;
+  const fila = (t) => {
+    const doc = MD.docs[t.t];
+    const estado = doc ? `<span class="tag g">Cargado</span>` : `<span class="tag warn">Pendiente</span>`;
+    const bloqueado = doc && !doc.subido_por_mi;
+    return `<div class="doc-row">
+      <div style="flex:1;min-width:0"><div class="doc-name">${esc(t.n)} ${estado}</div>
+      <div class="doc-meta">${doc ? esc(doc.nombre_archivo || '') + (bloqueado ? ' · cargado por RH' : '') : esc(t.ayuda)}</div></div>
+      ${doc ? `<button class="btn sm" onclick="mdVer('personal','${esc(doc.storage_path)}')">Ver</button>` : ''}
+      ${bloqueado ? '' : `<label class="btn sm ${doc ? '' : 'primary'}" style="cursor:pointer;margin-left:4px">${doc ? 'Reemplazar' : 'Subir'}<input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="display:none" onchange="mdSubir('${esc(t.t)}',this)"></label>`}
+    </div>`;
+  };
+  const lista = MD_TIPOS.filter(t => !t.solo || t.solo.includes(currentUser.role));
+  const curpOk = !!(x.curp), rfcOk = !!(x.rfc);
+  const bancoBloq = x.banco_tipo && !x.banco_propio;
+  cont.innerHTML = lista.map(fila).join('') + `
+    <div style="border-top:1px solid var(--border);margin:12px 0 10px"></div>
+    <div class="grid2">
+      <div><label class="form-lbl">CURP</label><input class="form-input" id="aj-curp" maxlength="18" placeholder="18 caracteres" value="${esc(x.curp || '')}" ${curpOk ? 'readonly' : ''} style="text-transform:uppercase"></div>
+      <div><label class="form-lbl">RFC</label><input class="form-input" id="aj-rfc" maxlength="13" placeholder="12 o 13 caracteres" value="${esc(x.rfc || '')}" ${rfcOk ? 'readonly' : ''} style="text-transform:uppercase"></div>
+    </div>
+    ${curpOk && rfcOk ? '<div style="font-size:10px;color:var(--text3);margin-top:6px">Ya están registrados. Si hay un error, pide a RH que lo corrija.</div>' : '<button class="btn sm primary" style="margin-top:8px" onclick="mdGuardarCurpRfc()">Guardar CURP y RFC</button>'}
+    <div style="border-top:1px solid var(--border);margin:14px 0 10px"></div>
+    <div style="font-family:var(--head);font-size:11px;font-weight:900;margin-bottom:6px">Cuenta bancaria o tarjeta de nómina</div>
+    ${bancoBloq ? `<div class="doc-row"><div style="flex:1"><div class="doc-name">${esc(x.banco_tipo === 'clabe' ? 'CLABE' : x.banco_tipo === 'tarjeta' ? 'Tarjeta' : 'Número de cuenta')} <span class="tag g">Registrado por RH</span></div><div class="doc-meta">Termina en ${esc(String(x.banco_digitos || '').slice(-4))}. Para cambiarlo, pídeselo a RH.</div></div></div>` : `
+    <div class="grid2">
+      <div><label class="form-lbl">Tipo</label><select class="form-input" id="aj-b-tipo"><option value="">Elige…</option><option value="cuenta"${x.banco_tipo==='cuenta'?' selected':''}>Número de cuenta (10-11 dígitos)</option><option value="clabe"${x.banco_tipo==='clabe'?' selected':''}>CLABE (18 dígitos)</option><option value="tarjeta"${x.banco_tipo==='tarjeta'?' selected':''}>Número de tarjeta (16 dígitos)</option></select></div>
+      <div><label class="form-lbl">Dígitos</label><input class="form-input" id="aj-b-dig" inputmode="numeric" autocomplete="off" value="${esc(x.banco_digitos || '')}"></div>
+    </div>
+    <div style="margin-top:8px"><label class="form-lbl">Carátula o estado de cuenta <span style="font-weight:400;color:var(--text3)">(PDF o foto, opcional)</span></label>
+      <input type="file" id="aj-b-file" accept="application/pdf,image/jpeg,image/png,image/webp" class="form-input">${x.banco_archivo ? `<div style="font-size:10px;color:var(--text3);margin-top:4px">Ya cargado: ${esc(x.banco_archivo)}</div>` : ''}</div>
+    <button class="btn sm primary" style="margin-top:8px" onclick="mdGuardarBanco()">Guardar datos bancarios</button>`}`;
+}
+async function mdPrepararArchivo(f){
+  if (!f) return null;
+  if (f.size > 10 * 1024 * 1024){ toast('El archivo excede 10 MB','error'); return null; }
+  if (f.type === 'application/pdf'){
+    if (!(await validarPDFReal(f))){ toast(MSG_PDF_INVALIDO,'error'); return null; }
+    return { blob:f, ext:'pdf', ct:'application/pdf' };
+  }
+  if (/^image\/(jpeg|png|webp)$/.test(f.type)) return { blob: await redimensionarImagen(f, 2000, 0.85, false), ext:'jpg', ct:'image/jpeg' };
+  toast('Sube un PDF o una foto (JPG, PNG o WebP)','error'); return null;
+}
+async function mdSubir(tipo, input){
+  const f = input.files && input.files[0]; input.value = '';
+  if (!f || !currentUser.colaboradorId) return;
+  try {
+    const a = await mdPrepararArchivo(f); if (!a) return;
+    const path = claveStorageSegura(`${currentUser.colaboradorId}/documento/${tipo.replace(/\s+/g,'_')}_${Date.now()}.${a.ext}`);
+    const { error } = await sb.storage.from('personal').upload(path, a.blob, { contentType:a.ct });
+    if (error) throw error;
+    const { error: e2 } = await sb.rpc('mis_documento_guardar', { p_tipo:tipo, p_path:path, p_nombre:f.name });
+    if (e2) throw e2;
+    toast('Documento guardado','success'); renderAjustes();
+  } catch(e){ toast(e.message || 'No se pudo guardar el documento','error'); }
+}
+async function mdVer(bucket, path){
+  try { const url = await urlFirmadaStorage(bucket, path); if (!window.open(url, '_blank', 'noopener')) toast('Permite ventanas emergentes para ver el archivo','error'); }
+  catch(e){ toast(e.message,'error'); }
+}
+async function mdGuardarCurpRfc(){
+  const curp = (document.getElementById('aj-curp').value || '').trim().toUpperCase(), rfc = (document.getElementById('aj-rfc').value || '').trim().toUpperCase();
+  if (!curp && !rfc){ toast('Escribe tu CURP o tu RFC','error'); return; }
+  const { error } = await sb.rpc('mis_curp_rfc_guardar', { p_curp:curp, p_rfc:rfc });
+  if (error){ toast(error.message,'error'); return; }
+  toast('Datos guardados','success'); renderAjustes();
+}
+async function mdGuardarBanco(){
+  const tipo = document.getElementById('aj-b-tipo').value, dig = document.getElementById('aj-b-dig').value.trim();
+  if (!tipo || !dig){ toast('Elige el tipo y escribe los dígitos','error'); return; }
+  try {
+    let path = null, nombre = null;
+    const f = document.getElementById('aj-b-file').files[0];
+    if (f){
+      const a = await mdPrepararArchivo(f); if (!a) return;
+      path = claveStorageSegura(`${currentUser.colaboradorId}/estado_${Date.now()}.${a.ext}`); nombre = f.name;
+      const { error } = await sb.storage.from('bancarios').upload(path, a.blob, { contentType:a.ct });
+      if (error) throw error;
+    }
+    const { error: e2 } = await sb.rpc('mis_banco_guardar', { p_tipo:tipo, p_digitos:dig, p_path:path, p_nombre:nombre });
+    if (e2) throw e2;
+    toast('Datos bancarios guardados','success'); renderAjustes();
+  } catch(e){ toast(e.message || 'No se pudo guardar','error'); }
+}
+async function invitarFotoPerfil(){
+  try {
+    if (!currentUser || currentUser.fotoInvitada) return;
+    if (document.querySelector('.overlay.open')) { setTimeout(invitarFotoPerfil, 4000); return; }
+    await cargarDirectorioAvatares();
+    currentUser.fotoInvitada = true;
+    try { await sb.rpc('foto_invitacion_vista'); } catch(e){}
+    if ((AV.dir[currentUser.userId] || {}).avatar_path) return;
+    openModal('modal-foto-invita');
+  } catch(e){}
+}
 function refrescarAvatarPropio(){
   if (!currentUser) return;
   [document.getElementById('sb-av'), document.getElementById('sb-av2')].forEach(el => { if (!el) return;
@@ -9181,6 +9346,7 @@ async function elegirFotoPerfil(input){
     if (viejo) sb.storage.from('avatares').remove([viejo]);
     await cargarDirectorioAvatares(true);
     toast('Foto de perfil actualizada','success');
+    insigniasEvaluar(true); ajRefrescarFoto();
   } catch(e){ toast('No se pudo subir la foto: ' + (e.message || e), 'error'); }
 }
 async function quitarFotoPerfil(){
@@ -9190,7 +9356,7 @@ async function quitarFotoPerfil(){
   if (error){ toast(error.message,'error'); return; }
   sb.storage.from('avatares').remove([viejo]);
   await cargarDirectorioAvatares(true);
-  toast('Foto eliminada','info');
+  toast('Foto eliminada','info'); ajRefrescarFoto();
 }
 
 /* ── Bio Muro — solo RH/Dirección publican (texto + imágenes), todos ven, reaccionan y comentan ── */
@@ -10415,6 +10581,7 @@ const LOGROS_RAREZA = { comun:['Común', '#b8733a'], rara:['Rara', '#8a97a8'], e
 const LOGROS = [
   { c:'primer_paso',       i:'🏁', n:'Primer paso',        d:'Entraste a Bio-centralis',                         h:'Inicia sesión en tu cuenta',                           r:'comun',      p:10, a:['*'] },
   { c:'siempre_presente',  i:'🎯', n:'Siempre presente',   d:'Registraste 10 asistencias',                       h:'Registra 10 asistencias en tu sede',                   r:'rara',       p:25, a:['*'] },
+  { c:'foto_perfil',       i:'📸', n:'Cara conocida',      d:'Pusiste tu foto de perfil',                        h:'Sube tu foto de perfil: debes ser tú, con el rostro visible', r:'comun',      p:10, a:['*'] },
   { c:'unidad_impecable',  i:'✨', n:'Unidad impecable',   d:'Entregaste tu primer lavado con evidencia',        h:'Entrega un lavado programado con sus 3 fotos',         r:'comun',      p:15, a:['chofer'] },
   { c:'constancia',        i:'✅', n:'Constancia',         d:'Entregaste 10 checklists de tu unidad',            h:'Entrega 10 checklists de tu unidad',                   r:'rara',       p:25, a:['chofer'] },
   { c:'cumplimiento_total',i:'🏆', n:'Cumplimiento total', d:'Cerraste un mes con el 100% de tus parámetros',    h:'Cierra un mes cumpliendo todos tus parámetros',        r:'legendaria', p:50, a:['chofer'] },
@@ -10880,6 +11047,7 @@ async function bellPendientes(){
     const nl = (lav.data || []).length;
     add(nl, nl === 1 ? 'Tienes un lavado pendiente de evidencia' : 'Tienes lavados pendientes de evidencia', 'mantenimiento');
   }
+  if (!avUrl(currentUser.userId) && !(AV.dir[currentUser.userId] || {}).avatar_path) add(1, 'Pon tu foto de perfil (debes ser tú, con el rostro visible)', 'ajustes');
   if (esDireccionReal()){
     const { data } = await sb.from('reset_password').select('id').eq('estado', 'pendiente');
     const n = (data || []).length;
@@ -12135,6 +12303,7 @@ async function cerrarTour(){
     currentUser.tourCompletado = true;
     try { await sb.rpc('marcar_tour_completado'); } catch(e){}
     avisoAsistenciaInicio();
+    setTimeout(invitarFotoPerfil, 1500);
   }
 }
 
