@@ -413,6 +413,8 @@ select.form-input option{background:var(--bg2)}
 .file-chip-size{font-size:10px;color:var(--text3)}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
 .overlay.open{display:flex}
+.leaflet-container{z-index:0;isolation:isolate}
+#sd-mapa{position:relative;z-index:0;isolation:isolate}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);width:480px;max-width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
 .modal.wide{width:640px}.modal.xl{width:780px}
 .modal-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg2);z-index:10}
@@ -6017,10 +6019,12 @@ function nivelColor(n){ return n==='critico'?'r':n==='urgente'?'a':n==='adverten
 /* Documentación de la empresa: cada rol solo ve lo que le corresponde (el servidor lo aplica; esto mantiene la pantalla coherente) */
 const verDocsUnidades = () => !!currentUser && (caps().fleet || opEsAdminOp());
 const verDocsPersonal = () => !!currentUser && ['rh', 'direccion_ceo', 'supervisor'].includes(currentUser.role);
+/* Unidades dadas de baja no generan alertas ni cuentan en cumplimiento; vuelven en cuanto su estatus cambia a Activo (o En taller). */
+function unidadesVigilables(){ return DB.unidades.filter(u => u.estatus !== 'baja'); }
 function getAlertas(){
   const alertas = [];
   const hoy = new Date(); hoy.setHours(0,0,0,0);
-  (verDocsUnidades() ? DB.unidades : []).forEach(u => {
+  (verDocsUnidades() ? unidadesVigilables() : []).forEach(u => {
     ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación'].forEach(tipo => {
       const key = `unidad-${u.id}-${tipo}`;
       const doc = DB.documentos[key];
@@ -6062,7 +6066,7 @@ function getFaltantes(){
     const docs = c.puesto === 'Operador' ? ['Licencia de conducir','Contrato laboral','Alta IMSS'] : ['Contrato laboral','Alta IMSS'];
     docs.forEach(t => { if (!DB.documentos[`colab-${c.id}-${t}`]) n++; });
   });
-  (verDocsUnidades() ? DB.unidades : []).forEach(u => {
+  (verDocsUnidades() ? unidadesVigilables() : []).forEach(u => {
     ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación'].forEach(t => { if (!DB.documentos[`unidad-${u.id}-${t}`]) n++; });
   });
   return n;
@@ -9222,7 +9226,7 @@ async function renderKPIs(){
   const dispFlota = totUnids ? Math.round(unidsAct/totUnids*100) : 0;
   const alertas = getAlertas();
   const crit = alertas.filter(a=>a.nivel==='critico').length;
-  const totalDocsEsperados = activos*3 + DB.unidades.length*4;
+  const totalDocsEsperados = activos*3 + unidadesVigilables().length*4;
   const docsCargados = Object.keys(DB.documentos).length;
   const cumplDocs = totalDocsEsperados ? Math.round(docsCargados/totalDocsEsperados*100) : 0;
 
@@ -11600,7 +11604,7 @@ async function renderCompliance(){
   if (elCo){ elCo.textContent = colabOk; document.getElementById('comp-colab-sub').textContent = `${colabOk} de ${activos.length}`; }
 
   // Unidades con docs al día
-  const unidOk = DB.unidades.filter(u=>{
+  const unidOk = unidadesVigilables().filter(u=>{
     return ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación'].every(t=>{
       const d = DB.documentos[`unidad-${u.id}-${t}`];
       if (!d) return false;
@@ -11609,7 +11613,7 @@ async function renderCompliance(){
     });
   }).length;
   const elUo = document.getElementById('comp-unid-ok');
-  if (elUo){ elUo.textContent = unidOk; document.getElementById('comp-unid-sub').textContent = `${unidOk} de ${DB.unidades.length}`; }
+  if (elUo){ elUo.textContent = unidOk; document.getElementById('comp-unid-sub').textContent = `${unidOk} de ${unidadesVigilables().length}`; }
 
   // Riesgo legal global
   const alertas = getAlertas();
@@ -11628,9 +11632,9 @@ async function renderCompliance(){
       { ok: activos.every(c=>DB.contratosVigentes.has(String(c.id))), txt:'Todos los colaboradores activos tienen contrato firmado' },
       { ok: activos.every(c=>DB.documentos[`colab-${c.id}-Alta IMSS`]), txt:'Todos los colaboradores tienen alta IMSS' },
       { ok: activos.filter(c=>c.puesto==='Operador').every(c=>{ const d=DB.documentos[`colab-${c.id}-Licencia de conducir`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Choferes con licencia vigente' },
-      { u:1, ok: DB.unidades.every(u=>{ const d=DB.documentos[`unidad-${u.id}-Póliza de seguro`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades con póliza vigente' },
-      { u:1, ok: DB.unidades.every(u=>{ const d=DB.documentos[`unidad-${u.id}-Verificación vehicular`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades verificadas' },
-      { u:1, ok: DB.unidades.every(u=>!!u.jurisdiccion), txt:'Todas las unidades con jurisdicción definida (Federal/Estatal)' },
+      { u:1, ok: unidadesVigilables().every(u=>{ const d=DB.documentos[`unidad-${u.id}-Póliza de seguro`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades con póliza vigente' },
+      { u:1, ok: unidadesVigilables().every(u=>{ const d=DB.documentos[`unidad-${u.id}-Verificación vehicular`]; const dias=d?diasHasta(d.vigencia):null; return d && (dias===null||dias>=0); }), txt:'Todas las unidades verificadas' },
+      { u:1, ok: unidadesVigilables().every(u=>!!u.jurisdiccion), txt:'Todas las unidades con jurisdicción definida (Federal/Estatal)' },
       { ok: DB.bajas.every(b=>b.doc && b.doc!=='—'), txt:'Todas las bajas tienen documento legal archivado' },
     ].filter(i => !i.u || verUni);
     chk.innerHTML = items.map(i=>`<div class="doc-row"><div class="doc-ico ${i.ok?'ok':'crit'}">${i.ok?'✓':'✗'}</div><div style="flex:1"><div class="doc-name" style="color:var(--${i.ok?'text':'red'})">${i.txt}</div></div><span class="tag ${i.ok?'g':'r'}">${i.ok?'Cumple':'Pendiente'}</span></div>`).join('');
