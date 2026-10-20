@@ -4553,7 +4553,7 @@ async function cargarPerfilYActivarSesion(){
   document.getElementById('chat-widget-launcher').style.display = 'flex';
   document.getElementById('bell-widget-launcher').style.display = 'flex';
   renderBell(false);
-  chatIniciar();
+  chatIniciar(); vivoIniciar(); versionVigilar();
   document.getElementById('login-screen').style.display = 'none';
   const un=document.getElementById('sb-uname'); if(un) un.textContent = currentUser.name;
   const ur=document.getElementById('sb-urole'); if(ur) ur.textContent = ROLES[currentUser.role]?.label || currentUser.role;
@@ -4612,7 +4612,7 @@ async function guardarCuestionarioBienvenida(){
 }
 
 function cerrarSesion(motivo){
-  try { ctDetener(); chatDetener(); } catch(e){}
+  try { ctDetener(); chatDetener(); vivoDetener(); } catch(e){}
   _sesionActiva = false;
   sb.auth.signOut();
   closeAllModals();
@@ -4844,6 +4844,60 @@ function mostrarContactosChat(){
   document.getElementById('chat-conversacion-wrap').style.display = 'none';
   document.getElementById('chat-widget-back').style.display = 'none';
   document.getElementById('chat-widget-title').textContent = 'Chat';
+}
+
+/* ── Tiempo real: solicitudes, mantenimiento y cuentas se refrescan solos (el servidor solo envía lo que cada rol puede ver) ── */
+const VIVO = { canal:null, espera:null };
+function vivoIniciar(){
+  if (!currentUser?.userId) return;
+  vivoDetener();
+  const tablas = ['solicitudes_op', 'solicitudes_cuenta', 'solicitud_etapas', 'mant_informes', 'mant_respuestas', 'lavados_programados'];
+  try {
+    let ch = sb.channel('vivo-' + currentUser.userId);
+    tablas.forEach(t => { ch = ch.on('postgres_changes', { event:'*', schema:'public', table:t }, () => { clearTimeout(VIVO.espera); VIVO.espera = setTimeout(vivoRefrescar, 700); }); });
+    VIVO.canal = ch.subscribe();
+  } catch(e){ /* sin tiempo real: las pantallas se actualizan al entrar */ }
+}
+function vivoDetener(){ clearTimeout(VIVO.espera); if (VIVO.canal){ try { sb.removeChannel(VIVO.canal); } catch(e){} VIVO.canal = null; } }
+function vivoRefrescar(){
+  if (!currentUser) return;
+  try { opBadges(); if (!_bellWidgetAbierto) renderBell(false); } catch(e){}
+  if (document.querySelector('.overlay.open')) return; // no se mueve nada mientras alguien llena un formulario
+  const act = (document.querySelector('.page.active') || {}).id;
+  try {
+    if (act === 'page-solicitudes') renderSolicitudes();
+    else if (act === 'page-mantenimiento' && !MANT.sel) renderMantenimiento();
+    else if (act === 'page-configuracion') renderSolicitudesConfig();
+  } catch(e){}
+}
+/* ── Versión nueva de la app: se detecta sola y se aplica sin que nadie tenga que adivinar ── */
+const VER = { base:null, timer:null, aviso:false };
+async function versionHuella(){
+  try {
+    const r = await fetch(location.pathname + '?v=' + Date.now(), { method:'HEAD', cache:'no-store' });
+    return r.headers.get('etag') || r.headers.get('last-modified') || null;
+  } catch(e){ return null; }
+}
+async function versionVigilar(){
+  if (VER.timer) return;
+  VER.base = await versionHuella();
+  if (!VER.base) return;
+  const revisar = async () => {
+    if (VER.aviso) return;
+    const h = await versionHuella();
+    if (!h || h === VER.base) return;
+    VER.aviso = true;
+    const b = document.createElement('div');
+    b.id = 'ver-aviso';
+    b.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:10px;z-index:3000;background:var(--green);color:#0a0a0a;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.4);display:flex;gap:10px;align-items:center;max-width:92vw';
+    b.innerHTML = 'Hay una versión nueva de Bio-centralis <button class="btn sm" style="background:#0a0a0a;color:#fff;border:0" onclick="location.reload()">Actualizar ahora</button>';
+    document.body.appendChild(b);
+  };
+  VER.timer = setInterval(revisar, 90000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    revisar().then(() => { if (VER.aviso && !document.querySelector('.overlay.open')) location.reload(); });
+  });
 }
 
 /* ── Estado del chat: mensajes sin leer, solicitudes de mensaje y avisos en vivo ── */
