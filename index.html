@@ -11945,7 +11945,7 @@ function rtPintar(){
         <div style="text-align:right">${tag}<div style="font-size:11px;color:var(--text3);margin-top:4px">${c} de ${t} · ${p} pendientes${n ? ' · ' + n + ' no realizados' : ''}</div></div>
       </div>
       <div style="height:7px;background:var(--border);border-radius:4px;margin:10px 0 6px;overflow:hidden"><div style="height:100%;width:${pc}%;background:${c === t ? 'var(--green)' : 'var(--blue)'}"></div></div>
-      <button class="btn sm" onclick="rtAlternar(${i})">${abierta ? 'Ocultar servicios' : 'Ver servicios'}</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="rtAlternar(${i})">${abierta ? 'Ocultar servicios' : 'Ver servicios'}</button>${rcEsDirecto() && !pasado && p > 0 ? `<button class="btn sm" onclick="rtReasignar(${i})">Cambiar chofer / unidad</button>` : ''}</div>
       <div style="display:${abierta ? 'block' : 'none'};margin-top:8px">${lista}</div>
     </div>`;
   }).join('');
@@ -11953,6 +11953,36 @@ function rtPintar(){
 function rtAlternar(i){
   const g = rtGrupos()[i]; if (!g) return;
   const k = i + '|' + g.unidad + g.ruta; RT.abiertas[k] = !RT.abiertas[k]; rtPintar();
+}
+/* Reasignar chofer, ayudantes o unidad de una ruta (Gerente Operativo y Dirección) */
+async function rtReasignar(i){
+  const g = rtGrupos()[i]; if (!g || !rcEsDirecto()) return;
+  const prog = g.filas.filter(o => o.estado === 'programada'); if (!prog.length){ toast('Esta ruta ya no tiene servicios programados', 'info'); return; }
+  const [pr, ur] = await Promise.all([sb.rpc('rutas_catalogo_personal'), sb.from('unidades').select('id,bak,estatus').order('bak')]);
+  if (pr.error || ur.error){ toast('No se pudo cargar el personal o las unidades', 'error'); return; }
+  const per = pr.data || [], uni = ur.data || [];
+  const ops = per.filter(x => x.puesto === 'Operador'), ays = per.filter(x => x.puesto === 'Ayudante general');
+  const porNombre = (lista, n) => (lista.find(x => (x.nombre || '').trim().toLowerCase() === (n || '').trim().toLowerCase()) || {}).id || '';
+  const f0 = prog[0], rutaId = f0.ruta_id || null;
+  const alcance = [['dia', 'Solo este día (' + RT.fecha + ')']].concat(rutaId ? [['ruta', 'Desde hoy en adelante (cambia la ruta fija)']] : []);
+  finModal('Cambiar chofer / unidad — ' + g.ruta,
+    `<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Aplica a los ${prog.length} servicios programados de esta ruta. Los que ya están en sitio o completados no se tocan.</div>` +
+    finSelect('Unidad', 'rr-uni', uni.map(u => [u.id, u.bak + (u.estatus && u.estatus !== 'activo' ? ' (' + u.estatus + ')' : '')]), f0.unidad_id || '', 'Sin unidad') +
+    finSelect('Titular', 'rr-op', ops.map(x => [x.id, x.nombre]), f0.operador_id || porNombre(ops, f0.operador_nombre), 'Sin titular') +
+    finSelect('Ayudante 1', 'rr-a1', ays.map(x => [x.id, x.nombre]), porNombre(ays, f0.ayudante1), 'Sin ayudante') +
+    finSelect('Ayudante 2', 'rr-a2', ays.map(x => [x.id, x.nombre]), porNombre(ays, f0.ayudante2), 'Sin ayudante') +
+    finSelect('¿Hasta cuándo aplica?', 'rr-alc', alcance, 'dia'),
+    async () => {
+      const u = fv('rr-uni') || null, o = fv('rr-op') || null, a1 = fv('rr-a1') || null, a2 = fv('rr-a2') || null;
+      if (a1 && a1 === a2) return finErr('Los dos ayudantes no pueden ser la misma persona');
+      let r;
+      if (fv('rr-alc') === 'ruta') r = await sb.rpc('gg_asignar_ruta', { p_ruta:rutaId, p_operador:o, p_unidad:u, p_ay1:a1, p_ay2:a2 });
+      else r = await sb.rpc('gg_asignar_ordenes', { p_ids:prog.map(x => x.id), p_operador:o, p_unidad:u, p_ay1:a1, p_ay2:a2 });
+      if (r.error) return finErr(r.error.message);
+      const av = (r.data && r.data.avisos) || [];
+      toast('Ruta reasignada' + (av.length ? '. Aviso: ' + av.join(' · ') : ''), 'success');
+      rtCargar();
+    }, 'Guardar cambio');
 }
 function rtCompletadas(){ return RT.filas.filter(o => o.estado === 'completada'); }
 function rtFilaExport(o){
