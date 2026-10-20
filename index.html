@@ -2194,6 +2194,7 @@ select.form-input option{background:var(--bg2)}
       <select class="form-input" id="ep-role" onchange="camposRol('ep')" style="margin-bottom:10px">
         <option value="supervisor">Gerente Operativo</option>
         <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
+        <option value="mantenimiento">Mantenimiento (solo solicitudes de mantenimiento)</option>
             <option value="administracion">Gerente Administrativo</option>
             <option value="administrativo">Administrativo (solo lectura)</option>
             <option value="chofer">Operativo (campo)</option>
@@ -2257,6 +2258,7 @@ select.form-input option{background:var(--bg2)}
       <select class="form-input" id="aps-role" onchange="camposRol('aps')" style="margin-bottom:10px">
         <option value="supervisor" selected>Gerente Operativo</option>
         <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
+        <option value="mantenimiento">Mantenimiento (solo solicitudes de mantenimiento)</option>
             <option value="administracion">Gerente Administrativo</option>
             <option value="administrativo">Administrativo (solo lectura)</option>
             <option value="chofer">Operativo (campo)</option>
@@ -2329,6 +2331,7 @@ select.form-input option{background:var(--bg2)}
           <select class="form-input" id="au-role" onchange="camposRol('au')">
             <option value="supervisor" selected>Gerente Operativo</option>
             <option value="monitoreo">Monitoreo (Flota/Equipos)</option>
+        <option value="mantenimiento">Mantenimiento (solo solicitudes de mantenimiento)</option>
             <option value="administracion">Gerente Administrativo</option>
             <option value="administrativo">Administrativo (solo lectura)</option>
             <option value="chofer">Operativo (campo)</option>
@@ -3706,6 +3709,7 @@ const ROLES = {
   chofer:        { label:'Operativo',          nombre:'Operativo' },
   supervisor:    { label:'Gerente Operativo',  nombre:'Gerente Operativo' },
   monitoreo:     { label:'Monitoreo',          nombre:'Monitoreo' },
+  mantenimiento: { label:'Mantenimiento',      nombre:'Mantenimiento' },
   administracion:{ label:'Gerente Administrativo', nombre:'Gerente Administrativo' },
   administrativo:{ label:'Administrativo',     nombre:'Administrativo' },
   she:           { label:'SHE',           nombre:'Seguridad, Higiene y Ambiente' },
@@ -3731,6 +3735,14 @@ const CAPS = {
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:true
+  },
+  mantenimiento: {
+    // Mantenimiento: solo solicitudes de mantenimiento aprobadas, informes de reparación y avance. Nada de personal, finanzas ni documentos.
+    pages:['mantenimiento','miperfil'],
+    fleet:false, personnel:'none', editPersonnel:'none', baja:false,
+    sites:'none', createSite:false, permisosLegales:false, permisos:false,
+    config:false, auditoria:false, kpis:false, compliance:false,
+    reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   chofer: {
     // Operativo: solo ve su camión asignado (RLS lo limita), su asistencia y el Muro
@@ -4184,6 +4196,7 @@ const VISTAS = [
   { role:'supervisor',     t:'Gerente Operativo',         d:'Sites, personal de sus sedes, flota, mantenimiento e inventario.' },
   { role:'she',            t:'SHE · Seguridad y Ambiente', d:'Reportes de seguridad con semáforo, avisos, alertas de caducidad y solicitudes de gasto.' },
   { role:'monitoreo',      t:'Monitoreo',                 d:'Flota, documentos y equipos. Sin acceso a personal.' },
+  { role:'mantenimiento',  t:'Mantenimiento',             d:'Solo solicitudes de mantenimiento aprobadas: avance por etapas e informes de reparación.' },
   { role:'chofer',         t:'Operativo',                 d:'Mi unidad (solo consulta), su ruta, su asistencia, Mi perfil y el Bio-Muro.' }
 ];
 function esDireccionReal(){ return !!currentUser && (currentUser.realRole || currentUser.role) === 'direccion_ceo'; }
@@ -10328,6 +10341,7 @@ async function renderMantenimiento(){
     sb.from('solicitudes_op').select('*').in('tipo', MANT_SOL_TIPOS.map(t => t[0])).order('created_at', { ascending:false }).limit(200)
   ]);
   MANT.inf = inf.data || []; MANT.unidades = uni.data || []; MANT.lav = lav.data || []; MANT.sol = (sol.data || []).filter(mantSolFiltro);
+  await solCargarEtapas(MANT.sol);
   const ids = MANT.inf.map(i => i.id);
   const rs = ids.length ? (await sb.from('mant_respuestas').select('*').in('informe_id', ids)).data : [];
   MANT.resp = {}; (rs || []).forEach(r => { (MANT.resp[r.informe_id] = MANT.resp[r.informe_id] || []).push(r); });
@@ -10336,8 +10350,24 @@ async function renderMantenimiento(){
     return MANT.sel ? mantDetalleUnidad() : mantListaUnidades();
   }
   await mantPrecargarFotos(null);
-  mantVistaChofer();
+  if (currentUser.role === 'mantenimiento') mantVistaTaller(); else mantVistaChofer();
   opBadges();
+}
+/* Vista del rol Mantenimiento: solo solicitudes aprobadas, fallas por responder y lo terminado */
+function mantVistaTaller(){
+  const cont = document.getElementById('mant-body');
+  const act = MANT.sol.filter(s => s.estatus === 'aprobada' && (s.etapa || 'aprobada') !== 'terminada').sort((a, b) => a.created_at.localeCompare(b.created_at));
+  const fin = MANT.sol.filter(s => s.estatus === 'aprobada' && s.etapa === 'terminada').slice(0, 10);
+  const por = k => act.filter(s => (s.etapa || 'aprobada') === k).length;
+  const sinResp = MANT.inf.filter(i => i.nivel !== 'ok' && !(MANT.resp[i.id] || []).length).slice(0, 20);
+  const chip = (n, t, c) => `<div class="panel" style="padding:10px 14px;margin:0;flex:1;min-width:120px"><div style="font-family:var(--head);font-weight:900;font-size:20px;color:${n ? c : 'inherit'}">${n}</div><div style="font-size:11px;color:var(--text3)">${t}</div></div>`;
+  cont.innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(por('aprobada'), 'En espera', '#3b82f6')}${chip(por('en_proceso'), 'En proceso', '#e0a100')}${chip(por('esperando_refaccion'), 'Esperando refacción', '#e0a100')}${chip(fin.length, 'Terminadas recientes', '#2e9e5b')}</div>
+    <div class="panel" style="padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--text2)">Aquí ves las solicitudes de mantenimiento ya aprobadas. Actualiza el avance con una nota y fotos; quien la pidió y la gerencia reciben el aviso.</div>
+    ${mantTitulo(`Solicitudes por atender <span class="tag a">${act.length}</span>`)}
+    <div style="display:flex;flex-direction:column;gap:8px">${act.map(mantFilaSolicitud).join('') || '<div class="empty-sub" style="padding:14px">No hay solicitudes pendientes de atender.</div>'}</div>
+    ${sinResp.length ? mantTitulo(`Fallas reportadas por responder <span class="tag r">${sinResp.length}</span>`) + `<div style="display:flex;flex-direction:column;gap:10px">${sinResp.map(i => mantTarjetaInforme(i, true)).join('')}</div>` : ''}
+    ${fin.length ? mantTitulo('Terminadas recientes') + `<div style="display:flex;flex-direction:column;gap:8px">${fin.map(mantFilaSolicitud).join('')}</div>` : ''}`;
 }
 async function mantPrecargarFotos(unidadId){
   const ps = [];
@@ -10391,7 +10421,47 @@ function mantFilaSolicitud(s){
   return `<div class="panel" style="padding:12px 14px;margin-bottom:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px"><span class="tag b">${esc(def.t)}</span>${tag}${s.unidad_id ? `<span class="tag m">${esc(mantUni(s.unidad_id))}</span>` : ''}<span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(s.created_at)}</span></div>
     <div style="font-size:11px;color:var(--text3)">${esc(s.solicitante_nombre || '')}</div><div style="font-size:13px;white-space:pre-wrap">${esc(s.detalle)}</div>
     ${s.motivo ? `<div style="font-size:12px;margin-top:4px"><strong>Motivo:</strong> ${esc(s.motivo)}</div>` : ''}
+    ${solEtapaHtml(s)}
     ${puede ? `<div style="display:flex;gap:6px;margin-top:8px"><button class="btn sm primary" onclick="solResolver('${esc(s.id)}',true)">Aprobar</button><button class="btn sm danger" onclick="solResolver('${esc(s.id)}',false)">Rechazar</button></div>` : ''}</div>`;
+}
+/* Etapas de seguimiento de una solicitud de mantenimiento aprobada */
+const SOL_ETAPAS = { aprobada:['b', 'Aprobada · en espera'], en_proceso:['a', 'En proceso'], esperando_refaccion:['a', 'Esperando refacción'], terminada:['g', 'Terminada'] };
+const solEsMant = s => MANT_SOL_TIPOS.some(t => t[0] === s.tipo);
+const solPuedeEtapa = s => s.estatus === 'aprobada' && solEsMant(s) && ['supervisor', 'direccion_ceo', 'mantenimiento'].includes(currentUser.role) && !((s.etapa || 'aprobada') === 'terminada' && currentUser.role === 'mantenimiento');
+MANT.et = {};
+async function solCargarEtapas(lista){
+  MANT.et = {};
+  const ids = (lista || []).filter(s => s.estatus === 'aprobada' && solEsMant(s)).map(s => s.id);
+  if (!ids.length) return;
+  const { data } = await sb.from('solicitud_etapas').select('*').in('solicitud_id', ids).order('created_at');
+  (data || []).forEach(e => { (MANT.et[e.solicitud_id] = MANT.et[e.solicitud_id] || []).push(e); });
+  await Promise.all([...new Set((data || []).flatMap(e => (e.fotos || []).slice(0, 4)))].map(p => avBlob('mant', p)));
+}
+function solEtapaHtml(s){
+  if (s.estatus !== 'aprobada' || !solEsMant(s)) return '';
+  const cur = SOL_ETAPAS[s.etapa || 'aprobada'] || SOL_ETAPAS.aprobada, hist = MANT.et[s.id] || [];
+  return `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="font-size:11px;font-weight:800">Avance:</span><span class="tag ${cur[0]}">${cur[1]}</span>${s.etapa_en ? `<span style="font-size:10px;color:var(--text3)">${opFechaHora(s.etapa_en)}</span>` : ''}</div>
+    ${hist.map(e => `<div style="margin-top:6px;font-size:12px;padding-left:10px;border-left:3px solid var(--border)"><strong>${esc((SOL_ETAPAS[e.etapa] || [, e.etapa])[1])}</strong> · ${esc(e.por_nombre || '')} · ${opFechaHora(e.created_at)}${e.nota ? `<div style="white-space:pre-wrap">${esc(e.nota)}</div>` : ''}${opMiniaturas('mant', e.fotos)}</div>`).join('')}
+    ${solPuedeEtapa(s) ? `<div style="margin-top:8px"><button class="btn sm primary" onclick="solAvance('${esc(s.id)}')">Actualizar avance</button></div>` : ''}</div>`;
+}
+function solAvance(id){
+  const s = MANT.sol.find(x => x.id === id) || (typeof SOL !== 'undefined' && (SOL.lista || []).find(x => x.id === id)); if (!s) return;
+  const cur = s.etapa || 'aprobada';
+  finModal('Actualizar avance',
+    finSelect('Etapa', 'ea-et', Object.entries(SOL_ETAPAS).map(([k, v]) => [k, v[1]]), cur) +
+    finArea('Nota (qué se hizo o qué se espera; obligatoria si esperas refacción)', 'ea-nota', '') +
+    `<label class="form-lbl">Fotos (opcional, hasta 4)</label><input class="form-input" type="file" id="ea-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">`,
+    async () => {
+      const et = fv('ea-et'), nota = fv('ea-nota').trim();
+      if (et === 'esperando_refaccion' && nota.length < 3) return finErr('Indica qué refacción o material se espera');
+      if (et === cur && !nota) return finErr('Cambia la etapa o agrega una nota');
+      const files = [...(document.getElementById('ea-fotos')?.files || [])], ef = opValidarFotos(files, 4); if (ef) return finErr(ef);
+      const rid = crypto.randomUUID(), paths = files.length ? await opSubirFotos('mant', rid, files) : [];
+      const { error } = await sb.rpc('sol_set_etapa', { p_id:id, p_etapa:et, p_nota:nota || null, p_fotos:paths });
+      if (error){ if (paths.length) await sb.storage.from('mant').remove(paths); return finErr(error.message); }
+      toast('Avance registrado. Quien lo solicitó ya fue avisado.', 'success'); solRefrescar();
+    }, 'Guardar avance');
 }
 const mantTitulo = t => `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:18px 0 8px">${t}</div>`;
 
@@ -10755,6 +10825,7 @@ async function renderSolicitudes(){
   const { data, error } = await sb.from('solicitudes_op').select('*').order('created_at', { ascending:false }).limit(150);
   if (error){ cont.innerHTML = `<div class="empty-sub" style="padding:20px">No se pudieron cargar las solicitudes.</div>`; return; }
   SOL.lista = data || [];
+  await solCargarEtapas(SOL.lista);
   // El goce de sueldo solo lo devuelve el servidor a quien aprueba; el solicitante nunca lo recibe
   const gz = await sb.from('solicitudes_goce').select('solicitud_id,goce');
   SOL.goce = {}; (gz.data || []).forEach(g => { SOL.goce[g.solicitud_id] = g.goce; });
@@ -10767,6 +10838,7 @@ async function renderSolicitudes(){
       ${resumen(s.datos) ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${resumen(s.datos)}</div>` : ''}
       ${solEvidenciaHtml(s.evidencia)}
       ${s.motivo ? `<div style="font-size:12px;margin-top:6px"><strong>Motivo:</strong> ${esc(s.motivo)}</div>` : ''}
+      ${solEtapaHtml(s)}
       ${puede ? `<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="solResolver('${esc(s.id)}',true)">Aprobar</button><button class="btn sm danger" onclick="solResolver('${esc(s.id)}',false)">Rechazar</button></div>` : ''}</div>`; };
   const porRes = SOL.lista.filter(s => s.estatus === 'pendiente' && solPuedeResolver(s.aprobador));
   const mias = SOL.lista.filter(s => s.solicitante === currentUser.userId);
@@ -10886,6 +10958,10 @@ async function opBadges(){
       const rs = ids.length ? (await sb.from('mant_respuestas').select('informe_id').in('informe_id', ids)).data : [];
       const resp = new Set((rs || []).map(x => x.informe_id));
       set('bdg-mant', ids.filter(i => !resp.has(i)).length);
+    }
+    if (currentUser.role === 'mantenimiento'){
+      const { data } = await sb.from('solicitudes_op').select('id,etapa').eq('estatus', 'aprobada');
+      set('bdg-mant', (data || []).filter(x => x.etapa !== 'terminada').length);
     }
     if (caps().pages.includes('solicitudes')){
       const { data } = await sb.from('solicitudes_op').select('aprobador').eq('estatus', 'pendiente');
@@ -12257,6 +12333,9 @@ const TOUR_PASOS = {
   ],
   administrativo: [
     { t:'Calendario y procesos', x:'Tu perfil es de consulta: puedes ver el calendario y los procesos de tu área.', pg:'calendario' }
+  ],
+  mantenimiento: [
+    { t:'Solicitudes de mantenimiento', x:'Aquí ves las solicitudes ya aprobadas. Actualiza su avance (en proceso, esperando refacción, terminada) con una nota y fotos; quien la pidió lo ve al instante. También respondes con evidencia las fallas que reportan los operativos.', pg:'mantenimiento' }
   ],
   monitoreo: [
     { t:'Flota, documentos y equipos', x:'Consulta y actualiza la información de unidades, sus documentos y los equipos móviles.', pg:'flota' }
