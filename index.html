@@ -757,6 +757,7 @@ select.form-input option{background:var(--bg2)}
         <div class="form-err" id="err-solicitud" style="margin-bottom:8px">—</div>
         <div class="form-ok" id="ok-solicitud" style="display:none;color:var(--green);font-size:11px;margin-bottom:8px;line-height:1.6">✓ Solicitud enviada. Cuando te aprueben, entra a «Ya me aprobaron mi cuenta» y escribe este código:
           <div id="sol-codigo" style="font-family:monospace;font-size:22px;letter-spacing:4px;text-align:center;color:var(--text);background:var(--surface);border:1px dashed var(--green);border-radius:8px;padding:10px;margin-top:8px;user-select:all">—</div>
+          <div id="sol-avisa" style="margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--amber-bg,#fff7e0);color:var(--text);border:1px solid var(--amber,#e0a800)"></div>
           <div style="color:var(--amber,#b45309);margin-top:6px"><strong>Anótalo ahora:</strong> no se vuelve a mostrar. Vale 7 días después de la aprobación.</div>
         </div>
         <button class="btn primary" id="sol-btn" style="width:100%;justify-content:center;height:38px" onclick="enviarSolicitudCuenta()">Enviar solicitud</button>
@@ -4343,6 +4344,7 @@ async function enviarSolicitudCuenta(){
   const correo = document.getElementById('sol-correo').value.trim().toLowerCase();
   const usuario = document.getElementById('sol-usuario').value.trim().toLowerCase();
   const funciones = document.getElementById('sol-funciones').value.trim();
+  const tipo = document.getElementById('sol-tipo').value;
   const err = document.getElementById('err-solicitud');
   const okEl = document.getElementById('ok-solicitud');
   err.classList.remove('show'); okEl.style.display='none';
@@ -4362,6 +4364,7 @@ async function enviarSolicitudCuenta(){
   if (error || data?.error) return fail(data?.error || error.message);
   ['sol-nombre','sol-correo','sol-usuario','sol-funciones'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('sol-codigo').textContent = data?.codigo || '—';
+  document.getElementById('sol-avisa').innerHTML = '<strong>Avisa a tu superior</strong> ' + (tipo === 'operativo' ? '(tu Gerente Operativo)' : '(Dirección)') + ' que ya enviaste tu solicitud, para que te apruebe la cuenta. Hasta que la apruebe no podrás desbloquear tu contraseña.';
   okEl.style.display = 'block';
 }
 
@@ -11026,7 +11029,8 @@ async function renderSolicitudes(){
   const porRes = SOL.lista.filter(s => s.estatus === 'pendiente' && solPuedeResolver(s.aprobador));
   const mias = SOL.lista.filter(s => s.solicitante === currentUser.userId);
   await Promise.all([...porRes, ...mias.slice(0, 20)].filter(s => (s.evidencia || []).length).flatMap(s => s.evidencia.slice(0, 4).map(p => avBlob('solicitudes', p))));
-  const otras = SOL.lista.filter(s => s.solicitante !== currentUser.userId && !porRes.includes(s));
+  // Cada perfil ve solo las solicitudes de su ámbito (el servidor lo impone igual); solo Dirección ve todo
+  const otras = SOL.lista.filter(s => s.solicitante !== currentUser.userId && !porRes.includes(s) && (solPuedeResolver(s.aprobador) || (opEsAdminOp() && s.aprobador === 'operativo')));
   const bloque = (t, arr) => arr.length ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">${t}</div><div style="display:flex;flex-direction:column;gap:10px">${arr.map(fila).join('')}</div>` : '';
   let cuentasHtml = '';
   if (currentUser.role === 'supervisor'){
@@ -11035,7 +11039,7 @@ async function renderSolicitudes(){
   }
   cont.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="solNueva()">Nueva solicitud</button></div>` + cuentasHtml +
     bloque(`Por resolver <span class="tag a">${porRes.length}</span>`, porRes) + bloque('Mis solicitudes', mias) +
-    (opEsDireccion() || opEsAdminOp() || currentUser.role === 'supervisor' || currentUser.role === 'rh' ? bloque('Otras solicitudes', otras) : '') +
+    bloque('Otras solicitudes de mi área', otras) +
     (!SOL.lista.length ? '<div class="empty-sub" style="padding:20px">Aún no hay solicitudes. Usa “Nueva solicitud”.</div>' : '');
   opBadges();
 }
