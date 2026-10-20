@@ -12229,7 +12229,7 @@ function rtPintar(){
       return `<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--border);font-size:12px;flex-wrap:wrap">
         <div style="width:54px;color:var(--text3)">${esc(o.hora || '—')}</div>
         <div style="flex:1;min-width:160px"><strong>${esc(o.cliente_nombre || 'Cliente')}</strong>${(o.folio || '').startsWith('EX-') ? ' <span class="tag a">Extraordinario</span>' : ''}<div style="font-size:11px;color:var(--text3)">${esc(o.folio || '')}${o.direccion ? ' · ' + esc(o.direccion) : ''}</div>${o.estado === 'no_realizada' && o.motivo_no_realizada ? `<div style="font-size:11px;color:var(--red)">Motivo: ${esc(o.motivo_no_realizada)}</div>` : ''}</div>
-        <span class="tag ${e.c}">${e.t}</span></div>`;
+        <span class="tag ${e.c}">${e.t}</span>${rtAccionesHtml(o)}</div>`;
     }).join('');
     return `<div class="panel" style="margin-bottom:12px;padding:14px 16px">
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
@@ -12250,6 +12250,69 @@ function rtPintar(){
 function rtAlternar(i){
   const g = rtGrupos()[i]; if (!g) return;
   const k = i + '|' + g.unidad + g.ruta; RT.abiertas[k] = !RT.abiertas[k]; rtPintar();
+}
+/* Operativo: botones para realizar sus servicios del día (llegada, completar con firma, no realizado) */
+function rtPuedeOperar(o){
+  return !!currentUser && currentUser.role === 'chofer' && !!currentUser.colaboradorId && o.operador_id === currentUser.colaboradorId
+    && RT.fecha === hoyLocal() && (o.estado === 'programada' || o.estado === 'en_sitio');
+}
+function rtAccionesHtml(o){
+  if (!rtPuedeOperar(o)) return '';
+  const id = esc(o.id);
+  return `<div style="flex-basis:100%;display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 4px">
+    ${o.estado === 'programada' ? `<button class="btn sm" onclick="rtLlegue('${id}')">Llegué al sitio</button>` : ''}
+    <button class="btn sm primary" onclick="rtCompletarServicio('${id}')">Realizar servicio</button>
+    <button class="btn sm danger" onclick="rtNoRealizada('${id}')">No se pudo realizar</button></div>`;
+}
+function rtUbicacion(){
+  return new Promise((ok, no) => {
+    if (!navigator.geolocation){ no(new Error('Tu dispositivo no permite ubicación')); return; }
+    navigator.geolocation.getCurrentPosition(p => ok({ lat:p.coords.latitude, lng:p.coords.longitude }), () => no(new Error('Activa la ubicación de tu dispositivo y permite el acceso para continuar')), { enableHighAccuracy:true, timeout:15000, maximumAge:30000 });
+  });
+}
+async function rtLlegue(id){
+  let pos = {}; try { pos = await rtUbicacion(); } catch(e){ /* la llegada puede registrarse sin ubicación; al cerrar sí se exige */ }
+  const { error } = await sb.rpc('iniciar_orden', { p_orden:id, p_lat:pos.lat ?? null, p_lng:pos.lng ?? null });
+  if (error){ toast(error.message, 'error'); return; }
+  toast('Llegada registrada', 'success'); rtCargar();
+}
+function rtCompletarServicio(id){
+  const o = RT.filas.find(x => x.id === id); if (!o || !rtPuedeOperar(o)) return;
+  const base = ['RESIDUOS SOLIDOS URBANOS', 'ORGANICOS', 'INORGANICOS'];
+  const act = (o.tipos && o.tipos[0]) || '';
+  const opts = (act && !base.includes(act) ? [act] : []).concat(base);
+  finModal('Realizar servicio — ' + (o.cliente_nombre || ''),
+    `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${esc(o.folio || '')}${o.direccion ? ' · ' + esc(o.direccion) : ''}</div>` +
+    finSelect('Tipo de residuo', 'cs-tipo', opts.map(t => [t, t]), act || opts[0]) +
+    finCampo('Volumen', 'cs-vol', 'text', o.volumen || '', 'maxlength="40" placeholder="Ej. 3 m3"') +
+    finCampo('Nombre de quien recibe', 'cs-nom', 'text', '', 'maxlength="120"') +
+    `<label class="form-lbl req">Firma de quien recibe</label><canvas id="cs-firma" width="600" height="200" style="width:100%;height:130px;border:1px solid var(--border);border-radius:8px;background:#fff;display:block"></canvas>
+     <div style="margin:4px 0 10px"><button class="btn sm" type="button" onclick="sheFirmaLimpiar('cs-firma')">Borrar firma</button></div>` +
+    finArea('Comentarios (opcional)', 'cs-com', ''),
+    async () => {
+      const nom = fv('cs-nom').trim(); if (!nom) return finErr('Escribe el nombre de quien recibe');
+      const c = document.getElementById('cs-firma'); if (!c._firmado) return finErr('Pide la firma de quien recibe');
+      let pos; try { pos = await rtUbicacion(); } catch(e){ return finErr(e.message); }
+      const blob = await sheFirmaBlob('cs-firma');
+      const ruta = `ordenes/${id}/cliente-${crypto.randomUUID()}.png`;
+      const up = await sb.storage.from('firmas').upload(ruta, blob, { contentType:'image/png' });
+      if (up.error) return finErr(up.error.message);
+      const { error } = await sb.rpc('completar_orden', { p_orden:id, p_firma_cliente_path:ruta, p_firma_cliente_nombre:nom, p_firma_operador_path:null, p_tipos:[fv('cs-tipo')], p_volumen:fv('cs-vol').trim() || null, p_comentarios:fv('cs-com').trim() || null, p_lat:pos.lat, p_lng:pos.lng });
+      if (error){ await sb.storage.from('firmas').remove([ruta]); return finErr(error.message); }
+      toast('Servicio completado', 'success'); rtCargar();
+    }, 'Completar servicio');
+  setTimeout(() => sheFirmaInit('cs-firma'), 0);
+}
+function rtNoRealizada(id){
+  const o = RT.filas.find(x => x.id === id); if (!o || !rtPuedeOperar(o)) return;
+  finModal('No se pudo realizar — ' + (o.cliente_nombre || ''),
+    finArea('Motivo (obligatorio)', 'nr-mot', ''),
+    async () => {
+      const m = fv('nr-mot').trim(); if (m.length < 3) return finErr('Escribe el motivo');
+      const { error } = await sb.rpc('marcar_no_realizada', { p_orden:id, p_motivo:m });
+      if (error) return finErr(error.message);
+      toast('Registrado como no realizado', 'info'); rtCargar();
+    }, 'Registrar');
 }
 /* Servicio extraordinario: suma un cliente a una ruta ya creada (incluso en curso el mismo día) */
 async function rtServicioExtra(i){
