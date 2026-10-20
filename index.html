@@ -2276,11 +2276,7 @@ select.form-input option{background:var(--bg2)}
         <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
         <select class="form-input" id="aps-colab"><option value="">Sin ligar</option></select>
       </div>
-      <label class="form-lbl req">Contraseña temporal</label>
-      <input class="form-input" type="password" id="aps-pass" autocomplete="new-password" style="margin-bottom:10px">
-      <label class="form-lbl req">Confirmar contraseña</label>
-      <input class="form-input" type="password" id="aps-pass2" autocomplete="new-password" style="margin-bottom:6px">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:8px">Comunica esta contraseña a la persona por un canal seguro. Podrá cambiarla al entrar.</div>
+      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin-bottom:8px;line-height:1.5">Al aprobar, el sistema crea una contraseña de primer uso y la envía <strong>directo al correo de la persona</strong>. Tú no la ves ni la escribes. Al entrar tendrá que cambiarla por una propia.</div>
       <div class="form-err" id="err-aps" style="margin-bottom:8px">—</div>
     </div>
     <div class="modal-foot">
@@ -2351,17 +2347,7 @@ select.form-input option{background:var(--bg2)}
         <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
         <select class="form-input" id="au-colab"><option value="">Sin ligar</option></select>
       </div>
-      <div style="font-size:10px;color:var(--text3);margin:8px 0 10px;line-height:1.5">Contraseña mínima: 8 caracteres (Operativo/Gerentes/Administrativo) · 12 caracteres (RH/Dirección)</div>
-      <div class="grid2">
-        <div>
-          <label class="form-lbl req">Contraseña</label>
-          <input class="form-input" type="password" id="au-pass" autocomplete="new-password">
-        </div>
-        <div>
-          <label class="form-lbl req">Confirmar</label>
-          <input class="form-input" type="password" id="au-pass2" autocomplete="new-password">
-        </div>
-      </div>
+      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin:8px 0 10px;line-height:1.5">Al guardar, el sistema crea una contraseña de primer uso y la envía <strong>directo al correo de la persona</strong> (así también se confirma que el correo es real). Tú no la ves ni la escribes. Al entrar tendrá que cambiarla por una propia.</div>
       <div class="form-err" id="err-au" style="margin-top:8px">—</div>
     </div>
     <div class="modal-foot">
@@ -4585,7 +4571,7 @@ async function renderUsuariosConfig(){
 function abrirAltaUsuario(){
   if (!can('config')) { toast('Sin permiso','error'); return; }
   editingUserId = null;
-  ['au-nombre','au-correo','au-usuario','au-pass','au-pass2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['au-nombre','au-correo','au-usuario'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   const rol=document.getElementById('au-role'); if(rol) rol.value='supervisor';
   camposRol('au');
   const err=document.getElementById('err-au'); if(err) err.classList.remove('show');
@@ -4599,8 +4585,6 @@ async function guardarUsuario(){
   const correo  = document.getElementById('au-correo').value.trim().toLowerCase();
   const usuario = document.getElementById('au-usuario').value.trim().toLowerCase();
   const role    = document.getElementById('au-role').value;
-  const pass    = document.getElementById('au-pass').value;
-  const pass2   = document.getElementById('au-pass2').value;
   const err     = document.getElementById('err-au');
   err.classList.remove('show');
   const fail = msg => { err.textContent = msg; err.classList.add('show'); };
@@ -4608,15 +4592,14 @@ async function guardarUsuario(){
   if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return fail('Escribe un correo institucional válido');
   if (!usuario || usuario.length<3) return fail('Usuario: mínimo 3 caracteres');
   if (!/^[a-z0-9._-]+$/.test(usuario)) return fail('Usuario: solo minúsculas, números, punto, guion');
-  if (pass !== pass2) return fail('Las contraseñas no coinciden');
 
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
-    body: { usuario, nombre, correo, role, password: pass, ...leerCamposRol('au') },
+    body: { usuario, nombre, correo, role, ...leerCamposRol('au') },
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
   if (error || data?.error) return fail(await errorFuncion(error, data));
-  toast('Cuenta creada correctamente','success');
+  toast('Cuenta creada. Se envió la contraseña de primer uso a ' + correo,'success');
   closeModal('modal-usuario');
   renderUsuariosConfig();
 }
@@ -4879,12 +4862,8 @@ async function guardarNuevaPassword(){
 async function verificarPasswordForzado(){
   const { data: perfil } = await sb.from('profiles').select('debe_cambiar_password,password_set_at').eq('id', currentUser.userId).single();
   if (!perfil || !perfil.debe_cambiar_password) return;
-  const horas = (Date.now() - new Date(perfil.password_set_at).getTime()) / 3600000;
-  if (horas >= 24){
-    abrirCambiarPassword(true);
-  } else {
-    toast(`Tienes una contraseña temporal. Cámbiala dentro de las próximas ${Math.ceil(24-horas)} horas.`, 'info');
-  }
+  // Contraseña de primer uso (llegó por correo): se cambia obligatoriamente al entrar
+  abrirCambiarPassword(true);
 }
 
 /* ── Candado TOTP extra para Supervisor al ver/editar datos bancarios ── */
@@ -6610,7 +6589,6 @@ async function abrirAprobarSolicitud(id){
   document.getElementById('aps-resumen').innerHTML = `<strong>${esc(data.nombre)}</strong> · ${esc(data.correo)} · usuario: <strong>${esc(data.usuario)}</strong>${data.funciones?'<br>'+esc(data.funciones):''}`;
   document.getElementById('aps-role').value = 'supervisor';
   camposRol('aps');
-  ['aps-pass','aps-pass2'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('err-aps').classList.remove('show');
   openModal('modal-aprobar-solicitud');
 }
@@ -6619,18 +6597,12 @@ async function aprobarSolicitud(){
   if (!solicitudEnRevision) return;
   const s = solicitudEnRevision;
   const role = document.getElementById('aps-role').value;
-  const pass = document.getElementById('aps-pass').value;
-  const pass2 = document.getElementById('aps-pass2').value;
   const err = document.getElementById('err-aps');
   err.classList.remove('show');
   const fail = msg => { err.textContent = msg; err.classList.add('show'); };
-  const minLen = (role === 'rh' || role === 'direccion_ceo') ? 12 : 8;
-  if (pass.length < minLen) return fail(`Contraseña: mínimo ${minLen} caracteres para este rol`);
-  if (pass !== pass2) return fail('Las contraseñas no coinciden');
-
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
-    body: { usuario: s.usuario, nombre: s.nombre, correo: s.correo, role, password: pass, ...leerCamposRol('aps') },
+    body: { usuario: s.usuario, nombre: s.nombre, correo: s.correo, role, ...leerCamposRol('aps') },
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
   if (error || data?.error) return fail(await errorFuncion(error, data));
@@ -6639,10 +6611,9 @@ async function aprobarSolicitud(){
     estado: 'aprobada', revisado_por: currentUser.userId, revisado_en: new Date().toISOString()
   }).eq('id', s.id);
   await audit('config', `Solicitud de cuenta de <strong>${esc(s.nombre)}</strong> aprobada (${role})`, 'g');
-  ['aps-pass','aps-pass2'].forEach(i=>{ const el=document.getElementById(i); if(el) el.value=''; });
   closeModal('modal-aprobar-solicitud');
   solicitudEnRevision = null;
-  toast('Cuenta creada. Comunica la contraseña temporal por un canal seguro.','success');
+  toast('Cuenta creada. Se envió la contraseña de primer uso a ' + s.correo,'success');
   renderSolicitudesConfig();
   renderUsuariosConfig();
 }
