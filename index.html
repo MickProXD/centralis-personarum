@@ -6187,7 +6187,7 @@ async function guardarSite(){
 }
 
 function abrirSite(id){
-  currentSiteId = Number(id);
+  currentSiteId = String(id);
   const s = DB.sites.find(s=>s.id===currentSiteId);
   if (!s){ toast('Sede no encontrada','error'); return; }
   if (!puedeVerSite(s)){ toast('No tienes acceso a esta sede','error'); return; }
