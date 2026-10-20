@@ -7223,6 +7223,9 @@ async function renderExpDocs(){
     ? ['Licencia de conducir','Alta IMSS','Identificación oficial','Comprobante de domicilio']
     : ['Alta IMSS','Identificación oficial','Comprobante de domicilio'];
   ['CURP (constancia)','RFC (constancia fiscal)','Licencia de conducir'].forEach(t => { if (!tipos.includes(t) && DB.documentos[`colab-${c.id}-${t}`]) tipos.push(t); });
+  // Todo documento subido aparece aquí, aunque no sea de los requeridos (Otro, Examen médico, nombres anteriores…)
+  const pref = `colab-${c.id}-`;
+  Object.keys(DB.documentos).filter(k => k.startsWith(pref)).forEach(k => { const t = k.slice(pref.length); if (t && !tipos.includes(t)) tipos.push(t); });
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   document.getElementById('exp-docs').innerHTML = contratoHtml + tipos.map(tipo => {
     const key = `colab-${c.id}-${tipo}`;
@@ -8473,7 +8476,7 @@ function eliminarActa(actaId){
 function openSubirDoc(ctx){
   currentDocCtx = ctx;
   const tipos = ctx==='colab' ?
-    ['Licencia de conducir','Alta IMSS','Identificación oficial','Comprobante domicilio','Examen médico','Otro'] :
+    ['Licencia de conducir','Alta IMSS','Identificación oficial','Comprobante de domicilio','Examen médico','Otro'] :
     ['Póliza de seguro','Verificación vehicular','Tarjeta de circulación','Tenencia','TAG','Revista de transporte','Otro'];
   document.getElementById('sd-tipo').innerHTML = tipos.map(t=>`<option>${t}</option>`).join('');
   document.getElementById('subir-doc-title').textContent = ctx==='colab' ? 'Subir documento — colaborador' : 'Subir documento — unidad';
@@ -8489,7 +8492,9 @@ function openSubirDocEspecifico(ctx, id, tipo){
   if (ctx==='colab') currentColabId = String(id);
   else currentUnidadId = String(id);
   openSubirDoc(ctx);
-  setTimeout(()=>{ document.getElementById('sd-tipo').value = tipo; }, 50);
+  const selT = document.getElementById('sd-tipo');
+  if (selT && ![...selT.options].some(o => o.value === tipo)){ const o = document.createElement('option'); o.textContent = tipo; selT.appendChild(o); }
+  if (selT) selT.value = tipo;
 }
 
 function handleDocFile(input){
@@ -8509,7 +8514,8 @@ function handleDocFile(input){
 
 async function guardarDocumento(){
   if (!sdFile){ toast('Selecciona un archivo PDF','error'); return; }
-  const tipo = document.getElementById('sd-tipo').value;
+  const tipo = (document.getElementById('sd-tipo').value || '').trim();
+  if (!tipo){ toast('Elige el tipo de documento','error'); return; }
   const id = currentDocCtx==='colab' ? currentColabId : currentUnidadId;
   if (!id){ toast('Contexto inválido','error'); return; }
   const bucket = currentDocCtx==='colab' ? 'personal' : 'flota';
