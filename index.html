@@ -1368,7 +1368,7 @@ select.form-input option{background:var(--bg2)}
         <button class="btn primary" id="rt-btn-crear" style="display:none" onclick="abrirCrearRuta()">＋ Crear ruta</button>
         <input class="form-input" type="date" id="rt-fecha" style="width:auto" onchange="renderRutas()">
         <button class="btn" onclick="rtDescargarCSV()">⬇ Órdenes del día (Excel)</button>
-        <button class="btn" onclick="rtImprimir()">🖨 Imprimir / PDF</button>
+        <button class="btn" onclick="rtImprimir()">🖨 Comprobantes con fotos y firmas (PDF)</button>
       </div>
     </div>
     <div id="rt-solicitudes"></div>
@@ -12209,7 +12209,7 @@ async function renderRutas(){
 async function rtCargar(){
   if (!RT.fecha) return;
   const { data, error } = await sb.from('ordenes_servicio')
-    .select('id,folio,estado,fecha,hora,hora_llegada,hora_fin,completada_at,cliente_nombre,direccion,ruta_id,ruta_nombre,operador_id,operador_nombre,ayudante1,ayudante2,unidad_id,unidad_bak,motivo_no_realizada,tipos,volumen,foto_llegada_path,foto_sitio_path,foto_salida_path,firma_cliente_path,firma_cliente_nombre')
+    .select('id,folio,estado,fecha,hora,hora_llegada,hora_fin,completada_at,cliente_nombre,direccion,ruta_id,ruta_nombre,operador_id,operador_nombre,ayudante1,ayudante2,unidad_id,unidad_bak,motivo_no_realizada,tipos,volumen,foto_llegada_path,foto_sitio_path,foto_salida_path,firma_cliente_path,firma_cliente_nombre,cliente_razon,contacto,comentarios,lat,lng')
     .eq('fecha', RT.fecha).neq('estado', 'anulada').order('hora', { ascending:true }).limit(2000);
   if (error){ document.getElementById('rt-unidades').innerHTML = `<div class="empty-sub" style="padding:14px">No se pudieron cargar las rutas: ${esc(error.message)}</div>`; return; }
   RT.filas = data || [];
@@ -12316,7 +12316,7 @@ function rtAccionesHtml(o){
     return `<div style="flex-basis:100%;margin:2px 0 4px"><button class="btn sm" onclick="rtVerEvidencia('${id}')">Ver evidencia</button></div>`;
   if (!rtPuedeOperar(o)) return '';
   return `<div style="flex-basis:100%;display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 4px">
-    ${o.estado === 'programada' ? `<button class="btn sm primary" onclick="rtLlegue('${id}')">Llegué al sitio (foto)</button>` : `<button class="btn sm primary" onclick="rtCompletarServicio('${id}')">Realizar servicio</button>`}
+    ${o.estado === 'programada' ? `<button class="btn sm primary" onclick="rtLlegue('${id}')">Llegué al sitio (foto)</button>` : `<span style="flex-basis:100%;font-size:11px;color:var(--amber)">Ya llegaste. Falta cerrar: fotos de sitio y salida, y firma del cliente.</span><button class="btn sm primary" onclick="rtCompletarServicio('${id}')">Terminar servicio (fotos y firma)</button>`}
     <button class="btn sm danger" onclick="rtNoRealizada('${id}')">No se pudo realizar</button></div>`;
 }
 function rtUbicacion(){
@@ -12369,7 +12369,8 @@ async function rtLlegue(id){
   try { await rtSubirFoto(id, 'llegada', foto); } catch(e){ toast(e.message, 'error'); return; }
   const { error } = await sb.rpc('iniciar_orden', { p_orden:id, p_lat:pos.lat ?? null, p_lng:pos.lng ?? null });
   if (error){ toast(error.message, 'error'); return; }
-  toast('Llegada registrada con foto', 'success'); rtCargar();
+  toast('Llegada registrada con foto', 'success'); await rtCargar();
+  rtCompletarServicio(id); // lo siguiente es cerrar el servicio: se abre solo para que no quede "en sitio"
 }
 const RTF = { sitio:null, salida:null };
 function rtFotoSlot(k, etiqueta){
@@ -12503,21 +12504,73 @@ function rtDescargarCSV(){
   descargarCSV(`ordenes_servicio_${RT.fecha}.csv`, csvRows(RT_COLS, lista.map(rtFilaExport)));
   audit('descarga', `Descarga de órdenes de servicio completadas del ${RT.fecha}`, 'b');
 }
-function rtImprimir(){
+const RT_HOJA = '<svg viewBox="0 0 64 64" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><path d="M32 8C18 14 12 26 14 40c1 8 7 14 16 15 14 1 22-10 20-26-1-9-8-17-18-21z" fill="#1f5c3a"/><path d="M32 54V22M32 40l-9-8M32 33l8-7" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>';
+async function rtImgDatos(path){
+  if (!path) return '';
+  try {
+    const { data } = await sb.storage.from('firmas').download(path); if (!data) return '';
+    return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => ok(''); r.readAsDataURL(data); });
+  } catch(e){ return ''; }
+}
+function rtFechaLarga(iso){ return iso ? new Date(iso).toLocaleString('es-MX', { dateStyle:'long', timeStyle:'short', timeZone:TZ_MX }) : ''; }
+async function rtComprobanteHtml(o){
+  const [fl, fs, fsa, fc] = await Promise.all([rtImgDatos(o.foto_llegada_path), rtImgDatos(o.foto_sitio_path), rtImgDatos(o.foto_salida_path), rtImgDatos(o.firma_cliente_path)]);
+  const unidad = o.unidad_bak || (DB.unidades.find(u => u.id === o.unidad_id)?.bak) || '';
+  const cuando = o.hora_fin || o.completada_at;
+  const mapa = (o.lat != null && o.lng != null) ? `${Number(o.lat).toFixed(6)}, ${Number(o.lng).toFixed(6)} <a href="https://www.openstreetmap.org/?mlat=${Number(o.lat)}&mlon=${Number(o.lng)}#map=18/${Number(o.lat)}/${Number(o.lng)}" target="_blank" rel="noopener">Ver en mapa</a>` : '';
+  const fila = (t, v) => v ? `<tr><th>${t}</th><td>${v}</td></tr>` : '';
+  const foto = (t, src) => `<figure>${src ? `<img src="${src}" alt="">` : '<div class="nofoto">Sin foto</div>'}<figcaption>${t}</figcaption></figure>`;
+  return `<section class="hoja">
+    <header><div class="ico">${RT_HOJA}</div><div class="tit"><h1>COMPROBANTE DE SERVICIO</h1><p>BioAmbientalistik S.A. de C.V. · Bio-centralis</p></div><div class="fol">Folio ${esc(o.folio || '')}</div></header>
+    <table class="datos">
+      ${fila('CLIENTE', esc(o.cliente_nombre))}${fila('RAZÓN SOCIAL', esc(o.cliente_razon))}${fila('DIRECCIÓN', esc(o.direccion))}${fila('CONTACTO', esc(o.contacto))}
+      ${fila('RUTA', esc(o.ruta_nombre))}${fila('UNIDAD', esc(unidad))}${fila('OPERADOR', esc(o.operador_nombre))}${fila('AYUDANTES', esc([o.ayudante1, o.ayudante2].filter(Boolean).join(', ')))}
+      ${fila('LLEGADA', o.hora_llegada ? esc(rtFechaLarga(o.hora_llegada)) : '')}${fila('FECHA Y HORA DE CIERRE', esc(rtFechaLarga(cuando)))}
+      ${fila('TIPO DE RESIDUO', esc((o.tipos || []).join(' / ')))}${fila('VOLUMEN', esc(o.volumen))}${fila('UBICACIÓN', mapa)}${fila('COMENTARIOS', esc(o.comentarios))}
+    </table>
+    <hr>
+    <h2>Evidencia fotográfica</h2>
+    <div class="fotos">${foto('Llegada', fl)}${foto('Sitio de recolección', fs)}${foto('Salida', fsa)}</div>
+    <div class="firma">${fc ? `<img src="${fc}" alt="">` : '<div class="nofoto">Sin firma</div>'}<div class="fn">Firma de quien recibe</div><div>${esc(o.firma_cliente_nombre || '')}</div></div>
+    <footer>Documento generado digitalmente por Bio-centralis el ${esc(rtFechaLarga(new Date().toISOString()))}. La firma, las fotos, la ubicación y la hora fueron registradas desde el dispositivo del operador durante el servicio. Referencia interna: ${esc(String(o.id).slice(0, 8))}.</footer>
+  </section>`;
+}
+async function rtImprimir(){
   const lista = rtCompletadas();
   if (!lista.length){ toast('No hay órdenes completadas en este día para imprimir', 'info'); return; }
-  const filas = lista.map(o => { const f = rtFilaExport(o); return `<tr><td>${esc(f[0])}</td><td>${esc(f[2])}</td><td>${esc(f[3])}</td><td>${esc(f[4])}</td><td>${esc(f[5])}</td><td>${esc(f[6])}</td><td>${esc(f[7])}</td><td>${esc([f[8], f[9]].filter(Boolean).join(', '))}</td><td>${esc(f[11])} – ${esc(f[12])}</td></tr>`; }).join('');
-  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Órdenes de servicio ${esc(RT.fecha)}</title><style>
-    body{font-family:Arial,sans-serif;font-size:11px;margin:24px;color:#111}h1{font-size:16px;margin:0 0 4px}p{margin:0 0 12px;color:#555}
-    table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}
-    @media print{body{margin:8mm}}</style></head><body>
-    <h1>Órdenes de servicio completadas — ${esc(RT.fecha)}</h1><p>BioAmbientalistik S.A. de C.V. · ${lista.length} servicios</p>
-    <table><thead><tr><th>Folio</th><th>Hora</th><th>Cliente</th><th>Dirección</th><th>Ruta</th><th>Unidad</th><th>Titular</th><th>Ayudante(s)</th><th>Llegada – Fin</th></tr></thead><tbody>${filas}</tbody></table></body></html>`;
+  toast('Preparando comprobantes con fotos y firmas…', 'info');
+  let cuerpo = '';
+  try { for (const o of lista) cuerpo += await rtComprobanteHtml(o); } catch(e){ toast('No se pudieron preparar los comprobantes', 'error'); return; }
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprobantes de servicio ${esc(RT.fecha)}</title><style>
+    *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;margin:0;background:#e9ecea}
+    .barra{position:sticky;top:0;background:#1f5c3a;color:#fff;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;font-size:13px}
+    .barra button{background:#fff;color:#1f5c3a;border:0;border-radius:8px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer}
+    .hoja{width:min(190mm,100%);margin:14px auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15);page-break-after:always;break-after:page;overflow:hidden}
+    .hoja:last-child{page-break-after:auto;break-after:auto}
+    header{background:#1f5c3a;color:#fff;display:flex;align-items:center;gap:14px;padding:16px 20px}
+    .ico{background:#fff;border-radius:6px;width:60px;height:60px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .tit{flex:1}.tit h1{margin:0;font-size:19px;letter-spacing:.3px}.tit p{margin:3px 0 0;font-size:11px;opacity:.85}.fol{font-weight:700;font-size:13px;white-space:nowrap}
+    .datos{width:calc(100% - 40px);margin:14px 20px 4px;border-collapse:collapse}
+    .datos th{width:34%;text-align:left;font-size:10px;color:#4d6a5a;padding:5px 8px 5px 0;vertical-align:top;letter-spacing:.4px}.datos td{font-size:12px;padding:5px 0;vertical-align:top}
+    .datos a{color:#2a9a5a;font-size:10px;margin-left:6px}
+    hr{border:0;border-top:1px solid #ccc;margin:10px 20px}
+    h2{text-align:center;font-size:11px;letter-spacing:1px;color:#4d6a5a;margin:12px 0 8px;text-transform:uppercase}
+    .fotos{display:flex;justify-content:center;gap:10px;padding:0 20px;flex-wrap:wrap}
+    figure{margin:0;width:calc(33.3% - 7px);min-width:140px;text-align:center}
+    figure img{width:100%;height:150px;object-fit:cover;border:1px solid #999;display:block}
+    figcaption{font-size:10px;font-weight:700;margin-top:4px}
+    .nofoto{height:150px;border:1px dashed #aaa;display:flex;align-items:center;justify-content:center;color:#888;font-size:11px}
+    .firma{width:260px;max-width:80%;margin:16px auto 6px;text-align:center}
+    .firma img{width:100%;height:110px;object-fit:contain;border:1px solid #999;background:#fff;display:block}
+    .firma .nofoto{height:110px}.fn{font-size:10px;font-weight:700;margin-top:4px}.firma div:last-child{font-size:11px}
+    footer{font-size:8.5px;color:#777;padding:10px 20px 16px;line-height:1.4;text-align:center}
+    @media print{body{background:#fff}.barra{display:none}.hoja{width:100%;margin:0;box-shadow:none}@page{size:A4;margin:8mm}header,.ico{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+    </style></head><body><div class="barra"><span>${lista.length} comprobante(s) · ${esc(RT.fecha)}</span><button onclick="window.print()">Imprimir / Guardar PDF</button></div>${cuerpo}</body></html>`;
   const url = URL.createObjectURL(new Blob([html], { type:'text/html;charset=utf-8' }));
   const w = window.open(url, '_blank', 'noopener');
   if (!w){ toast('El navegador bloqueó la ventana. Permite ventanas emergentes para este sitio.', 'error'); return; }
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-  audit('descarga', `Impresión de órdenes de servicio completadas del ${RT.fecha}`, 'b');
+  setTimeout(() => URL.revokeObjectURL(url), 600000);
+  audit('descarga', `Impresión de comprobantes de servicio del ${RT.fecha}`, 'b');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
