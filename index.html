@@ -1314,7 +1314,7 @@ select.form-input option{background:var(--bg2)}
       <div id="asis-firma-estado"></div>
       <div class="panel" id="asis-qr-panel" style="display:none;margin-bottom:14px">
         <div class="ph"><div class="ph-title">QR de asistencia por sede</div></div>
-        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada sede y cada Bio-Nave tiene su propio QR. Imprímelo y colócalo en la entrada de la sede.</div>
+        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Elige una sede para ver solo a su personal en la tabla. Con el botón QR generas el código de esa sede para imprimirlo y colocarlo en la entrada.</div>
         <div id="asis-qr-list" style="padding:4px 14px 12px;display:flex;flex-wrap:wrap;gap:8px"></div>
       </div>
       <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
@@ -8791,7 +8791,7 @@ async function renderFirmaEstado(){
 async function renderAsistencias(){
   renderQrSedesAsis();
   // Scope real: supervisor solo marca/ve asistencias de colaboradores de sus propias sedes
-  const activos = colaboradoresVisibles().filter(c=>c.estatus==='activo');
+  const activos = asisFiltrar(colaboradoresVisibles().filter(c=>c.estatus==='activo'));
   const dias = diasDeSemana(currentSemana);
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   const lbl = `Semana ${getNumSemana(currentSemana)} · ${fmt2(dias[0])} – ${fmt2(dias[6])}`;
@@ -8808,7 +8808,7 @@ async function renderAsistencias(){
   const grid = document.getElementById('asis-grid');
   if (!grid) return;
   if (activos.length===0){
-    grid.innerHTML = '<div style="grid-column:1/-1"><div class="empty" style="padding:36px"><div class="empty-title" style="font-size:12px">Sin colaboradores registrados</div><div class="empty-sub">Da de alta colaboradores para registrar asistencias.</div></div></div>';
+    grid.innerHTML = '<div style="grid-column:1/-1"><div class="empty" style="padding:36px"><div class="empty-title" style="font-size:12px">' + (ASIS_SEDE ? 'Esta sede no tiene personal ligado' : 'Sin colaboradores registrados') + '</div><div class="empty-sub">' + (ASIS_SEDE ? 'Liga a los colaboradores a esta sede desde su expediente de Personal.' : 'Da de alta colaboradores para registrar asistencias.') + '</div></div></div>';
     return;
   }
   // Comentarios por persona de esta semana
@@ -11692,7 +11692,7 @@ function pdfHeader(titulo){
 function descargarAsistenciaXLS(){
   const dias = diasDeSemana(currentSemana);
   const nomDias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const activos = DB.colaboradores.filter(c=>c.estatus==='activo');
+  const activos = asisFiltrar(DB.colaboradores.filter(c=>c.estatus==='activo'));
   const headers = ['#','Colaborador','Puesto','Bodega', ...nomDias.map((n,i)=>n+' '+dias[i].getDate()), 'Presentes','Faltas','Justif.','Vacaciones','Incap.'];
   const rows = activos.map((c,i)=>{
     const regs = dias.map(d=>DB.asistencias[`${fmtDate(d)}-${c.id}`]?.tipo||'');
@@ -11705,7 +11705,7 @@ function descargarAsistenciaXLS(){
 
 function descargarAsistenciaPDF(){
   const dias = diasDeSemana(currentSemana);
-  const activos = DB.colaboradores.filter(c=>c.estatus==='activo');
+  const activos = asisFiltrar(DB.colaboradores.filter(c=>c.estatus==='activo'));
   let txt = pdfHeader(`REPORTE DE ASISTENCIAS — Semana ${getNumSemana(currentSemana)}`);
   txt += `Período: ${fmt2(dias[0])} al ${fmt2(dias[6])}\n\n`;
   activos.forEach(c=>{
@@ -13085,14 +13085,33 @@ async function subirFotoSede(id, tipo, inp){
     toast('Foto guardada','success'); inp.value='';
   } catch(e){ toast(e.message || 'No se pudo subir la foto','error'); }
 }
+let ASIS_SEDE = '';            // '' = todas · 'site:<id>' · 'nave:<id>'
+let _asisSedesLista = [];
+function asisFiltrar(lista){
+  if (!ASIS_SEDE) return lista;
+  const [t, id] = ASIS_SEDE.split(':');
+  return lista.filter(c => t === 'site' ? String(c.siteId) === id : String(c.bodegaId) === id);
+}
+function asisElegirSede(k){ ASIS_SEDE = (ASIS_SEDE === k) ? '' : k; pintarFiltroSedesAsis(); renderAsistencias(); }
+function asisQrSede(k){ const x = _asisSedesLista.find(i => i.k === k); if (x) verQrSede(x.id, x.nombre); }
+function pintarFiltroSedesAsis(){
+  const l = document.getElementById('asis-qr-list'); if (!l) return;
+  const cuenta = k => { const sv = ASIS_SEDE; ASIS_SEDE = k; const n = asisFiltrar(colaboradoresVisibles().filter(c => c.estatus === 'activo')).length; ASIS_SEDE = sv; return n; };
+  const chip = (act, txt, extra) => `<span style="display:inline-flex;align-items:stretch;border:1px solid ${act ? 'var(--green)' : 'var(--border2)'};border-radius:8px;overflow:hidden;${act ? 'background:rgba(82,212,131,.12)' : ''}">${txt}${extra || ''}</span>`;
+  l.innerHTML = chip(!ASIS_SEDE, `<button class="btn sm" style="border:0;background:transparent" onclick="asisElegirSede('')">Todas</button>`) +
+    _asisSedesLista.map(n => chip(ASIS_SEDE === n.k,
+      `<button class="btn sm" style="border:0;background:transparent" onclick="asisElegirSede('${n.k}')">${esc(n.nombre)} <span class="tag m" style="margin-left:6px">${cuenta(n.k)}</span></button>`,
+      `<button class="btn sm" style="border:0;border-left:1px solid var(--border2);background:transparent;border-radius:0" title="Generar QR de ${esc(n.nombre)}" onclick="asisQrSede('${n.k}')">▦ QR</button>`)).join('');
+}
 async function renderQrSedesAsis(){
-  const p=document.getElementById('asis-qr-panel'), l=document.getElementById('asis-qr-list');
-  if(!p||!l) return;
+  const p=document.getElementById('asis-qr-panel');
+  if(!p) return;
   if(!['rh','direccion_ceo'].includes(currentUser.role)){ p.style.display='none'; return; }
   const [{data:sites},{data:naves}]=await Promise.all([ sb.from('sites').select('id,nombre').order('nombre'), sb.from('bio_naves').select('id,nombre').order('nombre') ]);
-  const items=[...(sites||[]).map(x=>({...x,et:'Sede'})),...(naves||[]).map(x=>({...x,et:'Bio-Nave'}))];
-  p.style.display= items.length?'block':'none';
-  l.innerHTML=items.map(n=>`<button class="btn sm" onclick="verQrSede('${n.id}','${esc(n.nombre)}')">${esc(n.nombre)} <span class="tag m" style="margin-left:6px">${n.et}</span></button>`).join('');
+  _asisSedesLista=[...(sites||[]).map(x=>({id:x.id,nombre:x.nombre,k:'site:'+x.id})),...(naves||[]).map(x=>({id:x.id,nombre:x.nombre,k:'nave:'+x.id}))];
+  if (ASIS_SEDE && !_asisSedesLista.some(x => x.k === ASIS_SEDE)) ASIS_SEDE = '';
+  p.style.display= _asisSedesLista.length?'block':'none';
+  pintarFiltroSedesAsis();
 }
 async function ubicacionSede(id){
   try {
