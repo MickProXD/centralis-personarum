@@ -684,6 +684,7 @@ select.form-input option{background:var(--bg2)}
         <div class="form-err" id="err-login" style="margin-bottom:8px">—</div>
         <button class="btn primary" id="login-btn" style="width:100%;justify-content:center;height:38px" onclick="intentarLogin()">Entrar</button>
         <button class="btn" style="width:100%;justify-content:center;height:34px;margin-top:8px" onclick="mostrarPantalla('solicitud-screen')">Solicitar una cuenta</button>
+        <button class="btn" style="width:100%;justify-content:center;height:34px;margin-top:8px" onclick="abrirReclamo()">Ya me aprobaron mi cuenta</button>
         <div style="text-align:center;margin-top:12px"><a href="#" style="font-size:12px;color:var(--green);text-decoration:none" onclick="event.preventDefault();abrirReset()">Olvidé mi contraseña</a></div>
       </div>
     </div>
@@ -711,13 +712,40 @@ select.form-input option{background:var(--bg2)}
       </div>
     </div>
 
+    <!-- DESBLOQUEAR CONTRASEÑA DE UN SOLO USO (cuenta ya aprobada) -->
+    <div id="reclamo-screen" style="display:none" class="panel">
+      <div class="ph"><div class="ph-title">Desbloquear mi contraseña de un solo uso</div></div>
+      <div style="padding:18px">
+        <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px">Escribe tu correo y el código de seguimiento que te dio el sistema al enviar tu solicitud. Si tu cuenta ya fue aprobada, aquí aparecerá tu contraseña de un solo uso.</div>
+        <label class="form-lbl req">Correo institucional</label>
+        <input class="form-input" type="email" id="rec-correo" autocomplete="username" style="margin-bottom:10px">
+        <label class="form-lbl req">Código de seguimiento</label>
+        <input class="form-input" id="rec-codigo" autocomplete="off" maxlength="9" placeholder="XXXX-XXXX" style="margin-bottom:6px;text-align:center;font-size:16px;letter-spacing:3px;text-transform:uppercase" onkeydown="if(event.key==='Enter')reclamarCuenta()">
+        <div class="form-err" id="err-reclamo" style="margin-bottom:8px">—</div>
+        <div id="rec-pend" style="display:none;color:var(--amber,#b45309);font-size:11px;line-height:1.5;margin-bottom:8px"></div>
+        <div id="rec-ok" style="display:none;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px">Coloca tu contraseña de un solo uso</div>
+          <div id="rec-pass" style="font-family:monospace;font-size:20px;letter-spacing:2px;text-align:center;background:var(--surface);border:1px dashed var(--green);border-radius:8px;padding:10px;user-select:all;word-break:break-all">—</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-top:6px">Se escribirá sola en el inicio de sesión. Enseguida el sistema te pedirá crear tu propia contraseña.</div>
+        </div>
+        <button class="btn primary" id="rec-btn" style="width:100%;justify-content:center;height:38px" onclick="reclamarCuenta()">Desbloquear</button>
+        <button class="btn" id="rec-entrar" style="display:none;width:100%;justify-content:center;height:38px;margin-top:8px" onclick="reclamoEntrar()">Continuar a iniciar sesión</button>
+        <button class="btn" style="width:100%;justify-content:center;height:34px;margin-top:8px" onclick="mostrarPantalla('login-form')">← Volver a iniciar sesión</button>
+      </div>
+    </div>
+
     <!-- SOLICITUD DE CUENTA (no crea la cuenta — Dirección aprueba) -->
     <div id="solicitud-screen" style="display:none" class="panel">
       <div class="ph"><div class="ph-title">Solicitar una cuenta</div></div>
       <div style="padding:18px">
         <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px">
-          Tu solicitud será revisada por <strong>Dirección</strong>. Si es aprobada, recibirás tus credenciales de acceso.
+          Tu solicitud será revisada por <strong>Dirección</strong> (o por tu Gerente Operativo si eres operativo de campo). Al enviarla recibirás un <strong>código de seguimiento</strong>: guárdalo, con él desbloquearás tu contraseña de un solo uso cuando te aprueben.
         </div>
+        <label class="form-lbl req">Tipo de cuenta</label>
+        <select class="form-input" id="sol-tipo" style="margin-bottom:10px">
+          <option value="operativo">Operativo de campo (chofer, ayudante)</option>
+          <option value="otro">Otro puesto</option>
+        </select>
         <label class="form-lbl req">Nombre completo</label>
         <input class="form-input" id="sol-nombre" style="margin-bottom:10px">
         <label class="form-lbl req">Correo institucional</label>
@@ -727,7 +755,10 @@ select.form-input option{background:var(--bg2)}
         <label class="form-lbl req">¿Cuál es tu puesto y funciones?</label>
         <textarea class="form-input" id="sol-funciones" rows="2" placeholder="Ej. Supervisor de rutas zona norte" style="margin-bottom:6px"></textarea>
         <div class="form-err" id="err-solicitud" style="margin-bottom:8px">—</div>
-        <div class="form-ok" id="ok-solicitud" style="display:none;color:var(--green);font-size:11px;margin-bottom:8px">✓ Solicitud enviada. Dirección la revisará.</div>
+        <div class="form-ok" id="ok-solicitud" style="display:none;color:var(--green);font-size:11px;margin-bottom:8px;line-height:1.6">✓ Solicitud enviada. Cuando te aprueben, entra a «Ya me aprobaron mi cuenta» y escribe este código:
+          <div id="sol-codigo" style="font-family:monospace;font-size:22px;letter-spacing:4px;text-align:center;color:var(--text);background:var(--surface);border:1px dashed var(--green);border-radius:8px;padding:10px;margin-top:8px;user-select:all">—</div>
+          <div style="color:var(--amber,#b45309);margin-top:6px"><strong>Anótalo ahora:</strong> no se vuelve a mostrar. Vale 7 días después de la aprobación.</div>
+        </div>
         <button class="btn primary" id="sol-btn" style="width:100%;justify-content:center;height:38px" onclick="enviarSolicitudCuenta()">Enviar solicitud</button>
         <button class="btn" style="width:100%;justify-content:center;height:34px;margin-top:8px" onclick="mostrarPantalla('login-form')">← Volver a iniciar sesión</button>
       </div>
@@ -2005,6 +2036,23 @@ select.form-input option{background:var(--bg2)}
     </div>
   </div>
 </div>
+<div class="overlay" id="modal-codigo-cuenta" onclick="if(event.target===this)closeModal('modal-codigo-cuenta')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Código de desbloqueo de cuenta</div>
+      <button class="modal-close" onclick="closeModal('modal-codigo-cuenta')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <div id="cc-quien" style="font-size:12px;color:var(--text2);margin-bottom:10px"></div>
+      <div id="cc-codigo" style="font-family:monospace;font-size:30px;font-weight:800;letter-spacing:6px;background:var(--surface);border-radius:10px;padding:14px;user-select:all">—</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.6">Entrégaselo en persona o por un medio privado. Vale <strong>7 días</strong>, se usa una sola vez y esta es la única vez que se muestra. La persona entra a «Ya me aprobaron mi cuenta», pone su correo y este código, y el sistema le da su contraseña de un solo uso. Tú nunca la ves.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="navigator.clipboard?.writeText(document.getElementById('cc-codigo').textContent).then(()=>toast('Código copiado','success'))">Copiar</button>
+      <button class="btn primary" onclick="closeModal('modal-codigo-cuenta')">Listo</button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="modal-qr-sede" onclick="if(event.target===this)closeModal('modal-qr-sede')">
   <div class="modal">
     <div class="modal-head">
@@ -2281,7 +2329,7 @@ select.form-input option{background:var(--bg2)}
         <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
         <select class="form-input" id="aps-colab"><option value="">Sin ligar</option></select>
       </div>
-      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin-bottom:8px;line-height:1.5">Al aprobar, el sistema crea una contraseña de primer uso y la envía <strong>directo al correo de la persona</strong>. Tú no la ves ni la escribes. Al entrar tendrá que cambiarla por una propia.</div>
+      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin-bottom:8px;line-height:1.5">Al aprobar, la persona desbloquea su contraseña de un solo uso con el código de seguimiento que recibió al enviar su solicitud. Tú no ves ni escribes ninguna contraseña. Al entrar tendrá que crear la suya de inmediato.</div>
       <div class="form-err" id="err-aps" style="margin-bottom:8px">—</div>
     </div>
     <div class="modal-foot">
@@ -2352,7 +2400,7 @@ select.form-input option{background:var(--bg2)}
         <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
         <select class="form-input" id="au-colab"><option value="">Sin ligar</option></select>
       </div>
-      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin:8px 0 10px;line-height:1.5">Al guardar, el sistema crea una contraseña de primer uso y la envía <strong>directo al correo de la persona</strong> (así también se confirma que el correo es real). Tú no la ves ni la escribes. Al entrar tendrá que cambiarla por una propia.</div>
+      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin:8px 0 10px;line-height:1.5">Al guardar, el sistema crea la cuenta con una contraseña aleatoria que nadie conoce y te muestra un <strong>código de desbloqueo</strong> (una sola vez). La persona entra a «Ya me aprobaron mi cuenta», escribe su correo y ese código, y el sistema le muestra su contraseña de un solo uso; al entrar tiene que crear la suya de inmediato.</div>
       <div class="form-err" id="err-au" style="margin-top:8px">—</div>
     </div>
     <div class="modal-foot">
@@ -4241,7 +4289,7 @@ let _lastActivity = Date.now();
 let _mfaFactorId = null;
 
 function mostrarPantalla(id){
-  ['login-setup','login-form','mfa-enroll-screen','mfa-challenge-screen','solicitud-screen','reset-screen'].forEach(x=>{
+  ['login-setup','login-form','mfa-enroll-screen','mfa-challenge-screen','solicitud-screen','reset-screen','reclamo-screen'].forEach(x=>{
     const el = document.getElementById(x); if (el) el.style.display = (x===id) ? 'block' : 'none';
   });
 }
@@ -4308,12 +4356,53 @@ async function enviarSolicitudCuenta(){
   const btn = document.getElementById('sol-btn');
   btn.disabled = true; btn.textContent = 'Enviando...';
   const { data, error } = await sb.functions.invoke('solicitar-cuenta', {
-    body: { nombre, correo, usuario, funciones }
+    body: { nombre, correo, usuario, funciones, tipo_cuenta: document.getElementById('sol-tipo').value }
   });
   btn.disabled = false; btn.textContent = 'Enviar solicitud';
   if (error || data?.error) return fail(data?.error || error.message);
   ['sol-nombre','sol-correo','sol-usuario','sol-funciones'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sol-codigo').textContent = data?.codigo || '—';
   okEl.style.display = 'block';
+}
+
+function abrirReclamo(){
+  const c = (document.getElementById('login-correo')?.value || '').trim();
+  document.getElementById('rec-correo').value = c;
+  document.getElementById('rec-codigo').value = '';
+  ['err-reclamo'].forEach(i=>document.getElementById(i).classList.remove('show'));
+  document.getElementById('rec-pend').style.display = 'none';
+  document.getElementById('rec-ok').style.display = 'none';
+  document.getElementById('rec-entrar').style.display = 'none';
+  document.getElementById('rec-btn').style.display = '';
+  mostrarPantalla('reclamo-screen');
+}
+async function reclamarCuenta(){
+  const correo = document.getElementById('rec-correo').value.trim().toLowerCase();
+  const codigo = document.getElementById('rec-codigo').value.trim();
+  const err = document.getElementById('err-reclamo'), pend = document.getElementById('rec-pend');
+  err.classList.remove('show'); pend.style.display = 'none';
+  const fail = m => { err.textContent = m; err.classList.add('show'); };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return fail('Escribe tu correo institucional');
+  if (codigo.replace(/[^A-Za-z0-9]/g,'').length !== 8) return fail('El código tiene 8 letras y números (XXXX-XXXX)');
+  const btn = document.getElementById('rec-btn'); btn.disabled = true; btn.textContent = 'Revisando...';
+  const { data, error } = await sb.functions.invoke('cuenta-reclamo', { body: { correo, codigo } });
+  btn.disabled = false; btn.textContent = 'Desbloquear';
+  const m = data?.error || (error && !data?.pendiente ? await errorFuncion(error, data) : '');
+  if (m) return fail(m);
+  if (data?.pendiente){ pend.textContent = data.mensaje || 'Tu solicitud todavía no ha sido aprobada. Vuelve a intentar más tarde.'; pend.style.display = 'block'; return; }
+  if (!data?.password) return fail('No se pudo desbloquear. Intenta de nuevo.');
+  document.getElementById('rec-pass').textContent = data.password;
+  document.getElementById('rec-ok').style.display = 'block';
+  btn.style.display = 'none';
+  document.getElementById('rec-entrar').style.display = '';
+  // Se coloca sola en el inicio de sesión
+  document.getElementById('login-correo').value = correo;
+  document.getElementById('login-pass').value = data.password;
+}
+function reclamoEntrar(){
+  document.getElementById('rec-pass').textContent = '—';
+  mostrarPantalla('login-form');
+  intentarLogin();
 }
 
 async function initAuth(){
@@ -4572,7 +4661,7 @@ async function renderUsuariosConfig(){
       <div class="doc-name" style="${u.activo?'':'opacity:.5'}">${esc(u.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(u.usuario)}</span></div>
       <div class="doc-meta">${ROLES[u.role]?.label||u.role} · ${u.activo?'Activo':'Desactivado'}</div>
     </div>
-    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button>${esDir ? `<button class="btn sm ${abiertas[u.id]?.estado==='pendiente'?'primary':''}" onclick="abrirResetPassword('${u.id}','${esc(u.nombre)}','${abiertas[u.id]?.id||''}','${abiertas[u.id]?.estado||''}')" style="margin-right:4px" title="Autorizar que esta persona restablezca su contraseña">Contraseña${abiertas[u.id]?.estado==='pendiente'?' (pidió)':''}</button>${abiertas[u.id]?.estado==='pendiente' ? `<button class="btn sm danger" onclick="rechazarResetPassword('${abiertas[u.id].id}','${esc(u.nombre)}')" style="margin-right:4px">Rechazar</button>` : ''}` : ''}<button class="btn sm" onclick="confirmarResetMFA('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Si perdió acceso a su autenticador">Restablecer 2FA</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
+    ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button>${esDir ? `<button class="btn sm ${abiertas[u.id]?.estado==='pendiente'?'primary':''}" onclick="abrirResetPassword('${u.id}','${esc(u.nombre)}','${abiertas[u.id]?.id||''}','${abiertas[u.id]?.estado||''}')" style="margin-right:4px" title="Autorizar que esta persona restablezca su contraseña">Contraseña${abiertas[u.id]?.estado==='pendiente'?' (pidió)':''}</button>${abiertas[u.id]?.estado==='pendiente' ? `<button class="btn sm danger" onclick="rechazarResetPassword('${abiertas[u.id].id}','${esc(u.nombre)}')" style="margin-right:4px">Rechazar</button>` : ''}` : ''}${u.debe_cambiar_password && esDir ? `<button class="btn sm" onclick="reemitirCodigoCuenta('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Aún no entra: genera un código nuevo para desbloquear su contraseña">Nuevo código</button>` : ''}<button class="btn sm" onclick="confirmarResetMFA('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Si perdió acceso a su autenticador">Restablecer 2FA</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
   </div>`).join('');
 }
 
@@ -4607,11 +4696,25 @@ async function guardarUsuario(){
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
   if (error || data?.error) return fail(await errorFuncion(error, data));
-  toast('Cuenta creada. Se envió la contraseña de primer uso a ' + correo,'success');
   closeModal('modal-usuario');
+  mostrarCodigoCuenta(nombre, data?.codigo);
   renderUsuariosConfig();
 }
 
+function mostrarCodigoCuenta(nombre, codigo){
+  if (!codigo){ toast('Cuenta lista. La persona ya puede desbloquear su contraseña con su código de seguimiento.','success'); return; }
+  document.getElementById('cc-quien').textContent = 'Para: ' + nombre;
+  document.getElementById('cc-codigo').textContent = codigo;
+  openModal('modal-codigo-cuenta');
+}
+async function reemitirCodigoCuenta(id, nombre){
+  confirmar('Se generará un código nuevo para ' + nombre + ' y el anterior dejará de servir. ¿Continuar?', 'Nuevo código', async ()=>{
+    const { data: { session } } = await sb.auth.getSession();
+    const { data, error } = await sb.functions.invoke('admin-create-user', { body:{ accion:'reemitir', user_id:id }, headers:{ Authorization:`Bearer ${session.access_token}` } });
+    if (error || data?.error){ toast(data?.error || await errorFuncion(error, data), 'error'); return; }
+    mostrarCodigoCuenta(nombre, data?.codigo);
+  });
+}
 async function toggleUsuario(id, activoActual){
   if (!can('config')) return;
   const { error } = await sb.from('profiles').update({ activo: !activoActual }).eq('id', id);
@@ -6623,7 +6726,11 @@ async function abrirAprobarSolicitud(id){
   if (error || !data){ toast('Solicitud no encontrada','error'); return; }
   solicitudEnRevision = data;
   document.getElementById('aps-resumen').innerHTML = `<strong>${esc(data.nombre)}</strong> · ${esc(data.correo)} · usuario: <strong>${esc(data.usuario)}</strong>${data.funciones?'<br>'+esc(data.funciones):''}`;
-  document.getElementById('aps-role').value = 'supervisor';
+  const selRol = document.getElementById('aps-role');
+  const soloOp = currentUser.role === 'supervisor';
+  [...selRol.options].forEach(o => { o.hidden = soloOp && o.value !== 'chofer'; o.disabled = soloOp && o.value !== 'chofer'; });
+  selRol.value = soloOp || data.tipo_cuenta === 'operativo' ? 'chofer' : 'supervisor';
+  selRol.disabled = soloOp;
   camposRol('aps');
   document.getElementById('err-aps').classList.remove('show');
   openModal('modal-aprobar-solicitud');
@@ -6638,31 +6745,26 @@ async function aprobarSolicitud(){
   const fail = msg => { err.textContent = msg; err.classList.add('show'); };
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
-    body: { usuario: s.usuario, nombre: s.nombre, correo: s.correo, role, ...leerCamposRol('aps') },
+    body: { solicitud_id: s.id, role, ...leerCamposRol('aps') },
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
   if (error || data?.error) return fail(await errorFuncion(error, data));
 
-  await sb.from('solicitudes_cuenta').update({
-    estado: 'aprobada', revisado_por: currentUser.userId, revisado_en: new Date().toISOString()
-  }).eq('id', s.id);
   await audit('config', `Solicitud de cuenta de <strong>${esc(s.nombre)}</strong> aprobada (${role})`, 'g');
   closeModal('modal-aprobar-solicitud');
   solicitudEnRevision = null;
-  toast('Cuenta creada. Se envió la contraseña de primer uso a ' + s.correo,'success');
-  renderSolicitudesConfig();
-  renderUsuariosConfig();
+  if (data?.codigo) mostrarCodigoCuenta(s.nombre, data.codigo);
+  else toast('Cuenta aprobada. ' + s.nombre + ' ya puede desbloquear su contraseña de un solo uso.','success');
+  if (currentUser.role === 'supervisor') renderSolicitudes(); else { renderSolicitudesConfig(); renderUsuariosConfig(); }
 }
 
 function rechazarSolicitud(id){
   confirmar('¿Rechazar esta solicitud de cuenta?', 'Rechazar solicitud', async ()=>{
-    const { error } = await sb.from('solicitudes_cuenta').update({
-      estado: 'rechazada', revisado_por: currentUser.userId, revisado_en: new Date().toISOString()
-    }).eq('id', id);
+    const { error } = await sb.rpc('rechazar_solicitud_cuenta', { p_id: id });
     if (error){ toast(error.message,'error'); return; }
     await audit('config', 'Solicitud de cuenta rechazada', 'r');
     toast('Solicitud rechazada','info');
-    renderSolicitudesConfig();
+    if (currentUser.role === 'supervisor') renderSolicitudes(); else renderSolicitudesConfig();
   });
 }
 
@@ -10926,7 +11028,12 @@ async function renderSolicitudes(){
   await Promise.all([...porRes, ...mias.slice(0, 20)].filter(s => (s.evidencia || []).length).flatMap(s => s.evidencia.slice(0, 4).map(p => avBlob('solicitudes', p))));
   const otras = SOL.lista.filter(s => s.solicitante !== currentUser.userId && !porRes.includes(s));
   const bloque = (t, arr) => arr.length ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">${t}</div><div style="display:flex;flex-direction:column;gap:10px">${arr.map(fila).join('')}</div>` : '';
-  cont.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="solNueva()">Nueva solicitud</button></div>` +
+  let cuentasHtml = '';
+  if (currentUser.role === 'supervisor'){
+    const { data: cs } = await sb.from('solicitudes_cuenta').select('id,nombre,usuario,correo,funciones,created_at').eq('estado','pendiente').eq('tipo_cuenta','operativo').order('created_at');
+    if ((cs || []).length) cuentasHtml = `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Cuentas de operativos por aprobar <span class="tag a">${cs.length}</span></div><div style="display:flex;flex-direction:column;gap:10px">${cs.map(c => `<div class="panel" style="padding:14px;margin-bottom:0"><div style="font-weight:600;font-size:13px">${esc(c.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(c.usuario)}</span></div><div style="font-size:11px;color:var(--text3)">${esc(c.correo)} · ${opFechaHora(c.created_at)}</div>${c.funciones ? `<div style="font-size:12px;margin-top:4px">${esc(c.funciones)}</div>` : ''}<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="abrirAprobarSolicitud('${esc(c.id)}')">Aprobar</button><button class="btn sm danger" onclick="rechazarSolicitud('${esc(c.id)}')">Rechazar</button></div></div>`).join('')}</div>`;
+  }
+  cont.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="solNueva()">Nueva solicitud</button></div>` + cuentasHtml +
     bloque(`Por resolver <span class="tag a">${porRes.length}</span>`, porRes) + bloque('Mis solicitudes', mias) +
     (opEsDireccion() || opEsAdminOp() || currentUser.role === 'supervisor' || currentUser.role === 'rh' ? bloque('Otras solicitudes', otras) : '') +
     (!SOL.lista.length ? '<div class="empty-sub" style="padding:20px">Aún no hay solicitudes. Usa “Nueva solicitud”.</div>' : '');
@@ -11046,7 +11153,12 @@ async function opBadges(){
     }
     if (caps().pages.includes('solicitudes')){
       const { data } = await sb.from('solicitudes_op').select('aprobador').eq('estatus', 'pendiente');
-      set('bdg-sol', (data || []).filter(s => solPuedeResolver(s.aprobador)).length);
+      let n = (data || []).filter(s => solPuedeResolver(s.aprobador)).length;
+      if (currentUser.role === 'supervisor'){
+        const c = await sb.from('solicitudes_cuenta').select('id', { count:'exact', head:true }).eq('estado','pendiente').eq('tipo_cuenta','operativo');
+        n += c.count || 0;
+      }
+      set('bdg-sol', n);
     }
     if (typeof sheVeTodo === 'function' && sheVeTodo()) renderRojosMuro();
   } catch(e){}
