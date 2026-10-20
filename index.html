@@ -10363,6 +10363,7 @@ function mantVistaTaller(){
   const chip = (n, t, c) => `<div class="panel" style="padding:10px 14px;margin:0;flex:1;min-width:120px"><div style="font-family:var(--head);font-weight:900;font-size:20px;color:${n ? c : 'inherit'}">${n}</div><div style="font-size:11px;color:var(--text3)">${t}</div></div>`;
   cont.innerHTML = `
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(por('aprobada'), 'En espera', '#3b82f6')}${chip(por('en_proceso'), 'En proceso', '#e0a100')}${chip(por('esperando_refaccion'), 'Esperando refacción', '#e0a100')}${chip(fin.length, 'Terminadas recientes', '#2e9e5b')}</div>
+    <div style="margin-bottom:12px"><button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button></div>
     <div class="panel" style="padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--text2)">Aquí ves las solicitudes de mantenimiento ya aprobadas. Actualiza el avance con una nota y fotos; quien la pidió y la gerencia reciben el aviso.</div>
     ${mantTitulo(`Solicitudes por atender <span class="tag a">${act.length}</span>`)}
     <div style="display:flex;flex-direction:column;gap:8px">${act.map(mantFilaSolicitud).join('') || '<div class="empty-sub" style="padding:14px">No hay solicitudes pendientes de atender.</div>'}</div>
@@ -10508,7 +10509,7 @@ function mantListaUnidades(){
   cont.innerHTML = `
     <div class="panel" style="padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--text2)">Cada unidad concentra su checklist diario, lavados y solicitudes. Toca una unidad para ver el detalle y la evidencia. Falla crítica: <strong>4 horas</strong> · requiere atención: <strong>24 horas</strong>. Sin respuesta con evidencia en plazo, baja el score de la gerencia operativa y del administrativo operativo.</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(conFalla, 'Unidades con falla sin responder', '#d64545')}${chip(sinCk, 'Sin checklist hoy', '#e0a100')}${chip(lavInc, 'Lavados incumplidos', '#d64545')}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="btn primary" onclick="lavProgramar()">Programar lavado</button><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button>${mantPuedeLlenar() ? '<button class="btn" onclick="mantNuevo()">Llenar mi checklist</button>' : ''}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="btn primary" onclick="lavProgramar()">Programar lavado</button><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button><button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button>${mantPuedeLlenar() ? '<button class="btn" onclick="mantNuevo()">Llenar mi checklist</button>' : ''}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">${est.map(e => `
       <div class="panel" onclick="mantAbrir('${esc(e.u.id)}')" style="padding:14px;margin:0;cursor:pointer;border-left:5px solid ${e.pendResp ? '#d64545' : (!e.hoyInf || e.lavInc) ? '#e0a100' : '#2e9e5b'}">
         <div style="display:flex;align-items:center;gap:8px"><div style="font-family:var(--head);font-weight:900;font-size:15px">${esc(e.u.bak)}</div><span style="font-size:11px;color:var(--text3);margin-left:auto">${esc(e.chofer)}</span></div>
@@ -10530,10 +10531,83 @@ function mantDetalleUnidad(){
   cont.innerHTML = `
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><button class="btn sm" onclick="mantVolver()">← Unidades</button>
       <div style="font-family:var(--head);font-weight:900;font-size:17px">${esc(u.bak)}</div><span style="font-size:12px;color:var(--text3)">Chofer: ${esc(e.chofer)}</span>
-      <button class="btn sm primary" style="margin-left:auto" onclick="lavProgramar('${esc(u.id)}')">Programar lavado</button></div>
+      <button class="btn sm" style="margin-left:auto" onclick="mantBitacoraAbrir('${esc(u.id)}')">Bitácora</button><button class="btn sm primary" onclick="lavProgramar('${esc(u.id)}')">Programar lavado</button></div>
     ${mantTitulo('Checklists')}<div style="display:flex;flex-direction:column;gap:10px">${inf.map(i => mantTarjetaInforme(i, true)).join('') || '<div class="empty-sub" style="padding:14px">Sin checklists todavía.</div>'}</div>
     ${mantTitulo('Lavados y evidencia')}<div style="display:flex;flex-direction:column;gap:10px">${lav.map(l => mantTarjetaLavado(l, true)).join('') || '<div class="empty-sub" style="padding:14px">Sin lavados programados.</div>'}</div>
     ${mantTitulo('Solicitudes de mantenimiento')}<div style="display:flex;flex-direction:column;gap:8px">${sol.map(mantFilaSolicitud).join('') || '<div class="empty-sub" style="padding:14px">Sin solicitudes.</div>'}</div>`;
+}
+
+/* ── Bitácora de mantenimiento: por unidad o de toda la flota, con evidencia (PDF para imprimir o CSV) ── */
+const mantPuedeBitacora = () => mantEsGerencia() || currentUser.role === 'mantenimiento';
+function mantBitacoraAbrir(unidadId){
+  if (!mantPuedeBitacora()) return;
+  const hoy = hoyLocal(), d = new Date(); d.setDate(d.getDate() - 30);
+  finModal('Bitácora de mantenimiento',
+    '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Reúne solicitudes de mantenimiento aprobadas con su avance por etapas, fallas reportadas con su respuesta y evidencia, y lavados entregados.</div>' +
+    finSelect('Unidad', 'bt-uni', MANT.unidades.map(u => [u.id, u.bak]), unidadId || '', 'Toda la flota') +
+    '<div style="display:flex;gap:8px"><div style="flex:1">' + finCampo('Desde', 'bt-ini', 'date', d.toLocaleDateString('en-CA'), `max="${hoy}"`) + '</div><div style="flex:1">' + finCampo('Hasta', 'bt-fin', 'date', hoy, `max="${hoy}"`) + '</div></div>' +
+    finSelect('Formato', 'bt-fmt', [['pdf', 'Para imprimir / PDF (con fotos)'], ['csv', 'Excel / CSV (sin fotos)']], 'pdf'),
+    mantBitacoraGenerar, 'Generar');
+}
+async function mantBitacoraGenerar(){
+  const uni = fv('bt-uni') || null, ini = fv('bt-ini'), fin = fv('bt-fin'), fmt = fv('bt-fmt');
+  if (!ini || !fin || ini > fin) return finErr('Revisa las fechas');
+  if ((new Date(fin) - new Date(ini)) / 864e5 > 366) return finErr('Elige un periodo de máximo un año');
+  const porLotes = async (tabla, col, ids, extra) => { const out = []; for (let i = 0; i < ids.length; i += 80){ const { data } = await sb.from(tabla).select('*').in(col, ids.slice(i, i + 80)).order('created_at'); out.push(...(data || [])); } return out; };
+  const tipos = MANT_SOL_TIPOS.map(t => t[0]);
+  let qs = sb.from('solicitudes_op').select('*').in('tipo', tipos).eq('estatus', 'aprobada').gte('created_at', ini + 'T00:00:00-06:00').lte('created_at', fin + 'T23:59:59-06:00').order('created_at').limit(1000);
+  let qi = sb.from('mant_informes').select('*').neq('nivel', 'ok').gte('fecha', ini).lte('fecha', fin).order('created_at').limit(1000);
+  let ql = sb.from('lavados_programados').select('*').eq('estado', 'completado').gte('fecha_programada', ini).lte('fecha_programada', fin).order('fecha_programada').limit(1000);
+  if (uni){ qs = qs.eq('unidad_id', uni); qi = qi.eq('unidad_id', uni); ql = ql.eq('unidad_id', uni); }
+  const [rs, ri, rl] = await Promise.all([qs, qi, ql]);
+  if (rs.error || ri.error || rl.error) return finErr('No se pudo reunir la información');
+  const sols = rs.data || [], infs = ri.data || [], lavs = rl.data || [];
+  const [ets, resp] = await Promise.all([porLotes('solicitud_etapas', 'solicitud_id', sols.map(x => x.id)), porLotes('mant_respuestas', 'informe_id', infs.map(x => x.id))]);
+  const etPor = {}; ets.forEach(e => { (etPor[e.solicitud_id] = etPor[e.solicitud_id] || []).push(e); });
+  const rePor = {}; resp.forEach(r => { (rePor[r.informe_id] = rePor[r.informe_id] || []).push(r); });
+  const ent = [];
+  sols.forEach(x => { const h = etPor[x.id] || [], ult = x.etapa || 'aprobada';
+    ent.push({ t:'Solicitud', u:x.unidad_id, f:x.created_at, titulo:(SOL_TIPOS[x.tipo] || { t:x.tipo }).t, quien:x.solicitante_nombre || '', det:x.detalle || '', estado:(SOL_ETAPAS[ult] || [, ult])[1], cierre:ult === 'terminada' ? (x.etapa_en || '') : '', sub:h.map(e => ({ f:e.created_at, t:(SOL_ETAPAS[e.etapa] || [, e.etapa])[1], por:e.por_nombre || '', nota:e.nota || '', fotos:e.fotos || [], b:'mant' })), fotos:(x.evidencia || []).filter(v => !/\.pdf$/i.test(v)), b:'solicitudes' }); });
+  infs.forEach(x => { const rr = rePor[x.id] || [], fl = Object.entries(x.checklist || {}).filter(([, v]) => v !== 'ok').map(([k, v]) => (MANT_NOMBRES[k] || k) + ': ' + (v === 'falla' ? 'falla' : 'atención')).join(', ');
+    ent.push({ t:'Falla reportada', u:x.unidad_id, f:x.created_at, titulo:(MANT_NIVEL[x.nivel] || [, x.nivel])[1], quien:x.chofer_nombre || '', det:(fl + (x.observaciones ? ' · ' + x.observaciones : '')).trim(), estado:rr.length ? 'Respondida' : 'Sin respuesta', cierre:rr.length ? rr[rr.length - 1].created_at : '', sub:rr.map(r => ({ f:r.created_at, t:'Respuesta con evidencia', por:'', nota:r.accion + (r.folio ? ' · Folio: ' + r.folio : ''), fotos:r.fotos || [], b:'mant' })), fotos:x.fotos || [], b:'mant' }); });
+  lavs.forEach(x => ent.push({ t:'Lavado', u:x.unidad_id, f:x.completado_en || (x.fecha_programada + 'T12:00:00-06:00'), titulo:'Lavado entregado', quien:'', det:x.notas || '', estado:'Completado', cierre:x.completado_en || '', sub:[], fotos:['foto_llegada', 'foto_lavando', 'foto_lavada'].map(k => x[k]).filter(Boolean), b:'mant' }));
+  if (!ent.length) return finErr('No hay registros de mantenimiento en ese periodo');
+  ent.sort((a, b) => (mantUni(a.u) + '').localeCompare(mantUni(b.u) + '', 'es', { numeric:true }) || a.f.localeCompare(b.f));
+  const nom = uni ? mantUni(uni) : 'Toda la flota', fch = v => v ? opFechaHora(v) : '';
+  if (fmt === 'csv'){
+    descargarCSV(`bitacora_mantenimiento_${uni ? nom : 'flota'}_${ini}_${fin}.csv`, csvRows(['Unidad', 'Fecha', 'Tipo de registro', 'Descripción', 'Solicitó o reportó', 'Estado', 'Fecha de cierre', 'Avance y notas', 'Fotos'],
+      ent.map(e => [mantUni(e.u), fch(e.f), e.t + ' · ' + e.titulo, e.det, e.quien, e.estado, fch(e.cierre), e.sub.map(s => `${fch(s.f)} ${s.t}${s.nota ? ': ' + s.nota : ''}`).join(' | '), e.fotos.length + e.sub.reduce((n, s) => n + s.fotos.length, 0)])));
+    audit('descarga', `Bitácora de mantenimiento (${nom}) ${ini} a ${fin}`, 'b');
+    return;
+  }
+  let cupo = 150, omit = 0;
+  const pedir = (b, lista) => lista.filter(pth => { if (cupo > 0){ cupo--; return true; } omit++; return false; });
+  ent.forEach(e => { e.fotos = pedir(e.b, e.fotos); e.sub.forEach(s => { s.fotos = pedir(s.b, s.fotos); }); });
+  const todas = []; ent.forEach(e => { e.fotos.forEach(pth => todas.push([e.b, pth])); e.sub.forEach(s => s.fotos.forEach(pth => todas.push([s.b, pth]))); });
+  toast('Preparando bitácora…', 'info');
+  for (let i = 0; i < todas.length; i += 10) await Promise.all(todas.slice(i, i + 10).map(([b, pth]) => avBlob(b, pth)));
+  const img = (b, lista) => lista.map(pth => AV.blobs[b + '/' + pth]).filter(Boolean).map(u => `<img src="${u}" alt="">`).join('');
+  const porUni = {}; ent.forEach(e => { (porUni[e.u] = porUni[e.u] || []).push(e); });
+  const cuerpo = Object.entries(porUni).map(([u, lista]) => `<h2>${esc(mantUni(u))}</h2>` + lista.map(e => `<div class="reg">
+      <div class="cab"><span class="tp">${esc(e.t)}</span> <strong>${esc(e.titulo)}</strong> <span class="est">${esc(e.estado)}</span><span class="fh">${esc(fch(e.f))}</span></div>
+      ${e.quien ? `<div class="mu">${esc(e.t === 'Solicitud' ? 'Solicitó' : 'Reportó')}: ${esc(e.quien)}</div>` : ''}
+      ${e.det ? `<div class="tx">${esc(e.det)}</div>` : ''}
+      ${img(e.b, e.fotos) ? `<div class="fo">${img(e.b, e.fotos)}</div>` : ''}
+      ${e.sub.map(s => `<div class="sub"><strong>${esc(s.t)}</strong> · ${esc(s.por)} · ${esc(fch(s.f))}${s.nota ? `<div class="tx">${esc(s.nota)}</div>` : ''}${img(s.b, s.fotos) ? `<div class="fo">${img(s.b, s.fotos)}</div>` : ''}</div>`).join('')}
+      ${e.cierre ? `<div class="mu">Cierre: ${esc(fch(e.cierre))}</div>` : ''}</div>`).join('')).join('');
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Bitácora de mantenimiento — ${esc(nom)}</title><style>
+    body{font-family:Arial,sans-serif;font-size:12px;margin:24px;color:#111}h1{font-size:18px;margin:0 0 4px}h2{font-size:15px;margin:22px 0 8px;padding:4px 8px;background:#e8f1ea;border-left:5px solid #2e7d4f;break-after:avoid}p{margin:0 0 10px;color:#555}
+    .reg{border:1px solid #ccc;border-radius:6px;padding:8px 10px;margin-bottom:8px;break-inside:avoid}.cab{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fh{margin-left:auto;color:#555;font-size:11px}
+    .tp{background:#eee;padding:1px 6px;border-radius:4px;font-size:10px;text-transform:uppercase}.est{background:#e8f1ea;padding:1px 6px;border-radius:4px;font-size:11px}.mu{color:#555;font-size:11px;margin-top:3px}.tx{white-space:pre-wrap;margin-top:4px}
+    .sub{margin:6px 0 0 8px;padding-left:8px;border-left:3px solid #bbb;font-size:11px}.fo{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.fo img{width:150px;height:110px;object-fit:cover;border:1px solid #ccc;border-radius:4px}
+    @media print{body{margin:8mm}}</style></head><body>
+    <h1>Bitácora de mantenimiento — ${esc(nom)}</h1><p>BioAmbientalistik S.A. de C.V. · Periodo ${esc(ini)} al ${esc(fin)} · ${ent.length} registros · Generada el ${esc(fch(new Date().toISOString()))} por ${esc(currentUser.name || '')}</p>
+    ${omit ? `<p style="color:#b45309">Se omitieron ${omit} fotos para no saturar el documento; filtra por unidad o por un periodo más corto para verlas todas.</p>` : ''}${cuerpo}</body></html>`;
+  const url = URL.createObjectURL(new Blob([html], { type:'text/html;charset=utf-8' }));
+  const w = window.open(url, '_blank', 'noopener');
+  if (!w){ toast('El navegador bloqueó la ventana. Permite ventanas emergentes para este sitio.', 'error'); return; }
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
+  audit('descarga', `Bitácora de mantenimiento (${nom}) ${ini} a ${fin}`, 'b');
 }
 
 /* Lavados */
