@@ -4553,7 +4553,7 @@ async function cargarPerfilYActivarSesion(){
   document.getElementById('chat-widget-launcher').style.display = 'flex';
   document.getElementById('bell-widget-launcher').style.display = 'flex';
   renderBell(false);
-  chatIniciar(); vivoIniciar(); versionVigilar();
+  chatIniciar(); vivoIniciar(); versionVigilar(); limitarRolesPorJerarquia();
   document.getElementById('login-screen').style.display = 'none';
   const un=document.getElementById('sb-uname'); if(un) un.textContent = currentUser.name;
   const ur=document.getElementById('sb-urole'); if(ur) ur.textContent = ROLES[currentUser.role]?.label || currentUser.role;
@@ -4732,10 +4732,16 @@ async function toggleUsuario(id, activoActual){
 
 let _epUsuarioId = null;
 
+/* Jerarquía: RH solo asigna roles menores o RH; hacer Dirección (o tocar una cuenta de Dirección) es solo de Dirección. El servidor también lo exige. */
+function limitarRolesPorJerarquia(){
+  if (esDireccionReal()) return;
+  ['ep-role', 'aps-role', 'au-role'].forEach(id => { const o = document.querySelector('#' + id + ' option[value="direccion_ceo"]'); if (o) o.remove(); });
+}
 async function abrirEditarPerfil(id){
   if (!can('config')){ toast('Sin permiso','error'); return; }
   const { data: u, error } = await sb.from('profiles').select('*').eq('id', id).single();
   if (error || !u){ toast('Cuenta no encontrada','error'); return; }
+  if (u.role === 'direccion_ceo' && !esDireccionReal()){ toast('Solo Dirección puede modificar cuentas de Dirección', 'error'); return; }
   _epUsuarioId = id;
   document.getElementById('ep-resumen').innerHTML = `<strong>${esc(u.nombre)}</strong> · ${esc(u.correo_contacto||u.usuario)}`;
 
