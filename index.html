@@ -992,6 +992,7 @@ select.form-input option{background:var(--bg2)}
     <!-- CHAT FLOTANTE ESTILO MESSENGER — fijo, visible en toda la app -->
   <div id="chat-widget-launcher" onclick="toggleChatWidget()" style="display:none;position:fixed;bottom:16px;right:16px;width:48px;height:48px;border-radius:50%;background:var(--green);align-items:center;justify-content:center;cursor:pointer;z-index:500;box-shadow:0 4px 14px rgba(0,0,0,.35)">
     <svg fill="none" stroke="#0a0a0a" stroke-width="1.8" viewBox="0 0 16 16" style="width:20px;height:20px"><path d="M2 3h12v8H5l-3 3V3z"/></svg>
+    <span id="chat-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red,#d64545);color:#fff;font-size:10px;font-weight:800;border-radius:999px;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center"></span>
   </div>
   <div id="chat-widget-panel" style="display:none;position:fixed;bottom:72px;right:16px;width:280px;height:380px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:500;overflow:hidden;flex-direction:column">
     <div id="chat-widget-header" style="padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px">
@@ -1002,7 +1003,8 @@ select.form-input option{background:var(--bg2)}
     <div id="chat-contactos-list" class="ct-panel" style="flex:1;overflow-y:auto;padding:10px 12px"></div>
     <div id="chat-conversacion-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden">
       <div id="chat-mensajes" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;font-size:11px"></div>
-      <div style="padding:8px;border-top:1px solid var(--border);display:flex;gap:6px">
+      <div id="chat-estado" style="display:none;padding:8px 10px;border-top:1px solid var(--border);font-size:11px;line-height:1.5;color:var(--text2)"></div>
+      <div id="chat-compose" style="padding:8px;border-top:1px solid var(--border);display:flex;gap:6px">
         <input class="form-input" id="chat-input" placeholder="Mensaje..." style="flex:1;font-size:11px;padding:6px 8px" onkeydown="if(event.key==='Enter')enviarMensajeChat()">
         <button class="btn primary" onclick="enviarMensajeChat()" style="padding:6px 10px;font-size:11px">➤</button>
       </div>
@@ -4551,6 +4553,7 @@ async function cargarPerfilYActivarSesion(){
   document.getElementById('chat-widget-launcher').style.display = 'flex';
   document.getElementById('bell-widget-launcher').style.display = 'flex';
   renderBell(false);
+  chatIniciar();
   document.getElementById('login-screen').style.display = 'none';
   const un=document.getElementById('sb-uname'); if(un) un.textContent = currentUser.name;
   const ur=document.getElementById('sb-urole'); if(ur) ur.textContent = ROLES[currentUser.role]?.label || currentUser.role;
@@ -4609,7 +4612,7 @@ async function guardarCuestionarioBienvenida(){
 }
 
 function cerrarSesion(motivo){
-  try { ctDetener(); } catch(e){}
+  try { ctDetener(); chatDetener(); } catch(e){}
   _sesionActiva = false;
   sb.auth.signOut();
   closeAllModals();
@@ -4825,13 +4828,13 @@ async function registrarEvento(accion, modulo){
 /* ── Chat interno — widget flotante estilo Messenger, libre entre
    cuentas, censura server-side, guardado permanente para supervisión. ── */
 let _chatContactoActivo = null;
-let _chatCanalRealtime = null;
 let _chatWidgetAbierto = false;
 
 function toggleChatWidget(){
   _chatWidgetAbierto = !_chatWidgetAbierto;
   document.getElementById('chat-widget-panel').style.display = _chatWidgetAbierto ? 'flex' : 'none';
-  if (_chatWidgetAbierto && !_chatCanalRealtime) renderChat();
+  if (_chatWidgetAbierto){ if (!CHAT.canal) renderChat(); try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch(e){} }
+  if (!_chatWidgetAbierto && _chatContactoActivo) mostrarContactosChat();
 }
 
 function mostrarContactosChat(){
@@ -4842,15 +4845,97 @@ function mostrarContactosChat(){
   document.getElementById('chat-widget-title').textContent = 'Chat';
 }
 
-async function renderChat(){
-  await cargarDirectorioAvatares(); iniciarPresencia(); cargarCumpleanos(); pintarContactos();
-
-  if (_chatCanalRealtime) sb.removeChannel(_chatCanalRealtime);
-  _chatCanalRealtime = sb.channel('chat-'+currentUser.userId)
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes_chat', filter:`destinatario_id=eq.${currentUser.userId}` }, payload=>{
-      if (_chatContactoActivo && payload.new.remitente_id === _chatContactoActivo.id) pintarMensajeChat(payload.new);
+/* ── Estado del chat: mensajes sin leer, solicitudes de mensaje y avisos en vivo ── */
+const CHAT = { unread:{}, conex:{}, canal:null, timer:null };
+const chatNombre = id => (AV.dir[id] || {}).nombre || 'Alguien';
+function chatTotalSinLeer(){ return Object.values(CHAT.unread).reduce((a, n) => a + n, 0); }
+function chatSolicitudesPendientes(){ return Object.entries(CHAT.conex).filter(([, c]) => c.estado === 'pendiente' && c.destinatario_id === currentUser.userId).map(([id, c]) => ({ id, ...c })); }
+function chatPintarInsignias(){
+  const n = chatTotalSinLeer() + chatSolicitudesPendientes().length;
+  const b = document.getElementById('chat-badge');
+  if (b){ b.style.display = n ? 'flex' : 'none'; b.textContent = n > 99 ? '99+' : n; }
+  const base = document.title.replace(/^\(\d+\)\s*/, '');
+  document.title = (n ? '(' + n + ') ' : '') + base;
+  pintarContactos(true);
+  if (typeof renderBell === 'function' && !_bellWidgetAbierto) renderBell(false);
+}
+async function chatCargarEstado(){
+  if (!currentUser?.userId) return;
+  const uid = currentUser.userId;
+  const [cx, un] = await Promise.all([
+    sb.from('chat_conexiones').select('solicitante_id,destinatario_id,estado,decidido_por').then(r => r.data || [], () => []),
+    sb.from('mensajes_chat').select('remitente_id').eq('destinatario_id', uid).eq('leido', false).limit(1000).then(r => r.data || [], () => [])
+  ]);
+  CHAT.conex = {}; cx.forEach(c => { CHAT.conex[c.solicitante_id === uid ? c.destinatario_id : c.solicitante_id] = c; });
+  CHAT.unread = {}; un.forEach(m => { if (!_chatContactoActivo || _chatContactoActivo.id !== m.remitente_id || !_chatWidgetAbierto) CHAT.unread[m.remitente_id] = (CHAT.unread[m.remitente_id] || 0) + 1; });
+  chatPintarInsignias();
+  if (_chatContactoActivo) chatPintarEstadoConversacion();
+}
+function chatAviso(titulo, cuerpo){
+  toast(titulo + (cuerpo ? ': ' + cuerpo : ''), 'info');
+  try { const A = window.AudioContext || window.webkitAudioContext; if (A){ const c = new A(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; g.gain.value = .05; o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + .12); } } catch(e){}
+  try { if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification(titulo, { body: cuerpo || '' }); } catch(e){}
+}
+async function chatIniciar(){
+  if (!currentUser?.userId) return;
+  const uid = currentUser.userId;
+  await cargarDirectorioAvatares(); iniciarPresencia(); cargarCumpleanos();
+  await chatCargarEstado();
+  if (CHAT.canal) sb.removeChannel(CHAT.canal);
+  CHAT.canal = sb.channel('chat-' + uid)
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'mensajes_chat', filter:`destinatario_id=eq.${uid}` }, async payload => {
+      const m = payload.new, abierta = _chatWidgetAbierto && _chatContactoActivo && _chatContactoActivo.id === m.remitente_id;
+      if (abierta){ pintarMensajeChat(m); sb.from('mensajes_chat').update({ leido:true }).eq('id', m.id).then(() => {}, () => {}); return; }
+      CHAT.unread[m.remitente_id] = (CHAT.unread[m.remitente_id] || 0) + 1;
+      await chatCargarEstado();
+      const c = CHAT.conex[m.remitente_id];
+      if (c && c.estado === 'pendiente' && c.destinatario_id === uid) chatAviso(chatNombre(m.remitente_id) + ' quiere enviarte un mensaje', 'revisa tus solicitudes en el chat');
+      else chatAviso('Mensaje de ' + chatNombre(m.remitente_id), (m.contenido || '').slice(0, 80));
+    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'chat_conexiones', filter:`destinatario_id=eq.${uid}` }, () => chatCargarEstado())
+    .on('postgres_changes', { event:'*', schema:'public', table:'chat_conexiones', filter:`solicitante_id=eq.${uid}` }, payload => {
+      const c = payload.new;
+      if (c && c.estado === 'aceptada' && payload.eventType === 'UPDATE' && c.decidido_por && c.decidido_por !== uid) chatAviso(chatNombre(c.decidido_por) + ' aceptó tu solicitud', 'ya puedes escribirle');
+      chatCargarEstado();
     })
     .subscribe();
+  if (CHAT.timer) clearInterval(CHAT.timer);
+  CHAT.timer = setInterval(chatCargarEstado, 60000);
+}
+function chatDetener(){
+  if (CHAT.canal){ try { sb.removeChannel(CHAT.canal); } catch(e){} CHAT.canal = null; }
+  if (CHAT.timer){ clearInterval(CHAT.timer); CHAT.timer = null; }
+  CHAT.unread = {}; CHAT.conex = {};
+  const base = document.title.replace(/^\(\d+\)\s*/, ''); document.title = base;
+}
+async function chatResponder(id, accion){
+  const { error } = await sb.rpc('chat_responder', { p_otro:id, p_accion:accion });
+  if (error){ toast(error.message, 'error'); return; }
+  toast(accion === 'aceptar' ? 'Solicitud aceptada' : accion === 'rechazar' ? 'Solicitud rechazada' : accion === 'bloquear' ? 'Persona bloqueada' : 'Persona desbloqueada', accion === 'rechazar' || accion === 'bloquear' ? 'info' : 'success');
+  await chatCargarEstado();
+  if (_chatContactoActivo && _chatContactoActivo.id === id && (accion === 'rechazar' || accion === 'bloquear')) mostrarContactosChat();
+}
+function chatPintarEstadoConversacion(){
+  const id = _chatContactoActivo?.id; if (!id) return;
+  const est = document.getElementById('chat-estado'), comp = document.getElementById('chat-compose'), inp = document.getElementById('chat-input');
+  const c = CHAT.conex[id], yo = currentUser.userId;
+  let txt = '', bloquea = false;
+  if (esDireccionReal()) { txt = ''; }
+  else if (!c) txt = 'Tu primer mensaje se enviará como <strong>solicitud</strong>. Podrás seguir escribiendo cuando la acepten.';
+  else if (c.estado === 'pendiente' && c.destinatario_id === yo){ bloquea = true; txt = `<strong>${esc(_chatContactoActivo.nombre)}</strong> quiere enviarte un mensaje. ¿Aceptas?<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><button class="btn sm primary" onclick="chatResponder('${id}','aceptar')">Aceptar</button><button class="btn sm" onclick="chatResponder('${id}','rechazar')">Rechazar</button><button class="btn sm danger" onclick="chatResponder('${id}','bloquear')">Bloquear</button></div>`; }
+  else if (c.estado === 'pendiente'){ bloquea = true; txt = 'Tu solicitud fue enviada. Podrás seguir escribiendo cuando la acepten.'; }
+  else if (c.estado === 'rechazada' && c.decidido_por !== yo){ bloquea = true; txt = 'Tu solicitud fue enviada. Podrás seguir escribiendo cuando la acepten.'; }
+  else if (c.estado === 'rechazada') txt = 'Rechazaste a esta persona. Si le escribes, se acepta la conversación.';
+  else if (c.estado === 'bloqueada' && c.decidido_por === yo){ bloquea = true; txt = `Bloqueaste a esta persona.<div style="margin-top:6px"><button class="btn sm" onclick="chatResponder('${id}','desbloquear')">Desbloquear</button></div>`; }
+  else if (c.estado === 'bloqueada'){ bloquea = true; txt = 'No puedes enviar mensajes a esta persona por ahora.'; }
+  est.style.display = txt ? 'block' : 'none'; est.innerHTML = txt;
+  comp.style.display = bloquea ? 'none' : 'flex';
+  if (inp) inp.disabled = bloquea;
+}
+
+async function renderChat(){
+  await cargarDirectorioAvatares(); iniciarPresencia(); cargarCumpleanos(); pintarContactos();
+  if (!CHAT.canal) chatIniciar();
 }
 
 async function abrirConversacionChat(contactoId, contactoNombre){
@@ -4866,6 +4951,9 @@ async function abrirConversacionChat(contactoId, contactoNombre){
   cont.innerHTML = '';
   if (!error) (data||[]).forEach(m=>pintarMensajeChat(m));
   cont.scrollTop = cont.scrollHeight;
+  delete CHAT.unread[contactoId];
+  chatPintarEstadoConversacion();
+  chatPintarInsignias();
   await sb.from('mensajes_chat').update({ leido:true }).eq('destinatario_id', currentUser.userId).eq('remitente_id', contactoId).eq('leido', false);
 }
 
@@ -4887,8 +4975,9 @@ async function enviarMensajeChat(){
   const { data, error } = await sb.from('mensajes_chat').insert({
     remitente_id: currentUser.userId, destinatario_id: _chatContactoActivo.id, contenido: texto
   }).select().single();
-  if (error){ toast(error.message,'error'); return; }
+  if (error){ toast(error.message,'error'); await chatCargarEstado(); return; }
   pintarMensajeChat(data);
+  await chatCargarEstado();
 }
 
 /* ── Mi cuenta — configuración personal, disponible para cualquier cuenta ── */
@@ -11303,7 +11392,7 @@ function toggleBellWidget(){
   document.getElementById('bell-widget-panel').style.display = _bellWidgetAbierto ? 'block' : 'none';
   if (_bellWidgetAbierto) renderBell(true);
 }
-function bellIr(pg){ if (_bellWidgetAbierto) toggleBellWidget(); if (pg) nav(pg, null); }
+function bellIr(pg){ if (_bellWidgetAbierto) toggleBellWidget(); if (pg === 'chat'){ if (!_chatWidgetAbierto) toggleChatWidget(); mostrarContactosChat(); return; } if (pg) nav(pg, null); }
 const bellKey = () => 'bio_bell_visto_' + (currentUser ? currentUser.userId : '');
 function bellVisto(){ try { return localStorage.getItem(bellKey()) || ''; } catch(e){ return ''; } }
 function bellMarcarVisto(){ try { localStorage.setItem(bellKey(), new Date().toISOString()); } catch(e){} }
@@ -11326,6 +11415,11 @@ async function bellPendientes(){
     const { data } = await sb.from('reset_password').select('id').eq('estado', 'pendiente');
     const n = (data || []).length;
     add(n, n === 1 ? 'Una persona pide restablecer su contraseña' : n + ' personas piden restablecer su contraseña', 'configuracion');
+  }
+  if (typeof CHAT !== 'undefined'){
+    const ns = chatSolicitudesPendientes().length, nm = chatTotalSinLeer();
+    add(ns, ns === 1 ? 'Una solicitud de mensaje por responder' : ns + ' solicitudes de mensaje por responder', 'chat');
+    add(nm, nm === 1 ? 'Tienes un mensaje sin leer' : 'Tienes ' + nm + ' mensajes sin leer', 'chat');
   }
   if (caps().pages.includes('solicitudes')){
     const { data } = await sb.from('solicitudes_op').select('aprobador').eq('estatus', 'pendiente');
@@ -12375,9 +12469,17 @@ function ctContactosHtml(){
   const q = CT.q.trim().toLowerCase();
   const lista = Object.values(AV.dir).filter(u => u.id !== currentUser.userId && (!q || (u.nombre || '').toLowerCase().includes(q)))
     .sort((a, b) => (CT.online.has(b.id) - CT.online.has(a.id)) || (a.nombre || '').localeCompare(b.nombre || '', 'es'));
-  const filas = lista.map(u => `<div class="ct-row" onclick="abrirChatCon('${u.id}','${esc((u.nombre || '').replace(/'/g, ''))}')">
+  const sinLeer = id => CHAT.unread[id] || 0;
+  lista.sort((a, b) => (sinLeer(b.id) > 0) - (sinLeer(a.id) > 0));
+  const bloqueados = new Set(Object.entries(CHAT.conex).filter(([, c]) => c.estado === 'bloqueada' && c.decidido_por === currentUser.userId).map(([id]) => id));
+  const solicitudes = chatSolicitudesPendientes();
+  const reqHtml = solicitudes.length ? `<div class="ct-tit" style="color:var(--amber,#e0a100)">Solicitudes de mensajes (${solicitudes.length})</div>` + solicitudes.map(r => `<div class="ct-row" style="flex-wrap:wrap" onclick="abrirChatCon('${r.id}','${esc(chatNombre(r.id).replace(/'/g, ''))}')">
+      <span style="position:relative;display:inline-flex">${avatarHtml(r.id, chatNombre(r.id), 36)}</span>
+      <span class="ct-nom">${esc(chatNombre(r.id))}<div style="font-size:10px;color:var(--text3);font-weight:400">quiere enviarte un mensaje</div></span>
+      <span style="display:flex;gap:4px;width:100%;margin:4px 0 2px 46px" onclick="event.stopPropagation()"><button class="btn sm primary" onclick="chatResponder('${r.id}','aceptar')">Aceptar</button><button class="btn sm" onclick="chatResponder('${r.id}','rechazar')">Rechazar</button></span></div>`).join('') + '<div class="ct-sep"></div>' : '';
+  const filas = reqHtml + lista.filter(u => !bloqueados.has(u.id) && !solicitudes.some(r => r.id === u.id)).map(u => `<div class="ct-row" onclick="abrirChatCon('${u.id}','${esc((u.nombre || '').replace(/'/g, ''))}')">
       <span style="position:relative;display:inline-flex">${avatarHtml(u.id, u.nombre, 36)}${CT.online.has(u.id) ? '<span class="ct-dot"></span>' : ''}</span>
-      <span class="ct-nom">${esc(u.nombre || '')}</span></div>`).join('');
+      <span class="ct-nom" style="${sinLeer(u.id) ? 'font-weight:800' : ''}">${esc(u.nombre || '')}</span>${sinLeer(u.id) ? `<span class="bell-n" style="margin-left:auto;background:var(--green);color:#0a0a0a">${sinLeer(u.id)}</span>` : ''}</div>`).join('');
   return `<div class="ct-head"><div class="ct-tit" style="margin:0">Contactos</div>
       <button class="ct-ico" title="Buscar" onclick="CT.buscando=!CT.buscando;pintarContactos()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="width:15px;height:15px"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg></button></div>
     ${CT.buscando ? `<input class="form-input" id="ct-q" placeholder="Buscar contacto" value="${esc(CT.q)}" oninput="CT.q=this.value;ctRefrescarLista()" style="margin:0 0 8px">` : ''}
