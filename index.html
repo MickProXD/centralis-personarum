@@ -838,7 +838,7 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="sb-item" data-page="sites" onclick="nav('sites',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" viewBox="0 0 16 16"><path d="M1.8 14V2.5h2.6V7l3.4-2.2V7L11.2 4.8V7l3-2V14z"/><path d="M4.3 11h1.4M7.5 11h1.4M10.7 11h1.4"/></svg>
-      Sites/Sedes <span class="sb-bdg m" id="bdg-sites">0</span>
+      Sedes <span class="sb-bdg m" id="bdg-sites">0</span>
     </div>
     <div class="sb-item" data-page="asistencias" onclick="nav('asistencias',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="12" rx="1.5"/><path d="M1 6h14M5 2V1M11 2V1"/></svg>
@@ -1032,22 +1032,22 @@ select.form-input option{background:var(--bg2)}
     <div id="page-sites" class="page fadein">
       <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div style="flex:1">
-          <div style="font-family:var(--head);font-size:13px;font-weight:800;color:var(--text)">Sites/Sedes</div>
+          <div style="font-family:var(--head);font-size:13px;font-weight:800;color:var(--text)">Sedes</div>
           <div style="font-size:11px;color:var(--text3)" id="sites-sub">Cada supervisor administra sus propias carpetas de inplant</div>
         </div>
-        <button class="btn primary" data-cap="createSite" onclick="openSite()"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>Crear Site</button>
+        <button class="btn primary" data-cap="createSite" onclick="openSite()"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>Crear sede</button>
       </div>
       <div id="sites-grid"></div>
       <div class="panel" id="panel-sedes" style="display:none;margin-top:16px">
         <div class="ph"><div class="ph-title">Sedes de asistencia — ubicación, red, foto y QR</div></div>
-        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada Site y cada Bio-Nave es una sede con su propio QR. Para dar de alta una sede, ponte físicamente en el lugar, conectado a su Wi-Fi, y usa los botones de ubicación actual y red actual. Sube también una foto del lugar por fuera. El registro de asistencia solo se acepta dentro del radio y desde las redes indicadas.</div>
+        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada sede y cada Bio-Nave es una sede con su propio QR. Para dar de alta una sede, ponte físicamente en el lugar, conectado a su Wi-Fi, y usa los botones de ubicación actual y red actual. Sube también una foto del lugar por fuera. El registro de asistencia solo se acepta dentro del radio y desde las redes indicadas.</div>
         <div id="cfg-sedes-list" style="padding:6px 14px 12px"></div>
       </div>
     </div>
 
     <!-- DETALLE DE SITE -->
     <div id="page-sitedetail" class="page fadein">
-      <div class="row" style="margin-bottom:14px"><button class="btn" onclick="nav('sites',null)">← Sites</button></div>
+      <div class="row" style="margin-bottom:14px"><button class="btn" onclick="nav('sites',null)">← Sedes</button></div>
       <div class="panel" style="padding:18px;display:flex;align-items:flex-start;gap:16px;margin-bottom:14px">
         <div style="width:46px;height:46px;border-radius:var(--r);background:var(--green3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg fill="none" stroke="var(--green)" stroke-width="1.5" viewBox="0 0 22 22" style="width:22px;height:22px"><path d="M3 7a1 1 0 011-1h4l2 2h8a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V7z"/></svg>
@@ -1065,12 +1065,12 @@ select.form-input option{background:var(--bg2)}
         <div id="sd-mapa" style="height:220px;border-radius:8px;overflow:hidden"></div>
       </div>
       <div class="metrics c3" style="margin-bottom:14px">
-        <div class="mcard g"><div class="mcard-lbl">Personal en este Site</div><div class="mcard-val" id="sd-tot-colab">0</div><div class="mcard-sub">colaboradores activos</div></div>
+        <div class="mcard g"><div class="mcard-lbl">Personal en esta sede</div><div class="mcard-val" id="sd-tot-colab">0</div><div class="mcard-sub">colaboradores activos</div></div>
         <div class="mcard b"><div class="mcard-lbl">Asistencia hoy</div><div class="mcard-val" id="sd-asis-hoy">0%</div><div class="mcard-sub">presentes registrados</div></div>
         <div class="mcard a"><div class="mcard-lbl">Documentos pendientes</div><div class="mcard-val" id="sd-docs-pend">0</div><div class="mcard-sub">por completar</div></div>
       </div>
       <div class="panel">
-        <div class="ph"><div class="ph-title">Personal del Site</div><button class="ph-btn ml" onclick="nav('asistencias',null)">Ir a asistencias →</button></div>
+        <div class="ph"><div class="ph-title">Personal de la sede</div><button class="ph-btn ml" onclick="nav('asistencias',null)">Ir a asistencias →</button></div>
         <div id="sd-colab-body"></div>
       </div>
     </div>
@@ -1116,14 +1116,14 @@ select.form-input option{background:var(--bg2)}
       <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <select id="filter-puesto" onchange="renderColab()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-family:var(--head);font-size:11px;font-weight:700;outline:none"><option value="">Todos los puestos</option><option>Chofer</option><option>Auxiliar</option><option>Supervisor</option><option>Administrativo</option></select>
         <select id="filter-estatus" onchange="renderColab()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-family:var(--head);font-size:11px;font-weight:700;outline:none"><option value="">Todos</option><option value="activo">Activos</option><option value="baja">Bajas</option></select>
-        <select id="filter-site" onchange="renderColab()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-family:var(--head);font-size:11px;font-weight:700;outline:none"><option value="">Todos los Sites</option></select>
+        <select id="filter-site" onchange="renderColab()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-family:var(--head);font-size:11px;font-weight:700;outline:none"><option value="">Todas las sedes</option></select>
         <div class="ml" style="display:flex;gap:8px">
           <button class="btn primary" data-min-role="supervisor" onclick="openModal('modal-alta-colab')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>Alta colaborador</button>
           <button class="btn danger" data-min-role="admintotal" onclick="openModal('modal-baja-colab')"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 11 11"><path d="M2 9l7-7M9 9L2 2"/></svg>Baja colaborador</button>
         </div>
       </div>
       <div class="panel" id="colab-panel">
-        <div class="ctbl-hdr"><div></div><div></div><div class="col-h">Colaborador</div><div class="col-h">Puesto</div><div class="col-h">Site</div><div class="col-h">Unidad</div><div class="col-h">Docs</div><div class="col-h">Estatus</div></div>
+        <div class="ctbl-hdr"><div></div><div></div><div class="col-h">Colaborador</div><div class="col-h">Puesto</div><div class="col-h">Sede</div><div class="col-h">Unidad</div><div class="col-h">Docs</div><div class="col-h">Estatus</div></div>
         <div id="colab-body"></div>
       </div>
     </div>
@@ -1280,7 +1280,7 @@ select.form-input option{background:var(--bg2)}
       <div id="asis-firma-estado"></div>
       <div class="panel" id="asis-qr-panel" style="display:none;margin-bottom:14px">
         <div class="ph"><div class="ph-title">QR de asistencia por sede</div></div>
-        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada Site y cada Bio-Nave tiene su propio QR. Imprímelo y colócalo en la entrada de la sede.</div>
+        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada sede y cada Bio-Nave tiene su propio QR. Imprímelo y colócalo en la entrada de la sede.</div>
         <div id="asis-qr-list" style="padding:4px 14px 12px;display:flex;flex-wrap:wrap;gap:8px"></div>
       </div>
       <div class="row" style="margin-bottom:14px;flex-wrap:wrap;gap:8px">
@@ -1768,21 +1768,26 @@ select.form-input option{background:var(--bg2)}
   <div class="modal">
     <div class="modal-head">
       <svg fill="none" stroke="var(--green)" stroke-width="1.5" viewBox="0 0 16 16" style="width:14px;height:14px"><path d="M2 5a1 1 0 011-1h3l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V5z"/></svg>
-      <div class="modal-title" id="modal-site-title">Crear Site</div>
+      <div class="modal-title" id="modal-site-title">Crear sede</div>
       <button class="modal-close" onclick="closeModal('modal-site')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </div>
     <div class="modal-body">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:14px">El Site funciona como carpeta operativa: agrupa al personal, sus asistencias y documentos de esa ubicación. Quedas registrado como responsable.</div>
-      <label class="form-lbl req">Nombre del Site</label>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px">La sede funciona como carpeta operativa: agrupa al personal, sus asistencias y documentos de esa ubicación. Quedas registrado como responsable.</div>
+      <label class="form-lbl req">Nombre de la sede</label>
       <input class="form-input" id="site-nombre" placeholder="Ej. ML, Estafeta, Galerías, Naves Operativas...">
       <label class="form-lbl">Dirección</label>
       <input class="form-input" id="site-direccion" placeholder="Dirección física del inplant">
       <label class="form-lbl">Tipo</label>
       <select class="form-input" id="site-tipo"><option>Inplant</option><option>Cliente</option><option>Centro de transferencia</option><option>Oficina</option><option>Otro</option></select>
+      <div id="site-ger-wrap" style="display:none;margin-top:6px">
+        <label class="form-lbl">Gerentes Operativos con acceso a esta sede</label>
+        <div id="site-ger-list" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px"></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">Quien esté marcado ve esta sede y puede dar de alta y gestionar a su personal. Quitar la marca le retira el acceso.</div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn" onclick="closeModal('modal-site')">Cancelar</button>
-      <button class="btn primary" onclick="guardarSite()">Guardar Site</button>
+      <button class="btn primary" onclick="guardarSite()">Guardar sede</button>
     </div>
   </div>
 </div>
@@ -1863,7 +1868,7 @@ select.form-input option{background:var(--bg2)}
       <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:12px" id="firma-ref">—</div>
       <div class="banner bl-blue" style="margin-bottom:12px">
         <svg fill="none" stroke="var(--blue)" stroke-width="1.5" viewBox="0 0 16 16" style="flex-shrink:0"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5M8 11h.01"/></svg>
-        <div class="banner-txt" style="font-size:10.5px;line-height:1.5">Al firmar, el supervisor verifica y da fe de que las asistencias capturadas para esta semana y este Site son correctas. La semana quedará cerrada.</div>
+        <div class="banner-txt" style="font-size:10.5px;line-height:1.5">Al firmar, el supervisor verifica y da fe de que las asistencias capturadas para esta semana y esta sede son correctas. La semana quedará cerrada.</div>
       </div>
       <label class="form-lbl">Firma del supervisor</label>
       <div class="firma-wrap" id="firma-wrap"><canvas id="firma-pad" class="firma-pad" width="440" height="160"></canvas></div>
@@ -2461,9 +2466,9 @@ select.form-input option{background:var(--bg2)}
       </div>
       <div class="grid2">
         <div>
-          <label class="form-lbl req">Site (carpeta operativa)</label>
+          <label class="form-lbl req">Sede (carpeta operativa)</label>
           <select class="form-input" id="ac-site"></select>
-          <div class="form-err" id="err-site">Selecciona el Site al que pertenece este colaborador</div>
+          <div class="form-err" id="err-site">Selecciona la sede a la que pertenece este colaborador</div>
         </div>
         <div id="ac-bodega-wrap">
           <label class="form-lbl">Bodega / Encierro <span style="font-weight:400;color:var(--text3)">(solo choferes)</span></label>
@@ -3834,20 +3839,22 @@ async function urlFirmadaStorage(bucket, path, segundos = 60){
    pedir todo de nuevo en cada render. ── */
 async function cargarDatosSupabase(){
   const desde = new Date(); desde.setDate(desde.getDate()-60);
-  const [sitesR, bnR, colR, uniR, celR, asisR] = await Promise.all([
+  const [sitesR, bnR, colR, uniR, celR, asisR, sgR] = await Promise.all([
     sb.from('sites').select('*').order('nombre'),
     sb.from('bio_naves').select('*').order('nombre'),
     sb.from('colaboradores').select('*').order('nombre'),
     sb.from('unidades').select('id,bak,niv,placas,marca,modelo,anio,tipo,jurisdiccion,bio_nave_id,estatus,chofer_id').order('bak'),
     sb.from('equipos_moviles').select('*').order('cel_economico'),
-    sb.from('asistencias').select('*').gte('fecha', desde.toISOString().split('T')[0])
+    sb.from('asistencias').select('*').gte('fecha', desde.toISOString().split('T')[0]),
+    sb.from('site_gerentes').select('site_id,user_id')
   ]);
-  if (sitesR.error) toast('Error cargando Sites: '+sitesR.error.message,'error');
+  if (sitesR.error) toast('Error cargando sedes: '+sitesR.error.message,'error');
   if (bnR.error) toast('Error cargando Bio-Naves: '+bnR.error.message,'error');
   if (colR.error) toast('Error cargando Personal: '+colR.error.message,'error');
   if (uniR.error) toast('Error cargando Flota: '+uniR.error.message,'error');
   if (celR.error) toast('Error cargando Equipos: '+celR.error.message,'error');
   if (asisR.error) toast('Error cargando Asistencias: '+asisR.error.message,'error');
+  DB.siteGerentes = sgR.data || [];
   DB.sites = (sitesR.data||[]).map(mapSiteRow);
   DB.bodegas = (bnR.data||[]).map(mapBioNaveRow);
   DB.colaboradores = (colR.data||[]).map(mapColabRow);
@@ -4105,9 +4112,10 @@ function canDo(minRole){
 function puedeVerSite(site){
   const s = caps().sites;
   if (s === 'all' || s === 'all_view') return true;
-  if (s === 'own') return site.ownerId === currentUser.userId;
+  if (s === 'own') return site.ownerId === currentUser.userId || esGerenteDeSede(site.id);
   return false;
 }
+function esGerenteDeSede(siteId){ return (DB.siteGerentes||[]).some(g => g.site_id === siteId && g.user_id === currentUser.userId); }
 function puedeEditarSite(site){
   const s = caps().sites;
   if (s === 'all') return true;
@@ -4115,7 +4123,7 @@ function puedeEditarSite(site){
   return false; // all_view (RH) no edita ajustes del site
 }
 function sitesVisibles(){ return DB.sites.filter(puedeVerSite); }
-function esMiSite(siteId){ const s = DB.sites.find(s=>s.id===siteId); return !!(s && s.ownerId===currentUser.userId); }
+function esMiSite(siteId){ const s = DB.sites.find(s=>s.id===siteId); return !!(s && (s.ownerId===currentUser.userId || esGerenteDeSede(siteId))); }
 
 // ─── Scoping de personal ───
 function puedeVerColab(c){
@@ -4179,7 +4187,7 @@ const VISTAS = [
   { role:'administracion', t:'Gerente Administrativo',    d:'Finanzas completas: aprueba pagos, proveedores, presupuestos y calendario.' },
   { role:'administrativo', area:'finanzas',  t:'Administrativo · Finanzas', d:'Captura facturas y solicitudes; da seguimiento a pagos. Calendario en lectura.' },
   { role:'administrativo', area:'operativa', t:'Administrativo · Operativa', d:'Consulta flota, equipos, mantenimiento e inventario en solo lectura.' },
-  { role:'supervisor',     t:'Gerente Operativo',         d:'Sites, personal de sus sedes, flota, mantenimiento e inventario.' },
+  { role:'supervisor',     t:'Gerente Operativo',         d:'Sedes, personal de sus sedes, flota, mantenimiento e inventario.' },
   { role:'she',            t:'SHE · Seguridad y Ambiente', d:'Reportes de seguridad con semáforo, avisos, alertas de caducidad y solicitudes de gasto.' },
   { role:'monitoreo',      t:'Monitoreo',                 d:'Flota, documentos y equipos. Sin acceso a personal.' },
   { role:'mantenimiento',  t:'Mantenimiento',             d:'Solo solicitudes de mantenimiento aprobadas: avance por etapas e informes de reparación.' },
@@ -5524,7 +5532,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sites/Sedes', sitedetail:'Site', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score' };
+  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sedes', sitedetail:'Sede', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score' };
   if (currentUser.role === 'chofer'){ titles.flota = 'Mi unidad'; titles.unidad = 'Mi unidad'; }
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
@@ -5840,7 +5848,7 @@ function renderSites(){
   }
   if (lista.length === 0){
     grid.className = '';
-    grid.innerHTML = `<div class="panel"><div class="empty" style="padding:40px"><svg fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 40 40"><path d="M5 12a2 2 0 012-2h8l4 4h14a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V12z"/></svg><div class="empty-title">Sin Sites creados</div><div class="empty-sub">${can('createSite')?'Crea tu primer Site para registrar personal, asistencias y documentos de esa ubicación.':'Aún no hay carpetas de Site con personal registrado.'}</div>${can('createSite')?'<button class="btn primary" style="margin-top:14px" onclick="openSite()">Crear Site</button>':''}</div></div>`;
+    grid.innerHTML = `<div class="panel"><div class="empty" style="padding:40px"><svg fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 40 40"><path d="M5 12a2 2 0 012-2h8l4 4h14a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V12z"/></svg><div class="empty-title">Sin sedes creadas</div><div class="empty-sub">${can('createSite')?'Crea tu primera sede para registrar personal, asistencias y documentos de esa ubicación.':'Aún no hay sedes con personal registrado.'}</div>${can('createSite')?'<button class="btn primary" style="margin-top:14px" onclick="openSite()">Crear sede</button>':''}</div></div>`;
     return;
   }
   grid.className = 'sites-grid';
@@ -5870,42 +5878,69 @@ function contarDocsPendientesSite(siteId){
   return n;
 }
 
-function openSite(){
-  if (!can('createSite')){ toast('Tu rol no puede crear Sites','error'); return; }
+async function openSite(){
+  if (!can('createSite')){ toast('Tu rol no puede crear sedes','error'); return; }
   editingSiteId = null;
-  document.getElementById('modal-site-title').textContent = 'Crear Site';
+  document.getElementById('modal-site-title').textContent = 'Crear sede';
   document.getElementById('site-nombre').value = '';
   document.getElementById('site-direccion').value = '';
   document.getElementById('site-tipo').value = 'Inplant';
+  await siteGerentesPoblar(null);
   openModal('modal-site');
+}
+
+/* Gerentes Operativos con acceso a una sede (solo Dirección los asigna) */
+async function siteGerentesPoblar(siteId){
+  const wrap = document.getElementById('site-ger-wrap'), lista = document.getElementById('site-ger-list');
+  if (!wrap || !lista) return;
+  if (!esDireccionReal()){ wrap.style.display = 'none'; return; }
+  const [pr, ar] = await Promise.all([sb.from('profiles').select('id,nombre').eq('role','supervisor').eq('activo', true).order('nombre'), siteId ? sb.from('site_gerentes').select('user_id').eq('site_id', siteId) : Promise.resolve({ data:[] })]);
+  const marcados = new Set((ar.data||[]).map(x => x.user_id));
+  wrap.style.display = '';
+  lista.innerHTML = (pr.data||[]).map(g => `<label style="display:flex;gap:8px;align-items:center;padding:4px 0;cursor:pointer"><input type="checkbox" class="site-ger-chk" value="${esc(g.id)}" ${marcados.has(g.id) ? 'checked' : ''}> ${esc(g.nombre)}</label>`).join('') || '<div style="color:var(--text3)">No hay Gerentes Operativos activos.</div>';
+}
+async function siteGerentesGuardar(siteId){
+  if (!esDireccionReal() || document.getElementById('site-ger-wrap')?.style.display === 'none') return '';
+  const nuevos = new Set([...document.querySelectorAll('.site-ger-chk:checked')].map(x => x.value));
+  const { data: act, error: e0 } = await sb.from('site_gerentes').select('user_id').eq('site_id', siteId);
+  if (e0) return e0.message;
+  const actuales = new Set((act||[]).map(x => x.user_id));
+  const alta = [...nuevos].filter(u => !actuales.has(u)).map(u => ({ site_id:siteId, user_id:u, asignado_por:currentUser.userId }));
+  const baja = [...actuales].filter(u => !nuevos.has(u));
+  if (alta.length){ const { error } = await sb.from('site_gerentes').insert(alta); if (error) return error.message; }
+  if (baja.length){ const { error } = await sb.from('site_gerentes').delete().eq('site_id', siteId).in('user_id', baja); if (error) return error.message; }
+  if (alta.length || baja.length) await audit('site', `Acceso de Gerentes a la sede actualizado (+${alta.length} / -${baja.length})`, 'a');
+  return '';
 }
 
 async function guardarSite(){
   const nombre = document.getElementById('site-nombre').value.trim();
   const direccion = document.getElementById('site-direccion').value.trim();
   const tipo = document.getElementById('site-tipo').value;
-  if (!nombre){ toast('El nombre del Site es obligatorio','error'); return; }
+  if (!nombre){ toast('El nombre de la sede es obligatorio','error'); return; }
   if (editingSiteId){
     const { error } = await sb.from('sites').update({ nombre, direccion, tipo, lat: null, lng: null }).eq('id', editingSiteId);
     if (error){ toast(error.message,'error'); return; }
-    await audit('site', `Site actualizado: <strong>${esc(nombre)}</strong>`, 'b');
+    const eg = await siteGerentesGuardar(editingSiteId); if (eg){ toast(eg,'error'); return; }
+    await audit('site', `Sede actualizada: <strong>${esc(nombre)}</strong>`, 'b');
     editingSiteId = null;
   } else {
-    const { error } = await sb.from('sites').insert({ nombre, direccion, tipo, owner_id: currentUser.userId });
+    const { data: nueva, error } = await sb.from('sites').insert({ nombre, direccion, tipo, owner_id: currentUser.userId }).select('id').single();
     if (error){ toast(error.message,'error'); return; }
-    await audit('site', `Site creado: <strong>${esc(nombre)}</strong>`, 'g');
+    const eg = await siteGerentesGuardar(nueva.id); if (eg){ toast(eg,'error'); return; }
+    await audit('site', `Sede creada: <strong>${esc(nombre)}</strong>`, 'g');
   }
   closeModal('modal-site');
   await cargarDatosSupabase();
   renderSites(); updateBadges();
-  toast('Site guardado','success');
+  toast('Sede guardada','success');
 }
 
 function abrirSite(id){
   currentSiteId = Number(id);
   const s = DB.sites.find(s=>s.id===currentSiteId);
-  if (!s){ toast('Site no encontrado','error'); return; }
-  if (!puedeVerSite(s)){ toast('No tienes acceso a este Site','error'); return; }
+  if (!s){ toast('Sede no encontrada','error'); return; }
+  if (!puedeVerSite(s)){ toast('No tienes acceso a esta sede','error'); return; }
   document.getElementById('sd-nombre').textContent = s.nombre;
   document.getElementById('sd-meta').textContent = `${s.direccion||'Sin dirección'} · ${s.tipo||'Inplant'} · Responsable: ${s.owner||'—'}`;
   document.getElementById('sd-edit-btn').style.display = puedeEditarSite(s) ? 'inline-flex' : 'none';
@@ -5968,7 +6003,7 @@ async function renderSiteDetail(){
   document.getElementById('sd-asis-hoy').textContent = personal.length ? Math.round(conReg/personal.length*100)+'%' : '0%';
   const body = document.getElementById('sd-colab-body');
   if (personal.length === 0){
-    body.innerHTML = '<div class="empty" style="padding:30px"><div class="empty-sub">Sin personal en este Site. Usa "Agregar personal" para registrar colaboradores aquí.</div></div>';
+    body.innerHTML = '<div class="empty" style="padding:30px"><div class="empty-sub">Sin personal en esta sede. Usa "Agregar personal" para registrar colaboradores aquí.</div></div>';
     return;
   }
   body.innerHTML = personal.map(c=>{
@@ -5981,14 +6016,15 @@ async function renderSiteDetail(){
   }).join('');
 }
 
-function editarSiteActual(){
+async function editarSiteActual(){
   const s = DB.sites.find(s=>s.id===currentSiteId);
   if (!s || !puedeEditarSite(s)) return;
   editingSiteId = s.id;
-  document.getElementById('modal-site-title').textContent = 'Editar Site';
+  document.getElementById('modal-site-title').textContent = 'Editar sede';
   document.getElementById('site-nombre').value = s.nombre;
   document.getElementById('site-direccion').value = s.direccion||'';
   document.getElementById('site-tipo').value = s.tipo||'Inplant';
+  await siteGerentesPoblar(s.id);
   openModal('modal-site');
 }
 
@@ -6065,7 +6101,7 @@ async function renderPermisos(){
     const rows = choferes.map(c=>{
       const doc = DB.documentos[`colab-${c.id}-Licencia de conducir`];
       const site = DB.sites.find(s=>s.id===c.siteId);
-      return { entidad:c.nombre, sub:`Chofer · ${site?site.nombre:'Sin site'}`, tipo:'Licencia de conducir', dias: doc?diasHasta(doc.vigencia):null, tiene:!!doc };
+      return { entidad:c.nombre, sub:`Chofer · ${site?site.nombre:'Sin sede'}`, tipo:'Licencia de conducir', dias: doc?diasHasta(doc.vigencia):null, tiene:!!doc };
     });
     licBody.innerHTML = rows.length ? permisoRows(rows) : emptyPermiso('Sin choferes activos');
   }
@@ -6386,7 +6422,7 @@ function poblarSelectsColab(){
   const siteEl = document.getElementById('ac-site');
   if (siteEl){
     const sites = sitesVisibles();
-    siteEl.innerHTML = '<option value="">— Seleccionar Site —</option>' +
+    siteEl.innerHTML = '<option value="">— Seleccionar sede —</option>' +
       sites.map(s=>`<option value="${s.id}">${esc(s.nombre)}${s.tipo?' · '+esc(s.tipo):''}</option>`).join('');
   }
   const bodEl = document.getElementById('ac-bodega');
@@ -6778,7 +6814,7 @@ function renderColab(){
   const fp = (document.getElementById('filter-puesto')||{}).value || '';
   const fe = (document.getElementById('filter-estatus')||{}).value || '';
   const fb = (document.getElementById('filter-site')||{}).value || '';
-  // Scope real: supervisor solo ve colaboradores de sus propios Sites
+  // Scope real: supervisor solo ve colaboradores de sus propias sedes
   let list = colaboradoresVisibles().filter(c => {
     if (fp && c.puesto !== fp) return false;
     if (fe && c.estatus !== fe) return false;
@@ -6815,7 +6851,7 @@ function renderColab(){
       <div><div class="av g" style="${c.estatus==='baja'?'opacity:.4':''}">${ini}</div></div>
       <div><div class="cname" style="${c.estatus==='baja'?'opacity:.4':''}" onclick="abrirExpedienteColab('${c.id}')">${esc(c.nombre)}</div><div class="cnum">BA-${String(c.id).padStart(4,'0')}</div></div>
       <div class="ccell">${esc(c.puesto)}</div>
-      <div class="ccell">${site?esc(site.nombre):'<span style="color:var(--text3)">Sin Site</span>'}</div>
+      <div class="ccell">${site?esc(site.nombre):'<span style="color:var(--text3)">Sin sede</span>'}</div>
       <div class="ccell">${u?esc(u.bak):'—'}</div>
       <div><span class="tag ${docsOk.color}">${docsOk.label}</span></div>
       <div><span class="tag ${c.estatus==='activo'?'g':'r'}">${c.estatus}</span></div>
@@ -6829,7 +6865,7 @@ function poblarFiltroSitePersonal(){
   const sel = document.getElementById('filter-site');
   if (!sel) return;
   const valorActual = sel.value;
-  sel.innerHTML = '<option value="">Todos los Sites</option>' +
+  sel.innerHTML = '<option value="">Todas las sedes</option>' +
     sitesVisibles().map(s=>`<option value="${s.id}">${esc(s.nombre)}</option>`).join('');
   sel.value = valorActual;
 }
@@ -8501,7 +8537,7 @@ async function renderFirmaEstado(){
 
 async function renderAsistencias(){
   renderQrSedesAsis();
-  // Scope real: supervisor solo marca/ve asistencias de colaboradores de sus propios Sites
+  // Scope real: supervisor solo marca/ve asistencias de colaboradores de sus propias sedes
   const activos = colaboradoresVisibles().filter(c=>c.estatus==='activo');
   const dias = diasDeSemana(currentSemana);
   const hoy = new Date(); hoy.setHours(0,0,0,0);
@@ -12540,7 +12576,7 @@ async function renderSedesConfig(){
         <button class="btn sm" onclick="verQrSede('${n.id}','${esc(n.nombre)}')">Ver QR</button>
         <button class="btn sm primary" onclick="guardarSede('${n.id}','${esc(n.nombre)}','${n.tipo}')">Guardar</button>
       </div></div>`;
-  }).join('') || '<div class="empty-sub">Sin Sites ni Bio-Naves registrados</div>';
+  }).join('') || '<div class="empty-sub">Sin sedes ni Bio-Naves registrados</div>';
 
   cont.querySelectorAll('[data-foto]').forEach(el => { if (el.dataset.foto) pintarFotoSede(el, el.dataset.foto); });
 }
@@ -12569,7 +12605,7 @@ async function renderQrSedesAsis(){
   if(!p||!l) return;
   if(!['rh','direccion_ceo'].includes(currentUser.role)){ p.style.display='none'; return; }
   const [{data:sites},{data:naves}]=await Promise.all([ sb.from('sites').select('id,nombre').order('nombre'), sb.from('bio_naves').select('id,nombre').order('nombre') ]);
-  const items=[...(sites||[]).map(x=>({...x,et:'Site'})),...(naves||[]).map(x=>({...x,et:'Bio-Nave'}))];
+  const items=[...(sites||[]).map(x=>({...x,et:'Sede'})),...(naves||[]).map(x=>({...x,et:'Bio-Nave'}))];
   p.style.display= items.length?'block':'none';
   l.innerHTML=items.map(n=>`<button class="btn sm" onclick="verQrSede('${n.id}','${esc(n.nombre)}')">${esc(n.nombre)} <span class="tag m" style="margin-left:6px">${n.et}</span></button>`).join('');
 }
@@ -13027,7 +13063,7 @@ const DBA = (() => {
   function crearSite(datos){
     const s = { id: nextId('siteSeq'), ...datos, owner: currentUser.name, ts: new Date().toISOString() };
     DB.sites.push(s);
-    commit('sites', `Creación de Site <strong>${esc(s.nombre)}</strong>`, 'g');
+    commit('sites', `Creación de sede <strong>${esc(s.nombre)}</strong>`, 'g');
     return s;
   }
 
@@ -13035,7 +13071,7 @@ const DBA = (() => {
     const s = getSite(id);
     if (!s) return null;
     Object.assign(s, datos);
-    commit('sites', `Actualización de Site <strong>${esc(s.nombre)}</strong>`, 'a');
+    commit('sites', `Actualización de sede <strong>${esc(s.nombre)}</strong>`, 'a');
     return s;
   }
 
