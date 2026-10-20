@@ -4696,6 +4696,7 @@ async function guardarUsuario(){
   if (!usuario || usuario.length<3) return fail('Usuario: mínimo 3 caracteres');
   if (!/^[a-z0-9._-]+$/.test(usuario)) return fail('Usuario: solo minúsculas, números, punto, guion');
 
+  if (role === 'chofer' && !leerCamposRol('au').colaborador_id) return fail('Elige el colaborador (expediente) de este operativo. Sin ese vínculo no verá su ruta ni su unidad.');
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
     body: { usuario, nombre, correo, role, ...leerCamposRol('au') },
@@ -6823,7 +6824,10 @@ async function abrirAprobarSolicitud(id){
   [...selRol.options].forEach(o => { o.hidden = soloOp && o.value !== 'chofer'; o.disabled = soloOp && o.value !== 'chofer'; });
   selRol.value = soloOp || data.tipo_cuenta === 'operativo' ? 'chofer' : 'supervisor';
   selRol.disabled = soloOp;
-  camposRol('aps');
+  await camposRol('aps');
+  const norm = t => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const par = (DB.colaboradores || []).filter(c => norm(c.nombre) === norm(data.nombre));
+  if (par.length === 1) document.getElementById('aps-colab').value = par[0].id;
   document.getElementById('err-aps').classList.remove('show');
   openModal('modal-aprobar-solicitud');
 }
@@ -6835,6 +6839,7 @@ async function aprobarSolicitud(){
   const err = document.getElementById('err-aps');
   err.classList.remove('show');
   const fail = msg => { err.textContent = msg; err.classList.add('show'); };
+  if (role === 'chofer' && !leerCamposRol('aps').colaborador_id) return fail('Elige el colaborador (expediente) de este operativo. Sin ese vínculo no verá su ruta ni su unidad.');
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
     body: { solicitud_id: s.id, role, ...leerCamposRol('aps') },
@@ -10877,7 +10882,7 @@ function mantNuevo(){
   const yo = currentUser.colaboradorId;
   const propias = MANT.unidades.filter(u => u.chofer_id && u.chofer_id === yo);
   const lista = (propias.length && !opEsDireccion()) ? propias : MANT.unidades;
-  if (!lista.length){ toast('No tienes una unidad asignada. Pide a tu Gerente Operativo que te la asigne.', 'error'); return; }
+  if (!lista.length){ toast(!yo && !opEsDireccion() ? 'Tu cuenta todavía no está ligada a tu expediente de Personal, por eso no ves tu ruta ni tu unidad. Avisa a tu Gerente Operativo o a RH para que la liguen.' : 'No tienes una unidad asignada. Pide a tu Gerente Operativo que te la asigne.', 'error'); return; }
   const sel = (id) => `<select class="form-input mant-it" data-k="${id}" style="margin:0;width:150px"><option value="ok" selected>Bien</option><option value="atencion">Atención</option><option value="falla">Falla</option></select>`;
   const grupos = MANT_GRUPOS.map(([t, its]) => `<div style="font-family:var(--head);font-size:11px;font-weight:800;margin:12px 0 6px;color:var(--text2)">${esc(t)}</div>` +
     its.map(([k, n]) => `<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${esc(n)}</span>${sel(k)}</div>`).join('')).join('');
@@ -12203,7 +12208,8 @@ function rtPintar(){
     <div class="mcard r"><div class="mcard-lbl">No realizados</div><div class="mcard-val">${nor}</div><div class="mcard-sub">Con motivo registrado</div></div>
   </div>`;
   if (!grupos.length){
-    cont.innerHTML = `<div class="panel"><div class="empty" style="padding:30px"><div class="empty-title" style="font-size:12px">Sin servicios programados</div><div class="empty-sub">No hay órdenes de servicio para este día.</div></div></div>`;
+    const sinLiga = rtEsOperativo() && !currentUser.colaboradorId;
+    cont.innerHTML = `<div class="panel"><div class="empty" style="padding:30px"><div class="empty-title" style="font-size:12px">${sinLiga ? 'Tu cuenta aún no está ligada a tu expediente' : 'Sin servicios programados'}</div><div class="empty-sub">${sinLiga ? 'Tu cuenta todavía no está ligada a tu expediente de Personal, por eso no ves tu ruta ni tu unidad. Avisa a tu Gerente Operativo o a RH para que la liguen.' : 'No hay órdenes de servicio para este día.'}</div></div></div>`;
     return;
   }
   cont.innerHTML = grupos.map((g, i) => {
