@@ -12222,7 +12222,7 @@ function rtPintar(){
       const e = EST_ORD[o.estado] || { t:o.estado, c:'m' };
       return `<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--border);font-size:12px;flex-wrap:wrap">
         <div style="width:54px;color:var(--text3)">${esc(o.hora || '—')}</div>
-        <div style="flex:1;min-width:160px"><strong>${esc(o.cliente_nombre || 'Cliente')}</strong><div style="font-size:11px;color:var(--text3)">${esc(o.folio || '')}${o.direccion ? ' · ' + esc(o.direccion) : ''}</div>${o.estado === 'no_realizada' && o.motivo_no_realizada ? `<div style="font-size:11px;color:var(--red)">Motivo: ${esc(o.motivo_no_realizada)}</div>` : ''}</div>
+        <div style="flex:1;min-width:160px"><strong>${esc(o.cliente_nombre || 'Cliente')}</strong>${(o.folio || '').startsWith('EX-') ? ' <span class="tag a">Extraordinario</span>' : ''}<div style="font-size:11px;color:var(--text3)">${esc(o.folio || '')}${o.direccion ? ' · ' + esc(o.direccion) : ''}</div>${o.estado === 'no_realizada' && o.motivo_no_realizada ? `<div style="font-size:11px;color:var(--red)">Motivo: ${esc(o.motivo_no_realizada)}</div>` : ''}</div>
         <span class="tag ${e.c}">${e.t}</span></div>`;
     }).join('');
     return `<div class="panel" style="margin-bottom:12px;padding:14px 16px">
@@ -12236,7 +12236,7 @@ function rtPintar(){
         <div style="text-align:right">${tag}<div style="font-size:11px;color:var(--text3);margin-top:4px">${c} de ${t} · ${p} pendientes${n ? ' · ' + n + ' no realizados' : ''}</div></div>
       </div>
       <div style="height:7px;background:var(--border);border-radius:4px;margin:10px 0 6px;overflow:hidden"><div style="height:100%;width:${pc}%;background:${c === t ? 'var(--green)' : 'var(--blue)'}"></div></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="rtAlternar(${i})">${abierta ? 'Ocultar servicios' : 'Ver servicios'}</button>${rcEsDirecto() && !pasado && p > 0 ? `<button class="btn sm" onclick="rtReasignar(${i})">Cambiar chofer / unidad</button>` : ''}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="rtAlternar(${i})">${abierta ? 'Ocultar servicios' : 'Ver servicios'}</button>${rcEsDirecto() && !pasado && p > 0 ? `<button class="btn sm" onclick="rtReasignar(${i})">Cambiar chofer / unidad</button>` : ''}${rcEsDirecto() && !pasado ? `<button class="btn sm primary" onclick="rtServicioExtra(${i})">＋ Servicio extraordinario</button>` : ''}</div>
       <div style="display:${abierta ? 'block' : 'none'};margin-top:8px">${lista}</div>
     </div>`;
   }).join('');
@@ -12244,6 +12244,30 @@ function rtPintar(){
 function rtAlternar(i){
   const g = rtGrupos()[i]; if (!g) return;
   const k = i + '|' + g.unidad + g.ruta; RT.abiertas[k] = !RT.abiertas[k]; rtPintar();
+}
+/* Servicio extraordinario: suma un cliente a una ruta ya creada (incluso en curso el mismo día) */
+async function rtServicioExtra(i){
+  const g = rtGrupos()[i]; if (!g || !rcEsDirecto()) return;
+  const ref = g.filas.find(o => o.estado !== 'anulada'); if (!ref) return;
+  const { data: cls } = await sb.from('clientes_servicio').select('id,nombre').eq('activo', true).order('nombre').limit(800);
+  finModal('Servicio extraordinario — ' + g.ruta,
+    `<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Se agrega al final de esta ruta (${esc(g.unidad)}, ${esc(RT.fecha)}) con el mismo chofer, ayudantes y unidad. El operador lo verá en su ruta.</div>` +
+    finSelect('Cliente registrado', 'sx-cli', (cls || []).map(c => [c.id, c.nombre]), '', 'Otro (escribe el nombre abajo)') +
+    finCampo('Nombre del cliente (si no está registrado)', 'sx-nom', 'text', '', 'maxlength="200"') +
+    finCampo('Dirección', 'sx-dir', 'text', '', 'maxlength="400"') +
+    finCampo('Horario', 'sx-hor', 'text', '', 'maxlength="40" placeholder="Ej. 14:30"') +
+    finCampo('Tipo de servicio', 'sx-tipo', 'text', '', 'maxlength="80" placeholder="Ej. Recolección RP"') +
+    finArea('Motivo o comentarios', 'sx-com', ''),
+    async () => {
+      const cli = fv('sx-cli') || null, nom = (fv('sx-nom') || '').trim();
+      if (!cli && !nom) return finErr('Elige un cliente o escribe su nombre');
+      const { data, error } = await sb.rpc('agregar_servicio_extra', { p_orden_ref: ref.id, p: { cliente_id: cli, nombre: nom, direccion: fv('sx-dir'), horario: fv('sx-hor'), tipo: fv('sx-tipo'), comentarios: fv('sx-com') } });
+      if (error) return finErr(error.message);
+      await audit('config', `Servicio extraordinario agregado a ${g.ruta} (${RT.fecha})`, 'b');
+      toast('Servicio extraordinario agregado a la ruta', 'success');
+      RT.abiertas[i + '|' + g.unidad + g.ruta] = true;
+      rtCargar();
+    }, 'Agregar a la ruta');
 }
 /* Reasignar chofer, ayudantes o unidad de una ruta (Gerente Operativo y Dirección) */
 async function rtReasignar(i){
