@@ -12155,7 +12155,7 @@ async function renderRutas(){
 async function rtCargar(){
   if (!RT.fecha) return;
   const { data, error } = await sb.from('ordenes_servicio')
-    .select('id,folio,estado,fecha,hora,hora_llegada,hora_fin,completada_at,cliente_nombre,direccion,ruta_id,ruta_nombre,operador_id,operador_nombre,ayudante1,ayudante2,unidad_id,unidad_bak,motivo_no_realizada,tipos,volumen')
+    .select('id,folio,estado,fecha,hora,hora_llegada,hora_fin,completada_at,cliente_nombre,direccion,ruta_id,ruta_nombre,operador_id,operador_nombre,ayudante1,ayudante2,unidad_id,unidad_bak,motivo_no_realizada,tipos,volumen,foto_llegada_path,foto_sitio_path,foto_salida_path,firma_cliente_path,firma_cliente_nombre')
     .eq('fecha', RT.fecha).neq('estado', 'anulada').order('hora', { ascending:true }).limit(2000);
   if (error){ document.getElementById('rt-unidades').innerHTML = `<div class="empty-sub" style="padding:14px">No se pudieron cargar las rutas: ${esc(error.message)}</div>`; return; }
   RT.filas = data || [];
@@ -12251,17 +12251,18 @@ function rtAlternar(i){
   const g = rtGrupos()[i]; if (!g) return;
   const k = i + '|' + g.unidad + g.ruta; RT.abiertas[k] = !RT.abiertas[k]; rtPintar();
 }
-/* Operativo: botones para realizar sus servicios del día (llegada, completar con firma, no realizado) */
+/* Operativo: llegada, servicio y salida con evidencia fotográfica (SOLO cámara, nunca galería) */
 function rtPuedeOperar(o){
   return !!currentUser && currentUser.role === 'chofer' && !!currentUser.colaboradorId && o.operador_id === currentUser.colaboradorId
     && RT.fecha === hoyLocal() && (o.estado === 'programada' || o.estado === 'en_sitio');
 }
 function rtAccionesHtml(o){
-  if (!rtPuedeOperar(o)) return '';
   const id = esc(o.id);
+  if (o.estado === 'completada' && (o.foto_llegada_path || o.foto_sitio_path || o.foto_salida_path || o.firma_cliente_path))
+    return `<div style="flex-basis:100%;margin:2px 0 4px"><button class="btn sm" onclick="rtVerEvidencia('${id}')">Ver evidencia</button></div>`;
+  if (!rtPuedeOperar(o)) return '';
   return `<div style="flex-basis:100%;display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 4px">
-    ${o.estado === 'programada' ? `<button class="btn sm" onclick="rtLlegue('${id}')">Llegué al sitio</button>` : ''}
-    <button class="btn sm primary" onclick="rtCompletarServicio('${id}')">Realizar servicio</button>
+    ${o.estado === 'programada' ? `<button class="btn sm primary" onclick="rtLlegue('${id}')">Llegué al sitio (foto)</button>` : `<button class="btn sm primary" onclick="rtCompletarServicio('${id}')">Realizar servicio</button>`}
     <button class="btn sm danger" onclick="rtNoRealizada('${id}')">No se pudo realizar</button></div>`;
 }
 function rtUbicacion(){
@@ -12270,35 +12271,92 @@ function rtUbicacion(){
     navigator.geolocation.getCurrentPosition(p => ok({ lat:p.coords.latitude, lng:p.coords.longitude }), () => no(new Error('Activa la ubicación de tu dispositivo y permite el acceso para continuar')), { enableHighAccuracy:true, timeout:15000, maximumAge:30000 });
   });
 }
+/* Cámara en vivo: no existe selector de archivos ni galería. La foto lleva fecha, hora, folio y ubicación impresas. */
+function camaraTomar(titulo, sello){
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2000;background:#000;display:flex;flex-direction:column;color:#fff';
+    ov.innerHTML = `<div style="padding:12px 14px;font-weight:700;font-size:14px">${esc(titulo)}</div>
+      <div style="flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center"><video playsinline autoplay muted style="max-width:100%;max-height:100%"></video><img style="display:none;max-width:100%;max-height:100%"><div class="cam-msg" style="position:absolute;padding:20px;text-align:center;font-size:13px"></div></div>
+      <div class="cam-bar" style="padding:14px;display:flex;gap:10px;justify-content:center"></div>`;
+    document.body.appendChild(ov);
+    const vid = ov.querySelector('video'), img = ov.querySelector('img'), msg = ov.querySelector('.cam-msg'), bar = ov.querySelector('.cam-bar');
+    let stream = null, blob = null;
+    const cerrar = r => { try { stream && stream.getTracks().forEach(t => t.stop()); } catch(e){} try { if (img.src) URL.revokeObjectURL(img.src); } catch(e){} ov.remove(); resolve(r); };
+    const btn = (t, cls, fn) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.style.cssText = 'height:44px;padding:0 20px;font-size:14px'; b.textContent = t; b.onclick = fn; return b; };
+    const vistaCamara = () => { img.style.display = 'none'; vid.style.display = ''; bar.innerHTML = ''; bar.append(btn('Cancelar', '', () => cerrar(null)), btn('Tomar foto', 'primary', tomar)); };
+    const vistaPrevia = () => { bar.innerHTML = ''; bar.append(btn('Repetir', '', () => { blob = null; vistaCamara(); }), btn('Usar esta foto', 'primary', () => cerrar(blob))); };
+    function tomar(){
+      if (!vid.videoWidth) return;
+      const k = Math.min(1, 1280 / Math.max(vid.videoWidth, vid.videoHeight)), w = Math.round(vid.videoWidth * k), h = Math.round(vid.videoHeight * k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(vid, 0, 0, w, h);
+      const t = new Date().toLocaleString('es-MX', { timeZone:TZ_MX }) + (sello ? ' · ' + sello : '');
+      const fs = Math.max(12, Math.round(w / 55)); g.font = `600 ${fs}px sans-serif`; const tw = Math.min(w - 10, g.measureText(t).width + 16);
+      g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, h - fs - 14, tw, fs + 14); g.fillStyle = '#fff'; g.fillText(t, 8, h - 9, w - 16);
+      c.toBlob(b => { blob = b; img.src = URL.createObjectURL(b); vid.style.display = 'none'; img.style.display = ''; vistaPrevia(); }, 'image/jpeg', 0.82);
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ msg.textContent = 'Este dispositivo o navegador no permite usar la cámara. No se puede continuar sin la foto.'; bar.append(btn('Cerrar', '', () => cerrar(null))); return; }
+    navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } }, audio:false }).then(st => { stream = st; vid.srcObject = st; vistaCamara(); })
+      .catch(() => { msg.textContent = 'Permite el acceso a la cámara para tomar la foto. No se puede continuar sin ella.'; bar.append(btn('Cerrar', '', () => cerrar(null))); });
+  });
+}
+async function rtSubirFoto(ordenId, tipo, blob){
+  const ruta = `ordenes/${ordenId}/${tipo}-${crypto.randomUUID()}.jpg`;
+  const up = await sb.storage.from('firmas').upload(ruta, blob, { contentType:'image/jpeg' });
+  if (up.error) throw new Error(up.error.message);
+  const { error } = await sb.rpc('orden_registrar_foto', { p_orden:ordenId, p_tipo:tipo, p_path:ruta });
+  if (error){ await sb.storage.from('firmas').remove([ruta]); throw new Error(error.message); }
+}
 async function rtLlegue(id){
+  const o = RT.filas.find(x => x.id === id); if (!o || !rtPuedeOperar(o)) return;
   let pos = {}; try { pos = await rtUbicacion(); } catch(e){ /* la llegada puede registrarse sin ubicación; al cerrar sí se exige */ }
+  const foto = await camaraTomar('Foto de llegada — ' + (o.cliente_nombre || ''), (o.folio || '') + (pos.lat != null ? ' · ' + pos.lat.toFixed(5) + ',' + pos.lng.toFixed(5) : ''));
+  if (!foto) return;
+  try { await rtSubirFoto(id, 'llegada', foto); } catch(e){ toast(e.message, 'error'); return; }
   const { error } = await sb.rpc('iniciar_orden', { p_orden:id, p_lat:pos.lat ?? null, p_lng:pos.lng ?? null });
   if (error){ toast(error.message, 'error'); return; }
-  toast('Llegada registrada', 'success'); rtCargar();
+  toast('Llegada registrada con foto', 'success'); rtCargar();
+}
+const RTF = { sitio:null, salida:null };
+function rtFotoSlot(k, etiqueta){
+  return `<label class="form-lbl req">${etiqueta}</label><div style="display:flex;gap:10px;align-items:center;margin-bottom:10px"><img id="cs-img-${k}" style="display:none;width:84px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"><button class="btn sm" type="button" id="cs-btn-${k}" onclick="rtTomarFotoSlot('${k}')">Tomar foto</button></div>`;
+}
+async function rtTomarFotoSlot(k){
+  const o = RT.filas.find(x => x.id === RTF.orden); if (!o) return;
+  const blob = await camaraTomar((k === 'sitio' ? 'Foto del sitio de recolección' : 'Foto de salida') + ' — ' + (o.cliente_nombre || ''), o.folio || '');
+  if (!blob) return;
+  RTF[k] = blob; const im = document.getElementById('cs-img-' + k); if (im){ if (im.src) URL.revokeObjectURL(im.src); im.src = URL.createObjectURL(blob); im.style.display = ''; }
+  const b = document.getElementById('cs-btn-' + k); if (b) b.textContent = 'Repetir foto';
 }
 function rtCompletarServicio(id){
-  const o = RT.filas.find(x => x.id === id); if (!o || !rtPuedeOperar(o)) return;
+  const o = RT.filas.find(x => x.id === id); if (!o || !rtPuedeOperar(o) || o.estado !== 'en_sitio') return;
+  RTF.orden = id; RTF.sitio = null; RTF.salida = null;
   const base = ['RESIDUOS SOLIDOS URBANOS', 'ORGANICOS', 'INORGANICOS'];
   const act = (o.tipos && o.tipos[0]) || '';
   const opts = (act && !base.includes(act) ? [act] : []).concat(base);
   finModal('Realizar servicio — ' + (o.cliente_nombre || ''),
     `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${esc(o.folio || '')}${o.direccion ? ' · ' + esc(o.direccion) : ''}</div>` +
+    rtFotoSlot('sitio', 'Foto del sitio de recolección') + rtFotoSlot('salida', 'Foto de salida') +
     finSelect('Tipo de residuo', 'cs-tipo', opts.map(t => [t, t]), act || opts[0]) +
     finCampo('Volumen', 'cs-vol', 'text', o.volumen || '', 'maxlength="40" placeholder="Ej. 3 m3"') +
-    finCampo('Nombre de quien recibe', 'cs-nom', 'text', '', 'maxlength="120"') +
-    `<label class="form-lbl req">Firma de quien recibe</label><canvas id="cs-firma" width="600" height="200" style="width:100%;height:130px;border:1px solid var(--border);border-radius:8px;background:#fff;display:block"></canvas>
+    finCampo('Nombre de quien recibe (cliente)', 'cs-nom', 'text', '', 'maxlength="120"') +
+    `<label class="form-lbl req">Firma del cliente</label><canvas id="cs-firma" width="600" height="200" style="width:100%;height:130px;border:1px solid var(--border);border-radius:8px;background:#fff;display:block"></canvas>
      <div style="margin:4px 0 10px"><button class="btn sm" type="button" onclick="sheFirmaLimpiar('cs-firma')">Borrar firma</button></div>` +
     finArea('Comentarios (opcional)', 'cs-com', ''),
     async () => {
+      if (!RTF.sitio) return finErr('Falta la foto del sitio de recolección');
+      if (!RTF.salida) return finErr('Falta la foto de salida');
       const nom = fv('cs-nom').trim(); if (!nom) return finErr('Escribe el nombre de quien recibe');
-      const c = document.getElementById('cs-firma'); if (!c._firmado) return finErr('Pide la firma de quien recibe');
+      const c = document.getElementById('cs-firma'); if (!c._firmado) return finErr('Pide la firma del cliente');
       let pos; try { pos = await rtUbicacion(); } catch(e){ return finErr(e.message); }
+      try { await rtSubirFoto(id, 'sitio', RTF.sitio); await rtSubirFoto(id, 'salida', RTF.salida); } catch(e){ return finErr(e.message); }
       const blob = await sheFirmaBlob('cs-firma');
       const ruta = `ordenes/${id}/cliente-${crypto.randomUUID()}.png`;
       const up = await sb.storage.from('firmas').upload(ruta, blob, { contentType:'image/png' });
       if (up.error) return finErr(up.error.message);
       const { error } = await sb.rpc('completar_orden', { p_orden:id, p_firma_cliente_path:ruta, p_firma_cliente_nombre:nom, p_firma_operador_path:null, p_tipos:[fv('cs-tipo')], p_volumen:fv('cs-vol').trim() || null, p_comentarios:fv('cs-com').trim() || null, p_lat:pos.lat, p_lng:pos.lng });
       if (error){ await sb.storage.from('firmas').remove([ruta]); return finErr(error.message); }
+      RTF.sitio = RTF.salida = null;
       toast('Servicio completado', 'success'); rtCargar();
     }, 'Completar servicio');
   setTimeout(() => sheFirmaInit('cs-firma'), 0);
@@ -12313,6 +12371,15 @@ function rtNoRealizada(id){
       if (error) return finErr(error.message);
       toast('Registrado como no realizado', 'info'); rtCargar();
     }, 'Registrar');
+}
+async function rtVerEvidencia(id){
+  const o = RT.filas.find(x => x.id === id); if (!o) return;
+  const items = [['Llegada', o.foto_llegada_path], ['Sitio de recolección', o.foto_sitio_path], ['Salida', o.foto_salida_path], ['Firma del cliente' + (o.firma_cliente_nombre ? ' (' + o.firma_cliente_nombre + ')' : ''), o.firma_cliente_path]].filter(x => x[1]);
+  const urls = await Promise.all(items.map(async ([, p]) => { try { const { data } = await sb.storage.from('firmas').download(p); return data ? URL.createObjectURL(data) : ''; } catch(e){ return ''; } }));
+  finModal('Evidencia — ' + (o.cliente_nombre || ''),
+    `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">${esc(o.folio || '')}</div>` +
+    items.map(([t], i) => `<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;margin-bottom:4px">${esc(t)}</div>${urls[i] ? `<img src="${urls[i]}" style="width:100%;border-radius:8px;border:1px solid var(--border);background:#fff">` : '<div class="empty-sub">No se pudo cargar</div>'}</div>`).join('') || '<div class="empty-sub">Sin evidencia</div>',
+    async () => true, 'Cerrar');
 }
 /* Servicio extraordinario: suma un cliente a una ruta ya creada (incluso en curso el mismo día) */
 async function rtServicioExtra(i){
