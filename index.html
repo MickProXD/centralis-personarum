@@ -7422,14 +7422,20 @@ async function ejecutarBaja(){
   const c = DB.colaboradores.find(c=>String(c.id)===currentColabId);
   if (!c) return;
   const fechaBaja = document.getElementById('baja-fecha').value;
-  // PENDIENTE (siguiente bloque): subir el PDF de baja a Storage (bucket "bajas").
+  // 1) Primero se guarda el PDF legal; si no se puede guardar, la baja NO se registra (nada a medias)
+  if (!bajaFile){ toast('El documento PDF es obligatorio','error'); return; }
+  let rutaBaja;
+  try { rutaBaja = await subirArchivoStorage('bajas', `${c.id}/baja_${Date.now()}_${bajaFile.name}`, bajaFile); }
+  catch(e){ toast('No se pudo guardar el documento de baja: ' + e.message, 'error'); return; }
+  // 2) Registro de la baja; el servidor desactiva la cuenta de acceso de la persona al cambiar su estatus
+  const { error: e0 } = await sb.from('bajas').insert({
+    colaborador_id: c.id, fecha: fechaBaja, storage_path: rutaBaja, created_by: currentUser.userId,
+    motivo: bajaMotivo + ((document.getElementById('baja-notas').value || '').trim() ? ' — ' + document.getElementById('baja-notas').value.trim() : '')
+  });
+  if (e0){ await sb.storage.from('bajas').remove([rutaBaja]); toast(e0.message, 'error'); return; }
   const { error: e1 } = await sb.from('colaboradores').update({ estatus:'baja', unidad_id:null }).eq('id', c.id);
   if (e1){ toast(e1.message,'error'); return; }
   await sb.from('unidades').update({ chofer_id:null }).eq('chofer_id', c.id);
-  await sb.from('bajas').insert({
-    colaborador_id: c.id, motivo: bajaMotivo, fecha: fechaBaja,
-    notas: document.getElementById('baja-notas').value
-  });
   await audit('baja', `Baja de <strong>${esc(c.nombre)}</strong> — ${esc(bajaMotivo)}`, 'r');
   await registrarEvento('baja_colaborador', 'personal');
   document.getElementById('baja-suc-txt').textContent = `El expediente de ${c.nombre} fue archivado el ${new Date().toLocaleDateString('es-MX')}.`;
