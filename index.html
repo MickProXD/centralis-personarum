@@ -4726,19 +4726,31 @@ async function errorFuncion(error, data){
 async function renderUsuariosConfig(){
   const cont = document.getElementById('cfg-usuarios-list');
   if (!cont) return;
-  const { data: usuarios, error } = await sb.from('profiles').select('*').order('nombre');
+  const { data: usuariosTodos, error } = await sb.from('profiles').select('*').order('nombre');
   if (error){ cont.innerHTML = '<div class="empty" style="padding:24px">Error al cargar cuentas</div>'; return; }
+  /* Filtro por tipo de colaborador al que está ligada la cuenta (según el puesto de su expediente) */
+  const colabDe = u => u.colaborador_id ? DB.colaboradores.find(c => String(c.id) === String(u.colaborador_id)) : null;
+  const tipoDe = u => { const c = colabDe(u); if (!c) return u.colaborador_id ? 'otro' : 'sin_ligar';
+    if (['Operador', 'Ayudante general'].includes(c.puesto)) return 'operativo';
+    if (c.puesto === 'Mecánico') return 'mantenimiento';
+    if (['Administrativo', 'Auxiliar administrativo'].includes(c.puesto)) return 'administrativo';
+    return 'otro'; };
+  const TIPOS_CTA = [['todos', 'Todas'], ['operativo', 'Operativo'], ['administrativo', 'Administrativo'], ['mantenimiento', 'Mantenimiento'], ['otro', 'Otro puesto'], ['sin_ligar', 'Sin ligar a un colaborador']];
+  if (!window.CFG_USR_TIPO) window.CFG_USR_TIPO = 'todos';
+  const cuenta = k => k === 'todos' ? usuariosTodos.length : usuariosTodos.filter(u => tipoDe(u) === k).length;
+  const chips = `<div style="display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px">${TIPOS_CTA.filter(([k]) => k === 'todos' || cuenta(k) || window.CFG_USR_TIPO === k).map(([k, t]) => `<button class="btn sm ${window.CFG_USR_TIPO === k ? 'primary' : ''}" onclick="window.CFG_USR_TIPO='${k}';renderUsuariosConfig()">${t} · ${cuenta(k)}</button>`).join('')}</div>`;
+  const usuarios = window.CFG_USR_TIPO === 'todos' ? usuariosTodos : usuariosTodos.filter(u => tipoDe(u) === window.CFG_USR_TIPO);
   const esDir = esDireccionReal();
   const abiertas = {};
   if (esDir){ const { data: rs } = await sb.from('reset_password').select('id,user_id,estado,created_at,codigo_vence').in('estado', ['pendiente','autorizada']); (rs || []).forEach(r => { if (r.user_id) abiertas[r.user_id] = r; }); }
   const pend = (usuarios || []).filter(u => abiertas[u.id]?.estado === 'pendiente');
   const bannerReset = pend.length ? `<div style="background:var(--amber-bg,#fff7e0);border:1px solid var(--amber,#e0a800);border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:12px"><strong>Piden restablecer su contraseña:</strong> ${pend.map(u => esc(u.nombre)).join(', ')}. Usa el botón "Contraseña" de cada persona para autorizar o rechazar.</div>` : '';
-  if (!usuarios.length){ cont.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-sub">Sin cuentas registradas</div></div>'; return; }
-  cont.innerHTML = bannerReset + usuarios.map(u=>`<div class="doc-row">
+  if (!usuarios.length){ cont.innerHTML = chips + '<div class="empty" style="padding:24px"><div class="empty-sub">Sin cuentas en este tipo</div></div>'; return; }
+  cont.innerHTML = chips + bannerReset + usuarios.map(u=>`<div class="doc-row">
     <div class="av g" style="width:30px;height:30px;font-size:11px;${u.activo?'':'opacity:.35'}">${esc(u.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase())}</div>
     <div style="flex:1">
       <div class="doc-name" style="${u.activo?'':'opacity:.5'}">${esc(u.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(u.usuario)}</span></div>
-      <div class="doc-meta">${ROLES[u.role]?.label||u.role} · ${u.activo?'Activo':'Desactivado'}</div>
+      <div class="doc-meta">${ROLES[u.role]?.label||u.role} · ${colabDe(u) ? 'Ligada a ' + esc(colabDe(u).puesto) : 'Sin colaborador ligado'} · ${u.activo?'Activo':'Desactivado'}</div>
     </div>
     ${u.id !== currentUser.userId ? `<button class="btn sm" onclick="abrirEditarPerfil('${u.id}')" style="margin-right:4px">Editar</button>${esDir ? `<button class="btn sm ${abiertas[u.id]?.estado==='pendiente'?'primary':''}" onclick="abrirResetPassword('${u.id}','${esc(u.nombre)}','${abiertas[u.id]?.id||''}','${abiertas[u.id]?.estado||''}')" style="margin-right:4px" title="Autorizar que esta persona restablezca su contraseña">Contraseña${abiertas[u.id]?.estado==='pendiente'?' (pidió)':''}</button>${abiertas[u.id]?.estado==='pendiente' ? `<button class="btn sm danger" onclick="rechazarResetPassword('${abiertas[u.id].id}','${esc(u.nombre)}')" style="margin-right:4px">Rechazar</button>` : ''}` : ''}${u.debe_cambiar_password && esDir ? `<button class="btn sm" onclick="reemitirCodigoCuenta('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Aún no entra: genera un código nuevo para desbloquear su contraseña">Nuevo código</button>` : ''}<button class="btn sm" onclick="confirmarResetMFA('${u.id}','${esc(u.nombre)}')" style="margin-right:4px" title="Si perdió acceso a su autenticador">Restablecer 2FA</button><button class="btn sm ${u.activo?'danger':''}" onclick="toggleUsuario('${u.id}', ${u.activo})">${u.activo?'Desactivar':'Reactivar'}</button>` : '<span class="tag b">Tu cuenta</span>'}
   </div>`).join('');
