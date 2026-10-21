@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <!-- Política de seguridad: sin scripts externos, sin conexiones de red salientes.
      Solo fuentes de Google Fonts. blob: necesario para vista previa/descarga de PDFs. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org; object-src blob:; frame-src blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.us.sentry.io https://nominatim.openstreetmap.org; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' https://challenges.cloudflare.com; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org; object-src blob:; frame-src blob: https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com https://*.supabase.co wss://*.supabase.co https://*.ingest.us.sentry.io https://nominatim.openstreetmap.org; form-action 'none'; base-uri 'none'">
 <title>Bio-centralis — Gestión Integral · BioAmbientalistik</title>
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -4320,7 +4320,7 @@ async function resetSolicitar(){
   err.classList.remove('show'); msg.style.display = 'none';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){ err.textContent = 'Escribe tu correo institucional'; err.classList.add('show'); return; }
   const btn = document.getElementById('reset-btn-sol'); btn.disabled = true; btn.textContent = 'Enviando...';
-  const { data, error } = await sb.functions.invoke('recuperar-password', { body: { accion:'solicitar', correo } });
+  const { data, error } = await sb.functions.invoke('recuperar-password', { body: { accion:'solicitar', correo, ts: await tsToken() } });
   btn.disabled = false; btn.textContent = 'Pedir autorización a Dirección';
   const m = data?.error || (error ? await errorFuncion(error, data) : '');
   if (m){ err.textContent = m; err.classList.add('show'); return; }
@@ -4337,7 +4337,7 @@ async function resetCanjear(){
   if (p1.length < 8) return fail('La contraseña debe tener mínimo 8 caracteres');
   if (p1 !== p2) return fail('Las contraseñas no coinciden');
   const btn = document.getElementById('reset-btn-canj'); btn.disabled = true; btn.textContent = 'Guardando...';
-  const { data, error } = await sb.functions.invoke('recuperar-password', { body: { accion:'canjear', correo, codigo, password:p1 } });
+  const { data, error } = await sb.functions.invoke('recuperar-password', { body: { accion:'canjear', correo, codigo, password:p1, ts: await tsToken() } });
   btn.disabled = false; btn.textContent = 'Cambiar contraseña';
   const m = data?.error || (error ? await errorFuncion(error, data) : '');
   if (m) return fail(m);
@@ -4369,7 +4369,7 @@ async function enviarSolicitudCuenta(){
   const btn = document.getElementById('sol-btn');
   btn.disabled = true; btn.textContent = 'Enviando...';
   const { data, error } = await sb.functions.invoke('solicitar-cuenta', {
-    body: { nombre, correo, usuario, funciones, tipo_cuenta: document.getElementById('sol-tipo').value }
+    body: { nombre, correo, usuario, funciones, tipo_cuenta: document.getElementById('sol-tipo').value, ts: await tsToken() }
   });
   btn.disabled = false; btn.textContent = 'Enviar solicitud';
   if (error || data?.error) return fail(data?.error || error.message);
@@ -4399,7 +4399,7 @@ async function reclamarCuenta(){
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return fail('Escribe tu correo institucional');
   if (codigo.replace(/[^A-Za-z0-9]/g,'').length !== 8) return fail('El código tiene 8 letras y números (XXXX-XXXX)');
   const btn = document.getElementById('rec-btn'); btn.disabled = true; btn.textContent = 'Revisando...';
-  const { data, error } = await sb.functions.invoke('cuenta-reclamo', { body: { correo, codigo } });
+  const { data, error } = await sb.functions.invoke('cuenta-reclamo', { body: { correo, codigo, ts: await tsToken() } });
   btn.disabled = false; btn.textContent = 'Desbloquear';
   const m = data?.error || (error && !data?.pendiente ? await errorFuncion(error, data) : '');
   if (m) return fail(m);
@@ -4492,6 +4492,44 @@ async function crearCuentaInicial(){
   await iniciarEnrolamientoTOTP();
 }
 
+/* ── Turnstile (Cloudflare): verificación anti-bots en pantallas públicas ── */
+const TS_SITEKEY = '0x4AAAAAAFfniCyAEGZKelWA';
+let _tsLoad = null;
+function tsCargar(){
+  if (window.turnstile) return Promise.resolve(true);
+  if (_tsLoad) return _tsLoad;
+  _tsLoad = new Promise(res => {
+    const sc = document.createElement('script');
+    sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; sc.async = true;
+    sc.onload = () => res(true); sc.onerror = () => { _tsLoad = null; res(false); };
+    document.head.appendChild(sc); setTimeout(() => res(!!window.turnstile), 10000);
+  });
+  return _tsLoad;
+}
+/* Devuelve el token, o null si no se pudo (el servidor decide si lo exige) */
+async function tsToken(){
+  try { if (!(await tsCargar()) || !window.turnstile) return null; } catch(_){ return null; }
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:1200;align-items:center;justify-content:center;background:rgba(0,0,0,.45)';
+    ov.innerHTML = '<div style="background:var(--surface,#fff);color:var(--text,#111);padding:18px 20px;border-radius:12px;text-align:center;min-width:320px"><div style="font-size:13px;font-weight:700;margin-bottom:10px">Verificando que eres una persona…</div><div class="ts-slot"></div></div>';
+    document.body.appendChild(ov);
+    let done = false, wid = null;
+    const fin = t => { if (done) return; done = true; try { window.turnstile.remove(wid); } catch(_){} ov.remove(); resolve(t || null); };
+    try {
+      wid = window.turnstile.render(ov.querySelector('.ts-slot'), {
+        sitekey: TS_SITEKEY,
+        callback: t => fin(t),
+        'error-callback': () => fin(null),
+        'timeout-callback': () => fin(null),
+        'before-interactive-callback': () => { ov.style.display = 'flex'; },
+        'after-interactive-callback': () => { ov.style.display = 'none'; }
+      });
+    } catch(_){ return fin(null); }
+    setTimeout(() => fin(null), 60000);
+  });
+}
+
 async function intentarLogin(){
   const err = document.getElementById('err-login');
   err.classList.remove('show');
@@ -4502,9 +4540,10 @@ async function intentarLogin(){
   const btn = document.getElementById('login-btn');
   btn.disabled = true; btn.textContent = 'Verificando...';
   let error = null;
+  const ts = await tsToken();
   try {
     const r = await Promise.race([
-      sb.auth.signInWithPassword({ email: correo, password: pass }),
+      sb.auth.signInWithPassword({ email: correo, password: pass, options: ts ? { captchaToken: ts } : undefined }),
       new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 20000))
     ]);
     error = r.error;
@@ -7344,6 +7383,8 @@ async function editarColab(){
   if (esSupervisor && requiereCandadoBanco()){
     bancoLock.style.display = 'block';
     bancoFields.style.display = 'none';
+    document.getElementById('ac-toxico-wrap').style.display = 'none';
+    openModal('modal-alta-colab');
     return;
   }
   bancoLock.style.display = 'none';
@@ -10663,10 +10704,22 @@ async function renderMantenimiento(){
     if (MANT.sel) await mantPrecargarFotos(MANT.sel);
     return MANT.sel ? mantDetalleUnidad() : mantListaUnidades();
   }
+  if (currentUser.role === 'mantenimiento' && MANT.tab === 'unidades'){
+    if (MANT.sel) await mantPrecargarFotos(MANT.sel);
+    return MANT.sel ? mantDetalleUnidad() : mantListaUnidades();
+  }
   await mantPrecargarFotos(null);
   if (currentUser.role === 'mantenimiento') mantVistaTaller(); else mantVistaChofer();
   opBadges();
 }
+/* Mantenimiento: pestañas «Por atender» y «Unidades» (checklists, lavados y solicitudes de toda la flota) */
+MANT.tab = 'atender';
+function mantTabsHtml(){
+  if (currentUser.role !== 'mantenimiento') return '';
+  const b = (k, t) => `<button class="btn sm ${MANT.tab === k ? 'primary' : ''}" onclick="mantCambiarTab('${k}')">${t}</button>`;
+  return `<div style="display:flex;gap:8px;margin-bottom:12px">${b('atender', 'Por atender')}${b('unidades', 'Unidades')}</div>`;
+}
+function mantCambiarTab(k){ MANT.tab = k; MANT.sel = null; renderMantenimiento(); }
 /* Vista del rol Mantenimiento: solo solicitudes aprobadas, fallas por responder y lo terminado */
 function mantVistaTaller(){
   const cont = document.getElementById('mant-body');
@@ -10675,7 +10728,7 @@ function mantVistaTaller(){
   const por = k => act.filter(s => (s.etapa || 'aprobada') === k).length;
   const sinResp = MANT.inf.filter(i => i.nivel !== 'ok' && !(MANT.resp[i.id] || []).length).slice(0, 20);
   const chip = (n, t, c) => `<div class="panel" style="padding:10px 14px;margin:0;flex:1;min-width:120px"><div style="font-family:var(--head);font-weight:900;font-size:20px;color:${n ? c : 'inherit'}">${n}</div><div style="font-size:11px;color:var(--text3)">${t}</div></div>`;
-  cont.innerHTML = `
+  cont.innerHTML = mantTabsHtml() + `
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(por('aprobada'), 'En espera', '#3b82f6')}${chip(por('en_proceso'), 'En proceso', '#e0a100')}${chip(por('esperando_refaccion'), 'Esperando refacción', '#e0a100')}${chip(fin.length, 'Terminadas recientes', '#2e9e5b')}</div>
     <div style="margin-bottom:12px"><button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button></div>
     <div class="panel" style="padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--text2)">Aquí ves las solicitudes de mantenimiento ya aprobadas. Actualiza el avance con una nota y fotos; quien la pidió y la gerencia reciben el aviso.</div>
@@ -10820,10 +10873,10 @@ function mantListaUnidades(){
   const est = MANT.unidades.map(mantEstadoUnidad).sort((a, b) => b.problema - a.problema || a.u.bak.localeCompare(b.u.bak));
   const sinCk = est.filter(e => !e.hoyInf && e.u.chofer_id).length, conFalla = est.filter(e => e.pendResp).length, lavInc = est.reduce((n, e) => n + e.lavInc, 0);
   const chip = (n, t, c) => `<div class="panel" style="padding:10px 14px;margin:0;flex:1;min-width:130px"><div style="font-family:var(--head);font-weight:900;font-size:20px;color:${n ? c : 'inherit'}">${n}</div><div style="font-size:11px;color:var(--text3)">${t}</div></div>`;
-  cont.innerHTML = `
+  cont.innerHTML = mantTabsHtml() + `
     <div class="panel" style="padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--text2)">Cada unidad concentra su checklist diario, lavados y solicitudes. Toca una unidad para ver el detalle y la evidencia. Falla crítica: <strong>4 horas</strong> · requiere atención: <strong>24 horas</strong>. Sin respuesta con evidencia en plazo, baja el score de la gerencia operativa y del administrativo operativo.</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(conFalla, 'Unidades con falla sin responder', '#d64545')}${chip(sinCk, 'Sin checklist hoy', '#e0a100')}${chip(lavInc, 'Lavados incumplidos', '#d64545')}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="btn primary" onclick="lavProgramar()">Programar lavado</button><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button><button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button>${mantPuedeLlenar() ? '<button class="btn" onclick="mantNuevo()">Llenar mi checklist</button>' : ''}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${currentUser.role === 'mantenimiento' ? '' : '<button class="btn primary" onclick="lavProgramar()">Programar lavado</button><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button>'}<button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button>${mantPuedeLlenar() ? '<button class="btn" onclick="mantNuevo()">Llenar mi checklist</button>' : ''}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">${est.map(e => `
       <div class="panel" onclick="mantAbrir('${esc(e.u.id)}')" style="padding:14px;margin:0;cursor:pointer;border-left:5px solid ${e.pendResp ? '#d64545' : (!e.hoyInf || e.lavInc) ? '#e0a100' : '#2e9e5b'}">
         <div style="display:flex;align-items:center;gap:8px"><div style="font-family:var(--head);font-weight:900;font-size:15px">${esc(e.u.bak)}</div><span style="font-size:11px;color:var(--text3);margin-left:auto">${esc(e.chofer)}</span></div>
@@ -10842,10 +10895,10 @@ function mantDetalleUnidad(){
   if (!u){ MANT.sel = null; return mantListaUnidades(); }
   const e = mantEstadoUnidad(u);
   const inf = MANT.inf.filter(i => i.unidad_id === u.id).slice(0, 15), lav = MANT.lav.filter(l => l.unidad_id === u.id).slice(0, 10), sol = MANT.sol.filter(s => s.unidad_id === u.id).slice(0, 10);
-  cont.innerHTML = `
+  cont.innerHTML = mantTabsHtml() + `
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><button class="btn sm" onclick="mantVolver()">← Unidades</button>
       <div style="font-family:var(--head);font-weight:900;font-size:17px">${esc(u.bak)}</div><span style="font-size:12px;color:var(--text3)">Chofer: ${esc(e.chofer)}</span>
-      <button class="btn sm" style="margin-left:auto" onclick="mantBitacoraAbrir('${esc(u.id)}')">Bitácora</button><button class="btn sm primary" onclick="lavProgramar('${esc(u.id)}')">Programar lavado</button></div>
+      <button class="btn sm" style="margin-left:auto" onclick="mantBitacoraAbrir('${esc(u.id)}')">Bitácora</button>${currentUser.role === 'mantenimiento' ? '' : `<button class="btn sm primary" onclick="lavProgramar('${esc(u.id)}')">Programar lavado</button>`}</div>
     ${mantTitulo('Checklists')}<div style="display:flex;flex-direction:column;gap:10px">${inf.map(i => mantTarjetaInforme(i, true)).join('') || '<div class="empty-sub" style="padding:14px">Sin checklists todavía.</div>'}</div>
     ${mantTitulo('Lavados y evidencia')}<div style="display:flex;flex-direction:column;gap:10px">${lav.map(l => mantTarjetaLavado(l, true)).join('') || '<div class="empty-sub" style="padding:14px">Sin lavados programados.</div>'}</div>
     ${mantTitulo('Solicitudes de mantenimiento')}<div style="display:flex;flex-direction:column;gap:8px">${sol.map(mantFilaSolicitud).join('') || '<div class="empty-sub" style="padding:14px">Sin solicitudes.</div>'}</div>`;
