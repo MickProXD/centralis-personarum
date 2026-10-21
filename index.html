@@ -313,6 +313,11 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 .tb-user .sb-uname{font-size:12.5px}
 #page-muro.active{display:grid;grid-template-columns:minmax(0,680px) 300px;gap:24px;justify-content:center;max-width:1040px !important}
 #page-muro .muro-col{min-width:0}
+/* Bio muro: cada bloque es una tarjeta separada, estilo red social */
+#page-muro .muro-col .panel{border:1px solid var(--border2,var(--border));box-shadow:0 1px 4px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.02);border-radius:12px;overflow:hidden}
+#page-muro #muro-composer,#page-muro #muro-rojos:not(:empty),#page-muro #muro-aviso-asistencia:not(:empty){margin-bottom:18px}
+#page-muro #muro-celebraciones,#page-muro #muro-logros{margin-bottom:18px !important}
+#page-muro #muro-list{gap:18px !important}
 .ct-aside{position:sticky;top:64px;align-self:start;max-height:calc(100vh - 90px);overflow:auto}
 @media(max-width:1100px){#page-muro.active{display:block}.ct-aside{display:none}}
 .ct-tit{font-family:var(--head);font-size:14px;font-weight:800;color:var(--text2);margin:2px 0 8px}
