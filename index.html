@@ -11089,7 +11089,8 @@ async function insigniasEvaluar(force){
     if (error || !Array.isArray(data) || !data.length) return;
     const nuevos = data.filter(c => LOGROS.some(l => l.c === c));
     if (!nuevos.length) return;
-    sb.rpc('insignias_marcar_vistas');
+    /* se marca como vista ANTES de celebrar (sin await la petición nunca salía y la animación se repetía en cada carga) */
+    try { await sb.rpc('insignias_marcar_vistas'); } catch(_){}
     logroEncolar(nuevos);
     if (document.getElementById('page-insignias')?.classList.contains('active')) renderInsignias(true);
     if (document.getElementById('page-muro')?.classList.contains('active')) renderLogrosMuro();
