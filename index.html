@@ -651,6 +651,7 @@ select.form-input option{background:var(--bg2)}
      Modo "setup": primera vez (sin cuentas) → crear cuenta Dirección/CEO.
      Modo "login": usuario + contraseña con PBKDF2, bloqueo y timeout.
      ═══════════════════════════════════════════════════════════════════ -->
+<div id="carga-sesion" style="display:none;position:fixed;inset:0;z-index:998;background:var(--bg,#0d1512);align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--text2,#9ab);font-size:13px"><div style="font-weight:700;font-size:15px;color:var(--text,#fff)">Bio-centralis</div>Cargando tu perfil…</div>
 <div id="login-screen" style="display:none;position:fixed;inset:0;z-index:999;overflow:auto">
   <div class="ls-wrap">
     <div class="ls-left">
@@ -4557,6 +4558,14 @@ async function verificarDesafioTOTP(){
 }
 
 /* ── Perfil, sesión y cuestionario de bienvenida ── */
+/* Pantalla de carga: evita ver un panel vacío de otro rol mientras llegan los datos */
+let _cargaT = null;
+function cargaSesion(on){
+  const el = document.getElementById('carga-sesion'); if (!el) return;
+  el.style.display = on ? 'flex' : 'none';
+  clearTimeout(_cargaT);
+  if (on) _cargaT = setTimeout(() => { el.style.display = 'none'; }, 20000);
+}
 async function cargarPerfilYActivarSesion(){
   const { data: { user } } = await sb.auth.getUser();
   const { data: profile, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
@@ -4577,6 +4586,7 @@ async function cargarPerfilYActivarSesion(){
   document.getElementById('bell-widget-launcher').style.display = 'flex';
   renderBell(false);
   chatIniciar(); vivoIniciar(); versionVigilar(); limitarRolesPorJerarquia();
+  cargaSesion(true);
   document.getElementById('login-screen').style.display = 'none';
   const un=document.getElementById('sb-uname'); if(un) un.textContent = currentUser.name;
   const ur=document.getElementById('sb-urole'); if(ur) ur.textContent = ROLES[currentUser.role]?.label || currentUser.role;
@@ -4589,6 +4599,7 @@ async function cargarPerfilYActivarSesion(){
   updateBadges();
   insigniasEvaluar(true);
   nav(paginaInicio(), null);
+  cargaSesion(false);
   if (!currentUser.tourCompletado) iniciarTour(); else { avisoAsistenciaInicio(); setTimeout(invitarFotoPerfil, 3500); }
   toast(`Bienvenido, ${currentUser.name.split(' ')[0]}`, 'success');
 
