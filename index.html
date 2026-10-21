@@ -3850,7 +3850,9 @@ Sentry.init({
 });
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false,
+    /* Sin bloqueo entre pestañas: evita que el inicio de sesión se quede esperando para siempre si otra pestaña/proceso dejó el candado trabado */
+    lock: async (name, acquireTimeout, fn) => await fn() }
 });
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -4493,11 +4495,26 @@ async function intentarLogin(){
   if (!correo || !pass) return fail('Escribe tu correo institucional y contraseña');
   const btn = document.getElementById('login-btn');
   btn.disabled = true; btn.textContent = 'Verificando...';
-  const { error } = await sb.auth.signInWithPassword({ email: correo, password: pass });
+  let error = null;
+  try {
+    const r = await Promise.race([
+      sb.auth.signInWithPassword({ email: correo, password: pass }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 20000))
+    ]);
+    error = r.error;
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Entrar';
+    return fail('No hay respuesta del servidor. Revisa tu internet e intenta de nuevo.');
+  }
   btn.disabled = false; btn.textContent = 'Entrar';
   document.getElementById('login-pass').value = '';
-  if (error) return fail('Correo o contraseña incorrectos');
-  await initAuth();
+  if (error){
+    const m = String(error.message||'').toLowerCase();
+    if (error.status === 0 || /fetch|network|retryable/.test(m)) return fail('No hay conexión con el servidor. Intenta de nuevo.');
+    return fail('Correo o contraseña incorrectos');
+  }
+  try { await initAuth(); }
+  catch (e) { fail('Error al abrir tu sesión: ' + (e.message||e)); try{ await sb.auth.signOut(); }catch(_){} }
 }
 
 /* ── TOTP: enrolamiento obligatorio (toda cuenta lo requiere) ── */
