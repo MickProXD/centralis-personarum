@@ -12715,6 +12715,14 @@ async function abrirCrearRuta(){
     sb.rpc('rutas_catalogo_personal'),
     sb.from('unidades').select('id,bak,estatus').order('bak')
   ]);
+  /* Catálogo de sitios: cada sitio que ya aparece en alguna ruta (p. ej. los CEDIS de Mercado Libre), sin repetir */
+  RC.sitios = []; RC.mismoDia = false;
+  try {
+    const rs = await sb.from('ruta_clientes').select('nombre,direccion,horario,m3,codigo,cliente_id').limit(3000);
+    const vistos = new Set();
+    (rs.data || []).forEach(x => { const k = ((x.nombre || '') + '|' + (x.direccion || '')).trim().toLowerCase(); if (!x.nombre || vistos.has(k)) return; vistos.add(k); RC.sitios.push(x); });
+    RC.sitios.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  } catch(e){}
   RC.rutas = r1.data || []; RC.clientes = r2.data || []; RC.personal = r3.data || []; RC.unidades = r4.data || []; RC.items = []; RC.base = '';
   RC.perfiles = {}; try { const pf = await sb.rpc('rutas_perfiles_operativos'); (pf.data || []).forEach(x => { RC.perfiles[x.id] = x.perfil_operativo; }); } catch(e){}
   const ops = RC.personal.filter(p => p.puesto === 'Operador').map(p => [p.id, p.nombre]);
@@ -12728,7 +12736,7 @@ async function abrirCrearRuta(){
     finSelect('Titular', 'rc-titular', ops, '', 'Sin titular').replace('<select ', '<select onchange="rcHintPerfil()" ') + '<div id="rc-hint" style="font-size:11px;color:var(--text3);margin:-4px 0 10px"></div>' +
     `<label class="form-lbl">Ayudante(s)</label><div style="display:flex;gap:8px"><input class="form-input" id="rc-ay1" list="rc-ay-list" maxlength="80" placeholder="Ayudante 1" style="margin-bottom:10px"><input class="form-input" id="rc-ay2" list="rc-ay-list" maxlength="80" placeholder="Ayudante 2" style="margin-bottom:10px"></div><datalist id="rc-ay-list">${ays.map(a => `<option value="${esc(a.nombre)}">`).join('')}</datalist>` +
     `<label class="form-lbl">Clientes de la ruta</label><div id="rc-clientes" style="border:1px solid var(--border);border-radius:8px;max-height:230px;overflow:auto;margin-bottom:8px"></div>` +
-    `<div style="display:flex;gap:8px;margin-bottom:6px"><select class="form-input" id="rc-add-cli" style="margin-bottom:0;flex:1"><option value="">Agregar cliente existente…</option>${RC.clientes.map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('')}</select><button class="btn sm" type="button" onclick="rcAgregarExistente()">Agregar</button></div>` +
+    `<div style="display:flex;gap:8px;margin-bottom:6px"><input class="form-input" id="rc-add-cli" list="rc-sitios-dl" autocomplete="off" placeholder="Buscar cliente o sitio (ej. Mercado Libre, CEDIS…)" style="margin-bottom:0;flex:1"><datalist id="rc-sitios-dl">${rcOpcionesSitios().map(o => `<option value="${esc(o.etiqueta)}"></option>`).join('')}</datalist><button class="btn sm" type="button" onclick="rcAgregarExistente()">Agregar</button></div>` +
     `<div style="display:flex;gap:8px"><input class="form-input" id="rc-man-nom" maxlength="200" placeholder="Cliente nuevo: nombre" style="margin-bottom:0;flex:1"><input class="form-input" id="rc-man-dir" maxlength="400" placeholder="Dirección" style="margin-bottom:0;flex:1"><button class="btn sm" type="button" onclick="rcAgregarManual()">Agregar</button></div>`;
   finModal(rcEsDirecto() ? 'Crear ruta' : 'Solicitar ruta', cuerpo, rcGuardar, rcEsDirecto() ? 'Crear ruta' : 'Enviar solicitud');
   rcPintarItems();
@@ -12750,8 +12758,10 @@ function rcHintPerfil(){
   const h = document.getElementById('rc-hint'); if (!h) return;
   const pf = (RC.perfiles || {})[document.getElementById('rc-titular').value], f = document.getElementById('rc-fecha').value;
   if (pf === 'hooklift_skiploader'){
-    const mal = f && f <= hoyLocal() && !esDireccionReal();
-    h.innerHTML = mal ? '<span style="color:#d64545">Chofer Hooklift/Skiploader: su ruta se programa un día antes. Elige una fecha posterior a hoy.</span>' : 'Chofer Hooklift/Skiploader: ruta programada con un día de anticipación ✓';
+    const hoy = hoyLocal(), dir = esDireccionReal();
+    if (f && f < hoy && !dir) h.innerHTML = '<span style="color:#d64545">Esa fecha ya pasó. Elige hoy o una fecha posterior.</span>';
+    else if (f && f === hoy && !dir) h.innerHTML = '<span style="color:var(--amber)">Chofer Hooklift/Skiploader: normalmente su ruta se programa un día antes. Si es por destajo o la programación llegó tarde, confirma:</span><label style="display:flex;gap:6px;align-items:center;margin-top:4px;font-size:12px;color:var(--text)"><input type="checkbox" id="rc-mismo" ' + (RC.mismoDia ? 'checked' : '') + ' onchange="RC.mismoDia=this.checked"> Confirmo que es una ruta del mismo día</label>';
+    else h.textContent = 'Chofer Hooklift/Skiploader: ruta programada con anticipación ✓';
   } else if (pf === 'recolector') h.textContent = 'Chofer Recolector: su ruta viene precargada; elige la ruta base.';
   else h.textContent = '';
 }
@@ -12772,10 +12782,21 @@ function rcPintarItems(){
     ${it.manual ? `<button class="btn sm" type="button" onclick="event.preventDefault();RC.items.splice(${i},1);rcPintarItems()">Quitar</button>` : ''}</label>`).join('') +
     `<div style="padding:6px 10px;font-size:11px;color:var(--text3)">${n} ${n === 1 ? 'cliente seleccionado' : 'clientes seleccionados'}</div>`;
 }
+function rcOpcionesSitios(){
+  const corto = d => (d || '').length > 60 ? d.slice(0, 57) + '…' : (d || '');
+  const sitios = (RC.sitios || []).map(x => ({ etiqueta: x.nombre + (x.direccion ? ' — ' + corto(x.direccion) : ''), item: { nombre:x.nombre, direccion:x.direccion || '', horario:x.horario || '', m3:x.m3, codigo:x.codigo || '', cliente_id:x.cliente_id || null } }));
+  const vistos = new Set(sitios.map(o => (o.item.nombre || '').trim().toLowerCase() + '|' + (o.item.direccion || '').trim().toLowerCase()));
+  const cli = (RC.clientes || []).filter(c => !(RC.sitios || []).some(x => x.cliente_id === c.id && ((x.nombre || '').trim().toLowerCase() === (c.nombre || '').trim().toLowerCase()))).map(c => ({ etiqueta: c.nombre + ' (cliente)', item: { nombre:c.nombre, direccion:'', horario:'', m3:null, codigo:'', cliente_id:c.id } }));
+  return [...sitios, ...cli];
+}
 function rcAgregarExistente(){
-  const sel = document.getElementById('rc-add-cli'); const c = RC.clientes.find(x => x.id === sel.value); if (!c) return;
-  if (RC.items.some(i => i.cliente_id === c.id)){ toast('Ese cliente ya está en la lista', 'info'); return; }
-  RC.items.push({ sel:true, manual:true, nombre:c.nombre, direccion:'', horario:'', m3:null, codigo:'', cliente_id:c.id, dias:{} }); sel.value = ''; rcPintarItems();
+  const inp = document.getElementById('rc-add-cli'), txt = (inp.value || '').trim().toLowerCase(); if (!txt) return;
+  const ops = rcOpcionesSitios();
+  let o = ops.find(x => x.etiqueta.toLowerCase() === txt);
+  if (!o){ const par = ops.filter(x => x.etiqueta.toLowerCase().includes(txt)); if (par.length === 1) o = par[0]; else { toast(par.length ? 'Hay ' + par.length + ' coincidencias: elige una de la lista al escribir' : 'No encontré ese cliente o sitio. Puedes darlo de alta abajo como cliente nuevo.', 'info'); return; } }
+  const it = o.item;
+  if (RC.items.some(i => i.nombre === it.nombre && (i.direccion || '') === (it.direccion || ''))){ toast('Ese sitio ya está en la lista', 'info'); return; }
+  RC.items.push({ sel:true, manual:true, nombre:it.nombre, direccion:it.direccion, horario:it.horario, m3:it.m3, codigo:it.codigo, cliente_id:it.cliente_id, dias:{} }); inp.value = ''; rcPintarItems();
 }
 function rcAgregarManual(){
   const n = document.getElementById('rc-man-nom'), d = document.getElementById('rc-man-dir');
@@ -12790,7 +12811,9 @@ async function rcGuardar(){
   const k = rcDiaClave(fecha), sel = RC.items.filter(i => i.sel);
   if (!sel.length) return finErr('Selecciona al menos un cliente');
   const tit = document.getElementById('rc-titular').value || null;
-  if (tit && (RC.perfiles || {})[tit] === 'hooklift_skiploader' && fecha <= hoyLocal() && !esDireccionReal()) return finErr('Las rutas Hooklift/Skiploader se programan un día antes. Elige una fecha posterior a hoy.');
+  const mismoDia = !!(tit && (RC.perfiles || {})[tit] === 'hooklift_skiploader' && fecha === hoyLocal() && !esDireccionReal());
+  if (tit && (RC.perfiles || {})[tit] === 'hooklift_skiploader' && fecha < hoyLocal() && !esDireccionReal()) return finErr('Esa fecha ya pasó. Elige hoy o una fecha posterior.');
+  if (mismoDia && !RC.mismoDia) return finErr('Marca la confirmación de ruta del mismo día (Hooklift/Skiploader).');
   const payload = {
     fecha, nombre, ruta_id: RC.base === 'nueva' ? null : RC.base,
     unidad_id: document.getElementById('rc-unidad').value || null, operador_id: tit,
@@ -12800,7 +12823,7 @@ async function rcGuardar(){
   const directo = rcEsDirecto();
   const { data, error } = await sb.rpc(directo ? 'crear_ruta_dia' : 'solicitar_ruta_dia', { p: payload });
   if (error) return finErr(error.message);
-  await audit('config', directo ? `Ruta creada: ${nombre} (${fecha})` : `Solicitud de ruta enviada: ${nombre} (${fecha})`, 'b');
+  await audit('config', directo ? `Ruta creada: ${nombre} (${fecha})${mismoDia ? ' · mismo día, confirmada por quien programa' : ''}` : `Solicitud de ruta enviada: ${nombre} (${fecha})`, 'b');
   toast(directo ? `Ruta creada con ${data.ordenes} servicios` : 'Solicitud enviada al Gerente Operativo', 'success');
   if (directo && fecha === document.getElementById('rt-fecha')?.value) rtCargar();
   rcCargarSolicitudes();
