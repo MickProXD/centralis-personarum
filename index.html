@@ -12716,7 +12716,7 @@ async function abrirCrearRuta(){
     sb.from('unidades').select('id,bak,estatus').order('bak')
   ]);
   /* Catálogo de sitios: cada sitio que ya aparece en alguna ruta (p. ej. los CEDIS de Mercado Libre), sin repetir */
-  RC.sitios = []; RC.mismoDia = false;
+  RC.sitios = []; RC.mismoDia = false; RC.extra = false;
   try {
     const rs = await sb.from('ruta_clientes').select('nombre,direccion,horario,m3,codigo,cliente_id').limit(3000);
     const vistos = new Set();
@@ -12729,6 +12729,7 @@ async function abrirCrearRuta(){
   const ays = RC.personal.filter(p => p.puesto === 'Ayudante general');
   const aviso = rcEsDirecto() ? '' : '<div style="font-size:12px;color:var(--amber);margin-bottom:10px">Tu ruta se enviará como solicitud: el Gerente Operativo (o Dirección) debe aprobarla antes de que se programe.</div>';
   const cuerpo = aviso +
+    `<label style="display:flex;gap:8px;align-items:center;margin:2px 0 10px;font-size:13px;font-weight:800;cursor:pointer"><input type="checkbox" id="rc-extra" onchange="rcToggleExtra()"> Ruta extraordinaria (improvisto de hoy)</label><div id="rc-extra-box" style="display:none">${finArea('Motivo: qué surgió y por qué sale esta unidad', 'rc-extra-mot', '')}</div>` +
     finSelect('Ruta', 'rc-base', [['nueva', '＋ Ruta nueva (desde cero)'], ...RC.rutas.map(r => [r.id, r.nombre])], '', 'Elige una ruta precargada…').replace('<select ', '<select onchange="rcCambiarBase()" ') +
     finCampo('Fecha', 'rc-fecha', 'date', hoyLocal(), 'onchange="rcActualizarDia();rcHintPerfil()"') +
     finCampo('Nombre de la ruta', 'rc-nombre', 'text', '', 'maxlength="120" placeholder="Ej. RUTA 11 (BAK-30)"') +
@@ -12754,12 +12755,22 @@ async function rcCambiarBase(){
   RC.items = (data || []).map(c => ({ sel:false, nombre:c.nombre, direccion:c.direccion || '', horario:c.horario || '', m3:c.m3, codigo:c.codigo || '', cliente_id:c.cliente_id || null, dias:c.dias || {} }));
   rcActualizarDia();
 }
+function rcToggleExtra(){
+  const on = document.getElementById('rc-extra').checked; RC.extra = on;
+  document.getElementById('rc-extra-box').style.display = on ? 'block' : 'none';
+  if (on){
+    const b = document.getElementById('rc-base'); if (!b.value){ b.value = 'nueva'; RC.base = 'nueva'; RC.items = []; rcPintarItems(); }
+    document.getElementById('rc-fecha').value = hoyLocal(); rcActualizarDia();
+  }
+  rcHintPerfil();
+}
 function rcHintPerfil(){
   const h = document.getElementById('rc-hint'); if (!h) return;
   const pf = (RC.perfiles || {})[document.getElementById('rc-titular').value], f = document.getElementById('rc-fecha').value;
   if (pf === 'hooklift_skiploader'){
     const hoy = hoyLocal(), dir = esDireccionReal();
-    if (f && f < hoy && !dir) h.innerHTML = '<span style="color:#d64545">Esa fecha ya pasó. Elige hoy o una fecha posterior.</span>';
+    if (RC.extra) h.textContent = 'Ruta extraordinaria: se permite el mismo día ✓';
+    else if (f && f < hoy && !dir) h.innerHTML = '<span style="color:#d64545">Esa fecha ya pasó. Elige hoy o una fecha posterior.</span>';
     else if (f && f === hoy && !dir) h.innerHTML = '<span style="color:var(--amber)">Chofer Hooklift/Skiploader: normalmente su ruta se programa un día antes. Si es por destajo o la programación llegó tarde, confirma:</span><label style="display:flex;gap:6px;align-items:center;margin-top:4px;font-size:12px;color:var(--text)"><input type="checkbox" id="rc-mismo" ' + (RC.mismoDia ? 'checked' : '') + ' onchange="RC.mismoDia=this.checked"> Confirmo que es una ruta del mismo día</label>';
     else h.textContent = 'Chofer Hooklift/Skiploader: ruta programada con anticipación ✓';
   } else if (pf === 'recolector') h.textContent = 'Chofer Recolector: su ruta viene precargada; elige la ruta base.';
@@ -12811,11 +12822,17 @@ async function rcGuardar(){
   const k = rcDiaClave(fecha), sel = RC.items.filter(i => i.sel);
   if (!sel.length) return finErr('Selecciona al menos un cliente');
   const tit = document.getElementById('rc-titular').value || null;
-  const mismoDia = !!(tit && (RC.perfiles || {})[tit] === 'hooklift_skiploader' && fecha === hoyLocal() && !esDireccionReal());
+  const extra = !!RC.extra, motExtra = (document.getElementById('rc-extra-mot')?.value || '').trim();
+  if (extra){
+    if (motExtra.length < 5) return finErr('Explica el motivo de la ruta extraordinaria');
+    if (fecha !== hoyLocal() && !esDireccionReal()) return finErr('La ruta extraordinaria es para hoy');
+  }
+  const mismoDia = !extra && !!(tit && (RC.perfiles || {})[tit] === 'hooklift_skiploader' && fecha === hoyLocal() && !esDireccionReal());
   if (tit && (RC.perfiles || {})[tit] === 'hooklift_skiploader' && fecha < hoyLocal() && !esDireccionReal()) return finErr('Esa fecha ya pasó. Elige hoy o una fecha posterior.');
   if (mismoDia && !RC.mismoDia) return finErr('Marca la confirmación de ruta del mismo día (Hooklift/Skiploader).');
+  const nombreF = extra && !/^EXTRA/i.test(nombre) ? 'EXTRA · ' + nombre : nombre;
   const payload = {
-    fecha, nombre, ruta_id: RC.base === 'nueva' ? null : RC.base,
+    fecha, nombre: nombreF, extraordinaria: extra, motivo_extra: extra ? motExtra : null, ruta_id: RC.base === 'nueva' ? null : RC.base,
     unidad_id: document.getElementById('rc-unidad').value || null, operador_id: tit,
     ayudante1: document.getElementById('rc-ay1').value.trim() || null, ayudante2: document.getElementById('rc-ay2').value.trim() || null,
     clientes: sel.map(i => ({ nombre:i.nombre, direccion:i.direccion || null, horario:i.horario || null, m3:i.m3, codigo:i.codigo || null, cliente_id:i.cliente_id, tipo:rcTipoDe(i, k) || null }))
@@ -12823,7 +12840,7 @@ async function rcGuardar(){
   const directo = rcEsDirecto();
   const { data, error } = await sb.rpc(directo ? 'crear_ruta_dia' : 'solicitar_ruta_dia', { p: payload });
   if (error) return finErr(error.message);
-  await audit('config', directo ? `Ruta creada: ${nombre} (${fecha})${mismoDia ? ' · mismo día, confirmada por quien programa' : ''}` : `Solicitud de ruta enviada: ${nombre} (${fecha})`, 'b');
+  await audit('config', directo ? `${extra ? 'Ruta extraordinaria' : 'Ruta creada'}: ${nombreF} (${fecha})${extra ? ' · motivo: ' + motExtra : ''}${mismoDia ? ' · mismo día, confirmada por quien programa' : ''}` : `Solicitud de ruta enviada: ${nombre} (${fecha})`, 'b');
   toast(directo ? `Ruta creada con ${data.ordenes} servicios` : 'Solicitud enviada al Gerente Operativo', 'success');
   if (directo && fecha === document.getElementById('rt-fecha')?.value) rtCargar();
   rcCargarSolicitudes();
