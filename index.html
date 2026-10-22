@@ -10742,7 +10742,7 @@ function mantVistaTaller(){
   const chip = (n, t, c) => `<div class="panel" style="padding:10px 14px;margin:0;flex:1;min-width:120px"><div style="font-family:var(--head);font-weight:900;font-size:20px;color:${n ? c : 'inherit'}">${n}</div><div style="font-size:11px;color:var(--text3)">${t}</div></div>`;
   cont.innerHTML = mantTabsHtml() + `
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(por('aprobada'), 'En espera', '#3b82f6')}${chip(por('en_proceso'), 'En proceso', '#e0a100')}${chip(por('esperando_refaccion'), 'Esperando refacción', '#e0a100')}${chip(fin.length, 'Terminadas recientes', '#2e9e5b')}</div>
-    <div style="margin-bottom:12px"><button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button></div>
+    <div style="margin-bottom:12px"><button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button><button class="btn" onclick="mantTalleresAbrir()">Talleres externos</button></div>
     <div class="panel" style="padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--text2)">Aquí ves las solicitudes de mantenimiento ya aprobadas. Actualiza el avance con una nota y fotos; quien la pidió y la gerencia reciben el aviso.</div>
     ${mantTitulo(`Solicitudes por atender <span class="tag a">${act.length}</span>`)}
     <div style="display:flex;flex-direction:column;gap:8px">${act.map(mantFilaSolicitud).join('') || '<div class="empty-sub" style="padding:14px">No hay solicitudes pendientes de atender.</div>'}</div>
@@ -10815,33 +10815,109 @@ async function solCargarEtapas(lista){
   if (!ids.length) return;
   const { data } = await sb.from('solicitud_etapas').select('*').in('solicitud_id', ids).order('created_at');
   (data || []).forEach(e => { (MANT.et[e.solicitud_id] = MANT.et[e.solicitud_id] || []).push(e); });
+  MANT.tmap = MANT.tmap || {};
+  if ((data || []).some(e => e.taller_id)){ try { const t = await sb.from('talleres_externos').select('id,nombre'); (t.data || []).forEach(x => { MANT.tmap[x.id] = x.nombre; }); } catch(e){} }
   await Promise.all([...new Set((data || []).flatMap(e => (e.fotos || []).slice(0, 4)))].map(p => avBlob('mant', p)));
+}
+/* Taller, costo, factura y corrección de una etapa (costo y factura solo para quien gestiona mantenimiento) */
+function mantExtraEtapa(e){
+  const ve = ['supervisor', 'direccion_ceo', 'mantenimiento'].includes(currentUser.role) || (typeof opEsAdminOp === 'function' && opEsAdminOp());
+  const t = [];
+  if (e.correccion) t.push('<span class="tag a">Corrección de diagnóstico</span>');
+  if (e.taller) t.push(`<span class="tag b">${e.taller === 'interno' ? 'Taller interno' : 'Taller externo: ' + esc((MANT.tmap || {})[e.taller_id] || '—')}</span>`);
+  if (ve && e.costo != null) t.push(`<span class="tag m">$${Number(e.costo).toLocaleString('es-MX', { minimumFractionDigits:2 })}</span>`);
+  if (ve && e.factura_path) t.push(`<button class="btn sm" type="button" onclick="mantVerFactura('${esc(e.factura_path)}')">Ver factura</button>`);
+  return t.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px">${t.join('')}</div>` : '';
+}
+async function mantVerFactura(path){
+  try { const u = await urlFirmadaStorage('mant', path, 120); window.open(u, '_blank', 'noopener'); }
+  catch(e){ toast('No se pudo abrir la factura: ' + (e.message || e), 'error'); }
 }
 function solEtapaHtml(s){
   if (s.estatus !== 'aprobada' || !solEsMant(s)) return '';
   const cur = SOL_ETAPAS[s.etapa || 'aprobada'] || SOL_ETAPAS.aprobada, hist = MANT.et[s.id] || [];
   return `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="font-size:11px;font-weight:800">Avance:</span><span class="tag ${cur[0]}">${cur[1]}</span>${s.etapa_en ? `<span style="font-size:10px;color:var(--text3)">${opFechaHora(s.etapa_en)}</span>` : ''}</div>
-    ${hist.map(e => `<div style="margin-top:6px;font-size:12px;padding-left:10px;border-left:3px solid var(--border)"><strong>${esc((SOL_ETAPAS[e.etapa] || [, e.etapa])[1])}</strong> · ${esc(e.por_nombre || '')} · ${opFechaHora(e.created_at)}${e.nota ? `<div style="white-space:pre-wrap">${esc(e.nota)}</div>` : ''}${opMiniaturas('mant', e.fotos)}</div>`).join('')}
+    ${hist.map(e => `<div style="margin-top:6px;font-size:12px;padding-left:10px;border-left:3px solid var(--border)"><strong>${esc((SOL_ETAPAS[e.etapa] || [, e.etapa])[1])}</strong> · ${esc(e.por_nombre || '')} · ${opFechaHora(e.created_at)}${e.nota ? `<div style="white-space:pre-wrap">${esc(e.nota)}</div>` : ''}${mantExtraEtapa(e)}${opMiniaturas('mant', e.fotos)}</div>`).join('')}
     ${solPuedeEtapa(s) ? `<div style="margin-top:8px"><button class="btn sm primary" onclick="solAvance('${esc(s.id)}')">Actualizar avance</button></div>` : ''}</div>`;
 }
-function solAvance(id){
+async function solAvance(id){
   const s = MANT.sol.find(x => x.id === id) || (typeof SOL !== 'undefined' && (SOL.lista || []).find(x => x.id === id)); if (!s) return;
   const cur = s.etapa || 'aprobada';
+  let talleres = []; try { const t = await sb.from('talleres_externos').select('id,nombre,servicio_recurrente').eq('activo', true).order('nombre'); talleres = t.data || []; } catch(e){}
+  const ve = ['supervisor', 'direccion_ceo', 'mantenimiento'].includes(currentUser.role);
   finModal('Actualizar avance',
     finSelect('Etapa', 'ea-et', Object.entries(SOL_ETAPAS).map(([k, v]) => [k, v[1]]), cur) +
     finArea('Nota (qué se hizo o qué se espera; obligatoria si esperas refacción)', 'ea-nota', '') +
+    `<label style="display:flex;gap:8px;align-items:center;margin:-2px 0 10px;font-size:12px"><input type="checkbox" id="ea-corr"> Es una corrección del diagnóstico (lo que se pidió no era el problema real; explícalo en la nota)</label>` +
+    finSelect('¿Dónde se hizo o se hará?', 'ea-taller', [['interno', 'Taller interno'], ['externo', 'Taller externo']], '', 'Sin indicar').replace('<select ', '<select onchange="document.getElementById(\'ea-ext\').style.display=this.value===\'externo\'?\'block\':\'none\'" ') +
+    `<div id="ea-ext" style="display:none">${finSelect('Taller externo', 'ea-tid', talleres.map(t => [t.id, t.nombre + (t.servicio_recurrente ? ' · ' + t.servicio_recurrente : '')]), '', talleres.length ? 'Elige el taller…' : 'No hay talleres: dalos de alta en “Talleres”')}</div>` +
+    (ve ? finCampo('Costo (opcional, en pesos)', 'ea-costo', 'number', '', 'min="0" step="0.01" inputmode="decimal"') +
+      `<label class="form-lbl">Factura o comprobante (opcional, PDF o foto de hasta 5 MB)</label><input class="form-input" type="file" id="ea-fact" accept="application/pdf,image/jpeg,image/png,image/webp" style="margin-bottom:10px">` : '') +
     `<label class="form-lbl">Fotos (opcional, hasta 4)</label><input class="form-input" type="file" id="ea-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">`,
     async () => {
-      const et = fv('ea-et'), nota = fv('ea-nota').trim();
+      const et = fv('ea-et'), nota = fv('ea-nota').trim(), corr = !!document.getElementById('ea-corr')?.checked;
+      const taller = fv('ea-taller') || null, tid = fv('ea-tid') || null, costoTxt = fv('ea-costo').trim();
       if (et === 'esperando_refaccion' && nota.length < 3) return finErr('Indica qué refacción o material se espera');
-      if (et === cur && !nota) return finErr('Cambia la etapa o agrega una nota');
+      if (corr && nota.length < 5) return finErr('Explica la corrección del diagnóstico en la nota');
+      if (taller === 'externo' && !tid) return finErr('Elige el taller externo (o dalo de alta en “Talleres”)');
+      if (costoTxt && !(Number(costoTxt) >= 0)) return finErr('El costo no es válido');
+      const fact = document.getElementById('ea-fact')?.files?.[0] || null;
+      if (fact && !/^(application\/pdf|image\/(jpeg|png|webp))$/.test(fact.type)) return finErr('La factura debe ser PDF, JPG, PNG o WebP');
+      if (fact && fact.size > 5 * 1024 * 1024) return finErr('La factura pesa más de 5 MB');
+      if (et === cur && !nota && !fact && !taller) return finErr('Cambia la etapa o agrega una nota');
       const files = [...(document.getElementById('ea-fotos')?.files || [])], ef = opValidarFotos(files, 4); if (ef) return finErr(ef);
       const rid = crypto.randomUUID(), paths = files.length ? await opSubirFotos('mant', rid, files) : [];
-      const { error } = await sb.rpc('sol_set_etapa', { p_id:id, p_etapa:et, p_nota:nota || null, p_fotos:paths });
-      if (error){ if (paths.length) await sb.storage.from('mant').remove(paths); return finErr(error.message); }
+      let facturaPath = null;
+      if (fact){
+        try {
+          if (fact.type === 'application/pdf'){ facturaPath = `${currentUser.userId}/${rid}/factura.pdf`; const u = await sb.storage.from('mant').upload(facturaPath, fact, { contentType:'application/pdf' }); if (u.error) throw u.error; }
+          else { const blob = await redimensionarImagen(fact, 2000, 0.85, false); facturaPath = `${currentUser.userId}/${rid}/factura.jpg`; const u = await sb.storage.from('mant').upload(facturaPath, blob, { contentType:'image/jpeg' }); if (u.error) throw u.error; }
+        } catch(e){ if (paths.length) await sb.storage.from('mant').remove(paths); return finErr('No se pudo subir la factura: ' + (e.message || e)); }
+      }
+      const { error } = await sb.rpc('sol_set_etapa', { p_id:id, p_etapa:et, p_nota:nota || null, p_fotos:paths, p_taller:taller, p_taller_id:taller === 'externo' ? tid : null, p_costo:costoTxt ? Number(costoTxt) : null, p_factura:facturaPath, p_correccion:corr });
+      if (error){ const rm = [...paths, ...(facturaPath ? [facturaPath] : [])]; if (rm.length) await sb.storage.from('mant').remove(rm); return finErr(error.message); }
       toast('Avance registrado. Quien lo solicitó ya fue avisado.', 'success'); solRefrescar();
     }, 'Guardar avance');
+}
+/* ── Directorio de talleres externos ── */
+const TALLER_PUEDE = () => ['supervisor', 'direccion_ceo', 'mantenimiento'].includes(currentUser.role) || (typeof opEsAdminOp === 'function' && opEsAdminOp());
+async function mantTalleresAbrir(){
+  const { data, error } = await sb.from('talleres_externos').select('*').order('nombre');
+  if (error){ toast(error.message, 'error'); return; }
+  MANT.talleresLista = data || [];
+  const fila = t => `<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;${t.activo ? '' : 'opacity:.55'}">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong style="font-size:14px">${esc(t.nombre)}</strong>${t.activo ? '' : '<span class="tag m">Inactivo</span>'}${t.servicio_recurrente ? `<span class="tag b">${esc(t.servicio_recurrente)}</span>` : ''}<button class="btn sm" style="margin-left:auto" onclick="mantTallerForm('${esc(t.id)}')">Editar</button></div>
+    <div style="font-size:12px;color:var(--text2);margin-top:4px">${t.mecanico ? 'Mecánico: ' + esc(t.mecanico) : ''}${t.telefono ? ' · Tel. ' + esc(t.telefono) : ''}</div>
+    ${t.direccion ? `<div style="font-size:12px;color:var(--text3)">${esc(t.direccion)}</div>` : ''}
+    ${t.servicios ? `<div style="font-size:12px;margin-top:4px"><strong>Servicios:</strong> ${esc(t.servicios)}</div>` : ''}
+    ${t.notas ? `<div style="font-size:12px;color:var(--text3);margin-top:2px;white-space:pre-wrap">${esc(t.notas)}</div>` : ''}</div>`;
+  finModal('Talleres externos',
+    `<div style="display:flex;margin-bottom:10px"><button class="btn primary" type="button" onclick="mantTallerForm()">＋ Agregar taller</button></div>` +
+    (MANT.talleresLista.map(fila).join('') || '<div class="empty-sub" style="padding:14px">Todavía no hay talleres registrados.</div>'),
+    async () => {}, 'Cerrar');
+}
+function mantTallerForm(id){
+  const t = id ? (MANT.talleresLista || []).find(x => x.id === id) : null;
+  finModal(t ? 'Editar taller' : 'Nuevo taller externo',
+    finCampo('Nombre del taller', 'tx-nombre', 'text', t?.nombre, 'maxlength="120"') +
+    finCampo('Mecánico o contacto', 'tx-mec', 'text', t?.mecanico, 'maxlength="120"') +
+    finCampo('Teléfono', 'tx-tel', 'tel', t?.telefono, 'maxlength="40"') +
+    finCampo('Dirección', 'tx-dir', 'text', t?.direccion, 'maxlength="250"') +
+    finArea('Servicios que ofrece', 'tx-serv', t?.servicios) +
+    finCampo('Servicio recurrente (para qué lo usamos normalmente)', 'tx-rec', 'text', t?.servicio_recurrente, 'maxlength="120" placeholder="Ej. llantas, alternadores, soldadura"') +
+    finArea('Notas', 'tx-notas', t?.notas) +
+    (t ? `<label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="tx-act" ${t.activo ? 'checked' : ''}> Taller activo (aparece al elegirlo en un avance)</label>` : ''),
+    async () => {
+      const nombre = fv('tx-nombre').trim(); if (nombre.length < 2) return finErr('Escribe el nombre del taller');
+      const row = { nombre, mecanico:fv('tx-mec').trim() || null, telefono:fv('tx-tel').trim() || null, direccion:fv('tx-dir').trim() || null, servicios:fv('tx-serv').trim() || null, servicio_recurrente:fv('tx-rec').trim() || null, notas:fv('tx-notas').trim() || null };
+      let error;
+      if (t){ row.activo = !!document.getElementById('tx-act')?.checked; ({ error } = await sb.from('talleres_externos').update(row).eq('id', t.id)); }
+      else { row.creado_por = currentUser.userId; ({ error } = await sb.from('talleres_externos').insert(row)); }
+      if (error) return finErr(error.message);
+      await audit('config', `${t ? 'Taller externo actualizado' : 'Taller externo agregado'}: ${nombre}`, 'b');
+      toast('Taller guardado', 'success'); setTimeout(mantTalleresAbrir, 50);
+    }, 'Guardar');
 }
 const mantTitulo = t => `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:18px 0 8px">${t}</div>`;
 
@@ -10888,7 +10964,7 @@ function mantListaUnidades(){
   cont.innerHTML = mantTabsHtml() + `
     <div class="panel" style="padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--text2)">Cada unidad concentra su checklist diario, lavados y solicitudes. Toca una unidad para ver el detalle y la evidencia. Falla crítica: <strong>4 horas</strong> · requiere atención: <strong>24 horas</strong>. Sin respuesta con evidencia en plazo, baja el score de la gerencia operativa y del administrativo operativo.</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(conFalla, 'Unidades con falla sin responder', '#d64545')}${chip(sinCk, 'Sin checklist hoy', '#e0a100')}${chip(lavInc, 'Lavados incumplidos', '#d64545')}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${currentUser.role === 'mantenimiento' ? '' : '<button class="btn primary" onclick="lavProgramar()">Programar lavado</button><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button>'}<button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button>${mantPuedeLlenar() ? '<button class="btn" onclick="mantNuevo()">Llenar mi checklist</button>' : ''}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${currentUser.role === 'mantenimiento' ? '' : '<button class="btn primary" onclick="lavProgramar()">Programar lavado</button><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button>'}<button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button><button class="btn" onclick="mantTalleresAbrir()">Talleres externos</button>${mantPuedeLlenar() ? '<button class="btn" onclick="mantNuevo()">Llenar mi checklist</button>' : ''}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">${est.map(e => `
       <div class="panel" onclick="mantAbrir('${esc(e.u.id)}')" style="padding:14px;margin:0;cursor:pointer;border-left:5px solid ${e.pendResp ? '#d64545' : (!e.hoyInf || e.lavInc) ? '#e0a100' : '#2e9e5b'}">
         <div style="display:flex;align-items:center;gap:8px"><div style="font-family:var(--head);font-weight:900;font-size:15px">${esc(e.u.bak)}</div><span style="font-size:11px;color:var(--text3);margin-left:auto">${esc(e.chofer)}</span></div>
