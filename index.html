@@ -1419,6 +1419,7 @@ select.form-input option{background:var(--bg2)}
 
   <div id="page-miperfil" class="page fadein" style="max-width:720px;margin:0 auto">
     <div class="panel" style="padding:18px" id="mp-cabecera"></div>
+    <div id="mp-expediente"></div>
     <div id="mp-asistencia"></div>
     <div id="mp-score"></div>
     <div id="mp-rutas"></div>
@@ -2046,6 +2047,32 @@ select.form-input option{background:var(--bg2)}
     </div>
   </div>
 </div>
+<div class="overlay" id="modal-mi-expediente" onclick="if(event.target===this)closeModal('modal-mi-expediente')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Completa tus datos de colaborador</div>
+      <button class="modal-close" onclick="closeModal('modal-mi-expediente')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.5">Tu expediente se creó automáticamente con tu nombre. <strong>Complétalo tú</strong> con los datos de abajo, o <strong>acude a Recursos Humanos</strong> para que lo capturen contigo. Tus documentos (INE, comprobante, contrato, etc.) los entregas directamente a RH. Solo se llenan los campos que estén vacíos; lo que RH ya capturó no se cambia desde aquí.</div>
+      <label class="form-lbl">Fecha de nacimiento</label>
+      <input class="form-input" type="date" id="me-nac">
+      <label class="form-lbl">CURP</label>
+      <input class="form-input" id="me-curp" maxlength="18" autocapitalize="characters" placeholder="18 caracteres">
+      <label class="form-lbl">RFC</label>
+      <input class="form-input" id="me-rfc" maxlength="13" autocapitalize="characters" placeholder="12 o 13 caracteres">
+      <label class="form-lbl">Teléfono</label>
+      <input class="form-input" id="me-tel" maxlength="40" inputmode="tel">
+      <label class="form-lbl">Contacto de emergencia <span style="font-weight:400;color:var(--text3)">(nombre y teléfono)</span></label>
+      <input class="form-input" id="me-emerg" maxlength="200">
+      <div class="form-err" id="err-me" style="margin-top:8px">—</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-mi-expediente')">Más tarde</button>
+      <button class="btn primary" onclick="guardarMiExpediente()">Guardar</button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="modal-codigo-cuenta" onclick="if(event.target===this)closeModal('modal-codigo-cuenta')">
   <div class="modal">
     <div class="modal-head">
@@ -2336,7 +2363,7 @@ select.form-input option{background:var(--bg2)}
           <label class="form-lbl">Gerente Administrativo asignado</label>
           <select class="form-input" id="aps-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
         </div>
-        <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
+        <label class="form-lbl">Expediente (colaborador) <span style="font-weight:400;color:var(--text3)">— si no eliges uno se crea uno nuevo automáticamente</span></label>
         <select class="form-input" id="aps-colab"><option value="">Sin ligar</option></select>
       </div>
       <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin-bottom:8px;line-height:1.5">Al aprobar, la persona desbloquea su contraseña de un solo uso con el código de seguimiento que recibió al enviar su solicitud. Tú no ves ni escribes ninguna contraseña. Al entrar tendrá que crear la suya de inmediato.</div>
@@ -2407,7 +2434,7 @@ select.form-input option{background:var(--bg2)}
           <label class="form-lbl">Gerente Administrativo asignado</label>
           <select class="form-input" id="au-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
         </div>
-        <label class="form-lbl">Colaborador ligado <span style="font-weight:400;color:var(--text3)">(necesario para asistencia y camión)</span></label>
+        <label class="form-lbl">Expediente (colaborador) <span style="font-weight:400;color:var(--text3)">— si no eliges uno se crea uno nuevo automáticamente</span></label>
         <select class="form-input" id="au-colab"><option value="">Sin ligar</option></select>
       </div>
       <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin:8px 0 10px;line-height:1.5">Al guardar, el sistema crea la cuenta con una contraseña aleatoria que nadie conoce y te muestra un <strong>código de desbloqueo</strong> (una sola vez). La persona entra a «Ya me aprobaron mi cuenta», escribe su correo y ese código, y el sistema le muestra su contraseña de un solo uso; al entrar tiene que crear la suya de inmediato.</div>
@@ -4119,7 +4146,7 @@ async function camposRol(p, sel){
   const g = document.getElementById(p+'-gerente');
   if (g) g.innerHTML = '<option value="">Sin asignar</option>' + (gerentes||[]).map(x=>`<option value="${x.id}">${esc(x.nombre)} — ${esc(ROLES[x.role]?.label||x.role)}</option>`).join('');
   const c = document.getElementById(p+'-colab');
-  if (c) c.innerHTML = '<option value="">Sin ligar</option>' + DB.colaboradores.map(x=>`<option value="${x.id}">${esc(x.nombre)}</option>`).join('');
+  if (c) c.innerHTML = '<option value="">' + (sel ? 'Sin ligar' : 'Crear expediente nuevo (automático)') + '</option>' + DB.colaboradores.map(x=>`<option value="${x.id}">${esc(x.nombre)}</option>`).join('');
   if (sel){
     if (g) g.value = sel.gerente_id || '';
     if (c) c.value = sel.colaborador_id || '';
@@ -4639,13 +4666,17 @@ async function cargarPerfilYActivarSesion(){
   insigniasEvaluar(true);
   nav(paginaInicio(), null);
   cargaSesion(false);
-  if (!currentUser.tourCompletado) iniciarTour(); else { avisoAsistenciaInicio(); setTimeout(invitarFotoPerfil, 3500); }
+  if (!currentUser.tourCompletado) iniciarTour(); else { avisoAsistenciaInicio(); setTimeout(invitarFotoPerfil, 3500); setTimeout(avisoExpedienteIncompleto, 6000); }
   toast(`Bienvenido, ${currentUser.name.split(' ')[0]}`, 'success');
 
   // Aviso a Dirección: solicitudes de cuenta pendientes de revisar
   if (currentUser.role === 'direccion_ceo'){
     const { count } = await sb.from('solicitudes_cuenta').select('*', { count:'exact', head:true }).eq('estado','pendiente');
     if ((count||0) > 0) toast(`Tienes ${count} solicitud${count>1?'es':''} de cuenta pendiente${count>1?'s':''} en Configuración`, 'info');
+  }
+  if (currentUser.role === 'rh'){
+    const { count } = await sb.from('solicitudes_cuenta').select('*', { count:'exact', head:true }).eq('estado','pendiente');
+    if ((count||0) > 0) toast(`Tienes ${count} solicitud${count>1?'es':''} de cuenta por aprobar en Solicitudes`, 'info');
   }
   await verificarPasswordForzado();
   await actualizarIconoPasswordSidebar();
@@ -4781,7 +4812,6 @@ async function guardarUsuario(){
   if (!usuario || usuario.length<3) return fail('Usuario: mínimo 3 caracteres');
   if (!/^[a-z0-9._-]+$/.test(usuario)) return fail('Usuario: solo minúsculas, números, punto, guion');
 
-  if (role === 'chofer' && !leerCamposRol('au').colaborador_id) return fail('Elige el colaborador (expediente) de este operativo. Sin ese vínculo no verá su ruta ni su unidad.');
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
     body: { usuario, nombre, correo, role, ...leerCamposRol('au') },
@@ -6967,9 +6997,10 @@ async function abrirAprobarSolicitud(id){
   solicitudEnRevision = data;
   document.getElementById('aps-resumen').innerHTML = `<strong>${esc(data.nombre)}</strong> · ${esc(data.correo)} · usuario: <strong>${esc(data.usuario)}</strong>${data.funciones?'<br>'+esc(data.funciones):''}`;
   const selRol = document.getElementById('aps-role');
-  const soloOp = currentUser.role === 'supervisor';
-  [...selRol.options].forEach(o => { o.hidden = soloOp && o.value !== 'chofer'; o.disabled = soloOp && o.value !== 'chofer'; });
-  selRol.value = soloOp || data.tipo_cuenta === 'operativo' ? 'chofer' : 'supervisor';
+  const soloOp = currentUser.role === 'supervisor', esRH = currentUser.role === 'rh';
+  const rolesRH = ['chofer', 'administrativo', 'monitoreo', 'mantenimiento', 'she'];
+  [...selRol.options].forEach(o => { const no = (soloOp && o.value !== 'chofer') || (esRH && !rolesRH.includes(o.value)); o.hidden = no; o.disabled = no; });
+  selRol.value = soloOp || data.tipo_cuenta === 'operativo' ? 'chofer' : (esRH ? 'administrativo' : 'supervisor');
   selRol.disabled = soloOp;
   await camposRol('aps');
   const norm = t => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -6986,7 +7017,6 @@ async function aprobarSolicitud(){
   const err = document.getElementById('err-aps');
   err.classList.remove('show');
   const fail = msg => { err.textContent = msg; err.classList.add('show'); };
-  if (role === 'chofer' && !leerCamposRol('aps').colaborador_id) return fail('Elige el colaborador (expediente) de este operativo. Sin ese vínculo no verá su ruta ni su unidad.');
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
     body: { solicitud_id: s.id, role, ...leerCamposRol('aps') },
@@ -6999,7 +7029,8 @@ async function aprobarSolicitud(){
   solicitudEnRevision = null;
   if (data?.codigo) mostrarCodigoCuenta(s.nombre, data.codigo);
   else toast('Cuenta aprobada. ' + s.nombre + ' ya puede desbloquear su contraseña de un solo uso.','success');
-  if (currentUser.role === 'supervisor') renderSolicitudes(); else { renderSolicitudesConfig(); renderUsuariosConfig(); }
+  if (data?.expediente_creado) setTimeout(() => toast('Se creó el expediente de ' + s.nombre + ' con datos mínimos. Pídele que complete sus datos o que acuda a RH.','info'), 1800);
+  if (currentUser.role === 'supervisor' || currentUser.role === 'rh') renderSolicitudes(); else { renderSolicitudesConfig(); renderUsuariosConfig(); }
 }
 
 function rechazarSolicitud(id){
@@ -7008,7 +7039,7 @@ function rechazarSolicitud(id){
     if (error){ toast(error.message,'error'); return; }
     await audit('config', 'Solicitud de cuenta rechazada', 'r');
     toast('Solicitud rechazada','info');
-    if (currentUser.role === 'supervisor') renderSolicitudes(); else renderSolicitudesConfig();
+    if (currentUser.role === 'supervisor' || currentUser.role === 'rh') renderSolicitudes(); else renderSolicitudesConfig();
   });
 }
 
@@ -11377,9 +11408,11 @@ async function renderSolicitudes(){
   const otras = SOL.lista.filter(s => s.solicitante !== currentUser.userId && !porRes.includes(s) && (solPuedeResolver(s.aprobador) || (opEsAdminOp() && s.aprobador === 'operativo')));
   const bloque = (t, arr) => arr.length ? `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">${t}</div><div style="display:flex;flex-direction:column;gap:10px">${arr.map(fila).join('')}</div>` : '';
   let cuentasHtml = '';
-  if (currentUser.role === 'supervisor'){
-    const { data: cs } = await sb.from('solicitudes_cuenta').select('id,nombre,usuario,correo,funciones,created_at').eq('estado','pendiente').eq('tipo_cuenta','operativo').order('created_at');
-    if ((cs || []).length) cuentasHtml = `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Cuentas de operativos por aprobar <span class="tag a">${cs.length}</span></div><div style="display:flex;flex-direction:column;gap:10px">${cs.map(c => `<div class="panel" style="padding:14px;margin-bottom:0"><div style="font-weight:600;font-size:13px">${esc(c.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(c.usuario)}</span></div><div style="font-size:11px;color:var(--text3)">${esc(c.correo)} · ${opFechaHora(c.created_at)}</div>${c.funciones ? `<div style="font-size:12px;margin-top:4px">${esc(c.funciones)}</div>` : ''}<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="abrirAprobarSolicitud('${esc(c.id)}')">Aprobar</button><button class="btn sm danger" onclick="rechazarSolicitud('${esc(c.id)}')">Rechazar</button></div></div>`).join('')}</div>`;
+  if (currentUser.role === 'supervisor' || currentUser.role === 'rh'){
+    let qc = sb.from('solicitudes_cuenta').select('id,nombre,usuario,correo,funciones,created_at').eq('estado','pendiente').order('created_at');
+    if (currentUser.role === 'supervisor') qc = qc.eq('tipo_cuenta','operativo');
+    const { data: cs } = await qc;
+    if ((cs || []).length) cuentasHtml = `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">${currentUser.role === 'rh' ? 'Cuentas por aprobar' : 'Cuentas de operativos por aprobar'} <span class="tag a">${cs.length}</span></div><div style="display:flex;flex-direction:column;gap:10px">${cs.map(c => `<div class="panel" style="padding:14px;margin-bottom:0"><div style="font-weight:600;font-size:13px">${esc(c.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(c.usuario)}</span></div><div style="font-size:11px;color:var(--text3)">${esc(c.correo)} · ${opFechaHora(c.created_at)}</div>${c.funciones ? `<div style="font-size:12px;margin-top:4px">${esc(c.funciones)}</div>` : ''}<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="abrirAprobarSolicitud('${esc(c.id)}')">Aprobar</button><button class="btn sm danger" onclick="rechazarSolicitud('${esc(c.id)}')">Rechazar</button></div></div>`).join('')}</div>`;
   }
   cont.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="solNueva()">Nueva solicitud</button></div>` + cuentasHtml +
     bloque(`Por resolver <span class="tag a">${porRes.length}</span>`, porRes) + bloque('Mis solicitudes', mias) +
@@ -11502,8 +11535,10 @@ async function opBadges(){
     if (caps().pages.includes('solicitudes')){
       const { data } = await sb.from('solicitudes_op').select('aprobador').eq('estatus', 'pendiente');
       let n = (data || []).filter(s => solPuedeResolver(s.aprobador)).length;
-      if (currentUser.role === 'supervisor'){
-        const c = await sb.from('solicitudes_cuenta').select('id', { count:'exact', head:true }).eq('estado','pendiente').eq('tipo_cuenta','operativo');
+      if (currentUser.role === 'supervisor' || currentUser.role === 'rh'){
+        let qb = sb.from('solicitudes_cuenta').select('id', { count:'exact', head:true }).eq('estado','pendiente');
+        if (currentUser.role === 'supervisor') qb = qb.eq('tipo_cuenta','operativo');
+        const c = await qb;
         n += c.count || 0;
       }
       set('bdg-sol', n);
@@ -12116,6 +12151,42 @@ async function asistenciaPendienteHoy(){
   const { data } = await sb.from('asistencias').select('hora_entrada').eq('fecha', hoyLocal()).eq('colaborador_id', currentUser.colaboradorId).maybeSingle();
   return !data?.hora_entrada;
 }
+// ─── Expediente automático: la persona completa sus datos (o acude a RH) ───
+async function miExpedienteFaltantes(){
+  if (!currentUser?.colaboradorId) return null;
+  const { data } = await sb.from('colaboradores').select('curp,rfc,tel,emerg,fecha_nacimiento').eq('id', currentUser.colaboradorId).maybeSingle();
+  if (!data) return null;
+  const f = []; ['curp','rfc','tel','emerg','fecha_nacimiento'].forEach(k => { if (!String(data[k] || '').trim()) f.push(k); });
+  return { faltan: f, data };
+}
+async function avisoExpedienteIncompleto(){
+  try {
+    if (localStorage.getItem('bc-aviso-exp') === hoyLocal()) return;
+    const r = await miExpedienteFaltantes();
+    if (!r || !r.faltan.length) return;
+    localStorage.setItem('bc-aviso-exp', hoyLocal());
+    abrirMiExpediente(r);
+  } catch(e) {}
+}
+async function abrirMiExpediente(r){
+  r = r || await miExpedienteFaltantes();
+  if (!r) { toast('Tu cuenta aún no está ligada a un expediente. Avisa a RH.','info'); return; }
+  const m = { 'me-nac':'fecha_nacimiento', 'me-curp':'curp', 'me-rfc':'rfc', 'me-tel':'tel', 'me-emerg':'emerg' };
+  Object.entries(m).forEach(([id,k]) => { const el = document.getElementById(id); if (!el) return; el.value = r.data[k] || ''; el.disabled = !!String(r.data[k] || '').trim(); });
+  document.getElementById('err-me').classList.remove('show');
+  openModal('modal-mi-expediente');
+}
+async function guardarMiExpediente(){
+  const err = document.getElementById('err-me'); err.classList.remove('show');
+  const v = id => { const el = document.getElementById(id); return el && !el.disabled ? el.value.trim() : ''; };
+  const p = { curp:v('me-curp'), rfc:v('me-rfc'), tel:v('me-tel'), emerg:v('me-emerg'), fecha_nacimiento:v('me-nac') };
+  if (!Object.values(p).some(Boolean)) { err.textContent = 'Escribe al menos un dato o cierra con «Más tarde».'; err.classList.add('show'); return; }
+  const { error } = await sb.rpc('completar_mi_expediente', { p });
+  if (error) { err.textContent = error.message; err.classList.add('show'); return; }
+  closeModal('modal-mi-expediente');
+  toast('Datos guardados. Los documentos entrégalos a RH.','success');
+}
+
 async function avisoAsistenciaInicio(){
   try {
     const qs = new URLSearchParams(location.search);
@@ -13021,6 +13092,8 @@ async function renderMiPerfil(){
       <button class="btn danger" onclick="cerrarSesion()">Cerrar sesión</button>
     </div></div>`;
   // Progreso de asistencia
+  const expBox = document.getElementById('mp-expediente');
+  if (expBox) { expBox.innerHTML = ''; miExpedienteFaltantes().then(r => { if (r && r.faltan.length) expBox.innerHTML = `<div class="panel" style="padding:14px;margin-top:12px;border-left:4px solid var(--amber,#e0a100)"><div style="font-weight:700;font-size:13px">Tu expediente está incompleto</div><div style="font-size:12px;color:var(--text2);margin:4px 0 10px;line-height:1.5">Completa tus datos de colaborador o acude a Recursos Humanos para que los capturen contigo. Tus documentos los entregas a RH.</div><button class="btn sm primary" onclick="abrirMiExpediente()">Completar mis datos</button></div>`; }).catch(() => {}); }
   const asisBox = document.getElementById('mp-asistencia');
   if (!currentUser.colaboradorId){
     asisBox.innerHTML = '<div class="panel" style="padding:14px;margin-top:12px"><div class="empty-sub">Tu cuenta todavía no está ligada a tu expediente de Personal. Pide a RH que la vincule para ver tu progreso de asistencia.</div></div>';
