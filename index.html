@@ -13359,7 +13359,7 @@ async function renderSedesConfig(){
         <div><label class="form-lbl">Longitud</label><input class="form-input" id="sa-lng-${n.id}" value="${s.lng ?? ''}"></div>
         <div><label class="form-lbl">Radio permitido (m)</label><input class="form-input" type="number" id="sa-rad-${n.id}" value="${s.radio_m ?? 150}"></div>
       </div>
-      <label class="form-lbl" style="margin-top:8px">Redes permitidas (una IP pública por línea)</label>
+      <label class="form-lbl" style="margin-top:8px">Redes permitidas (una por línea · puedes agregar varias: cada Wi-Fi/proveedor de la sede)</label>
       <textarea class="form-input" rows="2" id="sa-ips-${n.id}">${esc((s.ips_permitidas||[]).join('\n'))}</textarea>
       <div style="margin-top:10px"><label class="form-lbl">Foto del lugar por fuera</label>
         <div id="sf-prev-${n.id}" data-foto="${fotoDe(n.tipo,n.id)?esc(fotoDe(n.tipo,n.id).path):''}" style="margin-bottom:6px"></div>
@@ -13436,9 +13436,10 @@ async function ipSede(id){
   if (error || data?.error){ toast(await mensajeErrorFuncion(error, data),'error'); return; }
   const ta = document.getElementById('sa-ips-'+id);
   const ips = ta.value.split('\n').map(x=>x.trim()).filter(Boolean);
-  if (!ips.includes(data.ip)) ips.push(data.ip);
+  const nueva = data.sugerida || data.ip;
+  if (!ips.includes(nueva)) ips.push(nueva);
   ta.value = ips.join('\n');
-  toast(`Red agregada: ${data.ip}. Pulsa Guardar.`, 'success');
+  toast(`Red agregada: ${nueva}. Pulsa Guardar.`, 'success');
 }
 async function guardarSede(id, nombre, tipo){
   if (!['direccion_ceo','rh'].includes(currentUser.role)) return;
@@ -13447,7 +13448,7 @@ async function guardarSede(id, nombre, tipo){
   const ips = document.getElementById('sa-ips-'+id).value.split('\n').map(x=>x.trim()).filter(Boolean);
   if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180){ toast('Latitud o longitud inválida','error'); return; }
   if (!(radio_m >= 30 && radio_m <= 1000)){ toast('El radio debe estar entre 30 y 1000 metros','error'); return; }
-  if (!ips.length || ips.some(x => !/^[0-9a-fA-F:.]{3,45}$/.test(x))){ toast('Indica al menos una IP válida','error'); return; }
+  if (!ips.length || ips.some(x => !/^[0-9a-fA-F:.]{3,45}(\/\d{1,3})?$/.test(x))){ toast('Indica al menos una IP válida','error'); return; }
   const fila = { lat, lng, radio_m, ips_permitidas:ips, actualizado_por:currentUser.userId, actualizado_en:new Date().toISOString() };
   const { error } = tipo === 'site'
     ? await sb.from('sedes_asistencia_site').upsert({ site_id:id, ...fila }, { onConflict:'site_id' })
