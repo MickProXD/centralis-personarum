@@ -4169,7 +4169,8 @@ function caps(){
   const base = CAPS[currentUser.role] || CAPS.chofer;
   // Administrativo de área operativa: ve Flota, Equipos y Documentos de unidades (solo lectura)
   if (currentUser.role==='administrativo' && currentUser.areaAdmin==='operativa'){
-    return Object.assign({}, base, { pages:[...new Set([...base.pages,'flota','rutas','documentos','equipos','mantenimiento','insignias'])] });
+    // ...y NO ve Finanzas: eso queda para el Administrativo de finanzas, el Gerente Administrativo y Dirección
+    return Object.assign({}, base, { pages:[...new Set([...base.pages,'flota','rutas','documentos','equipos','mantenimiento','insignias'])].filter(p => p !== 'finanzas') });
   }
   // Ayudante general: no maneja unidad, no llena Informe de mantenimiento
   if (currentUser.role==='chofer' && esAyudanteGeneral()){
@@ -4273,7 +4274,7 @@ const VISTAS = [
   { role:'rh',             t:'Recursos Humanos',          d:'Personal, asistencia del equipo, Bio-Muro (publica) y reportes de personal.' },
   { role:'administracion', t:'Gerente Administrativo',    d:'Finanzas completas: aprueba pagos, proveedores, presupuestos y calendario.' },
   { role:'administrativo', area:'finanzas',  t:'Administrativo · Finanzas', d:'Captura facturas y solicitudes; da seguimiento a pagos. Calendario en lectura.' },
-  { role:'administrativo', area:'operativa', t:'Administrativo · Operativa', d:'Consulta flota, equipos, mantenimiento e inventario en solo lectura.' },
+  { role:'administrativo', area:'operativa', t:'Administrativo · Operativa', d:'Consulta flota, rutas, documentos, equipos y mantenimiento en solo lectura. Sin acceso a Finanzas.' },
   { role:'supervisor',     t:'Gerente Operativo',         d:'Sedes, personal de sus sedes, flota, mantenimiento e inventario.' },
   { role:'she',            t:'SHE · Seguridad y Ambiente', d:'Reportes de seguridad con semáforo, avisos, alertas de caducidad y solicitudes de gasto.' },
   { role:'monitoreo',      t:'Monitoreo',                 d:'Flota, documentos y equipos. Sin acceso a personal.' },
