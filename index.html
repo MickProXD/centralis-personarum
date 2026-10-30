@@ -873,7 +873,7 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="sb-item" data-page="finanzas" onclick="nav('finanzas',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="9" width="2.5" height="5" rx=".6"/><rect x="6.75" y="5" width="2.5" height="9" rx=".6"/><rect x="11.5" y="2" width="2.5" height="12" rx=".6"/></svg>
-      Finanzas
+      Control de gastos
     </div>
     <div class="sb-item" data-page="sites" onclick="nav('sites',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" viewBox="0 0 16 16"><path d="M1.8 14V2.5h2.6V7l3.4-2.2V7L11.2 4.8V7l3-2V14z"/><path d="M4.3 11h1.4M7.5 11h1.4M10.7 11h1.4"/></svg>
@@ -1488,7 +1488,7 @@ select.form-input option{background:var(--bg2)}
   <!-- FINANZAS -->
   <div id="page-finanzas" class="page fadein">
     <div class="row" style="margin-bottom:14px">
-      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Finanzas</div>
+      <div style="font-family:var(--head);font-size:14px;font-weight:900;color:var(--text)">Control de gastos</div>
     </div>
     <div id="fin-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
     <div id="fin-body"></div>
@@ -2295,7 +2295,7 @@ select.form-input option{background:var(--bg2)}
       <div id="ep-extra" style="margin-bottom:10px">
         <div id="ep-admtvo" style="display:none">
           <label class="form-lbl req">Área del Administrativo</label>
-          <select class="form-input" id="ep-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración de finanzas</option><option value="operativa">Administración operativa</option></select>
+          <select class="form-input" id="ep-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración · Control de gastos</option><option value="operativa">Administración operativa</option></select>
           <label class="form-lbl">Gerente Administrativo asignado</label>
           <select class="form-input" id="ep-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
         </div>
@@ -2359,7 +2359,7 @@ select.form-input option{background:var(--bg2)}
       <div id="aps-extra" style="margin-bottom:10px">
         <div id="aps-admtvo" style="display:none">
           <label class="form-lbl req">Área del Administrativo</label>
-          <select class="form-input" id="aps-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración de finanzas</option><option value="operativa">Administración operativa</option></select>
+          <select class="form-input" id="aps-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración · Control de gastos</option><option value="operativa">Administración operativa</option></select>
           <label class="form-lbl">Gerente Administrativo asignado</label>
           <select class="form-input" id="aps-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
         </div>
@@ -2430,7 +2430,7 @@ select.form-input option{background:var(--bg2)}
       <div id="au-extra" style="margin-bottom:10px">
         <div id="au-admtvo" style="display:none">
           <label class="form-lbl req">Área del Administrativo</label>
-          <select class="form-input" id="au-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración de finanzas</option><option value="operativa">Administración operativa</option></select>
+          <select class="form-input" id="au-areaadm" style="margin-bottom:10px"><option value="finanzas">Administración · Control de gastos</option><option value="operativa">Administración operativa</option></select>
           <label class="form-lbl">Gerente Administrativo asignado</label>
           <select class="form-input" id="au-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
         </div>
@@ -4272,9 +4272,9 @@ function applyRoleVisibility(){
 const VISTAS = [
   { role:'direccion_ceo',  t:'Dirección / CEO',          d:'Acceso total. Vista normal de tu cuenta.' },
   { role:'rh',             t:'Recursos Humanos',          d:'Personal, asistencia del equipo, Bio-Muro (publica) y reportes de personal.' },
-  { role:'administracion', t:'Gerente Administrativo',    d:'Finanzas completas: aprueba pagos, proveedores, presupuestos y calendario.' },
-  { role:'administrativo', area:'finanzas',  t:'Administrativo · Finanzas', d:'Captura facturas y solicitudes; da seguimiento a pagos. Calendario en lectura.' },
-  { role:'administrativo', area:'operativa', t:'Administrativo · Operativa', d:'Consulta flota, rutas, documentos, equipos y mantenimiento en solo lectura. Sin acceso a Finanzas.' },
+  { role:'administracion', t:'Gerente Administrativo',    d:'Control de gastos completo: aprueba pagos, proveedores, presupuestos y calendario.' },
+  { role:'administrativo', area:'finanzas',  t:'Administrativo · Control de gastos', d:'Captura facturas y solicitudes; da seguimiento a pagos. Calendario en lectura.' },
+  { role:'administrativo', area:'operativa', t:'Administrativo · Operativa', d:'Consulta flota, rutas, documentos, equipos y mantenimiento en solo lectura. Sin acceso a Control de gastos.' },
   { role:'supervisor',     t:'Gerente Operativo',         d:'Sedes, personal de sus sedes, flota, mantenimiento e inventario.' },
   { role:'she',            t:'SHE · Seguridad y Ambiente', d:'Reportes de seguridad con semáforo, avisos, alertas de caducidad y solicitudes de gasto.' },
   { role:'monitoreo',      t:'Monitoreo',                 d:'Flota, documentos y equipos. Sin acceso a personal.' },
@@ -5369,7 +5369,7 @@ async function finCargar(){
     sb.from('bio_naves').select('id,nombre').order('nombre')
   ]);
   const fallo = [prov, fact, sol, gas, art, pre, rec].find(r => r.error);
-  if (fallo) toast('No se pudo cargar Finanzas: ' + fallo.error.message, 'error');
+  if (fallo) toast('No se pudo cargar Control de gastos: ' + fallo.error.message, 'error');
   FIN.d = { prov:prov.data||[], fact:fact.data||[], sol:sol.data||[], gas:gas.data||[], art:art.data||[],
             pre:pre.data||[], rec:rec.data||[], uni:uni.data||[], naves:nav_.data||[] };
 }
@@ -5904,7 +5904,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sedes', sitedetail:'Sede', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Finanzas', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score' };
+  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sedes', sitedetail:'Sede', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Control de gastos', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score' };
   if (currentUser.role === 'chofer'){ titles.flota = 'Mi unidad'; titles.unidad = 'Mi unidad'; }
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
@@ -10240,7 +10240,7 @@ function sheGestionar(id){
 function sheSolicitudGasto(id){
   const r = SHE.reps.find(x => x.id === id); if (!r) return;
   finModal('Enviar a solicitud de gasto',
-    `<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Llegará a Finanzas como solicitud pendiente. La autoriza el Gerente Administrativo o Dirección.</div>`
+    `<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Llegará a Control de gastos como solicitud pendiente. La autoriza el Gerente Administrativo o Dirección.</div>`
     + finCampo('Título', 'sgs-tit', 'text', `${SHE_TIPOS[r.tipo] || ''} — ${r.lugar}`.slice(0, 120), 'maxlength="120"')
     + finCampo('Monto estimado (MXN, opcional)', 'sgs-monto', 'number', '', 'min="0" step="0.01"')
     + finArea('Descripción / qué se necesita', 'sgs-desc', r.accion_correctiva || ''),
@@ -10251,7 +10251,7 @@ function sheSolicitudGasto(id){
       await audit('config', `SHE: solicitud de gasto desde ${r.folio}`, 'a');
       toast('Enviada a Solicitudes de gasto', 'success');
       renderSeg();
-    }, 'Enviar a Finanzas');
+    }, 'Enviar a Control de gastos');
 }
 
 /* ── Avisos y vigencias (SHE y Dirección) ── */
@@ -10347,7 +10347,7 @@ async function sheRenderEpp(ex){
   ex.innerHTML = `
     ${ges ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="sheEntregarEpp()">Entregar EPP</button><button class="btn" onclick="sheEntradaEpp()">Registrar compra</button><button class="btn" onclick="sheNuevoArticuloEpp()">Nuevo artículo</button></div>` : ''}
     ${bajos.length ? `<div class="panel" style="margin-top:12px;padding:10px 14px;border-left:5px solid #d64545"><strong style="font-size:12px">Existencias bajas:</strong> <span style="font-size:12px">${bajos.map(a => esc(a.nombre) + ' (' + Number(a.existencias) + ')').join(', ')}</span>
-      ${shePuedeGasto() ? `<div style="margin-top:6px"><button class="btn sm" onclick="sheReposicionEpp()">Solicitar reposición a Finanzas</button></div>` : ''}</div>` : ''}
+      ${shePuedeGasto() ? `<div style="margin-top:6px"><button class="btn sm" onclick="sheReposicionEpp()">Solicitar reposición a Control de gastos</button></div>` : ''}</div>` : ''}
     ${sheTit('Inventario de EPP')}
     <div class="panel" style="padding:6px 14px">${SHE.epp.length ? SHE.epp.map(a => `<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
       <div style="flex:1;min-width:0"><div style="font-weight:700">${esc(a.nombre)}</div><div style="font-size:10px;color:var(--text3)">Mínimo ${Number(a.stock_minimo)} ${esc(a.unidad_medida || '')}</div></div>
@@ -10410,7 +10410,7 @@ function sheEntregarEpp(){
 }
 function sheReposicionEpp(){
   const bajos = (SHE.epp || []).filter(a => Number(a.existencias) <= Number(a.stock_minimo));
-  finModal('Solicitar reposición de EPP', `<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Llegará a Finanzas como solicitud pendiente.</div>`
+  finModal('Solicitar reposición de EPP', `<div style="font-size:11px;color:var(--text2);margin-bottom:10px">Llegará a Control de gastos como solicitud pendiente.</div>`
     + finCampo('Título', 'sgs-tit', 'text', 'Reposición de EPP', 'maxlength="120"')
     + finCampo('Monto estimado (MXN, opcional)', 'sgs-monto', 'number', '', 'min="0" step="0.01"')
     + finArea('Qué se necesita', 'sgs-desc', bajos.map(a => `${a.nombre}: quedan ${Number(a.existencias)} (mínimo ${Number(a.stock_minimo)})`).join('\n')),
@@ -10419,7 +10419,7 @@ function sheReposicionEpp(){
       const { error } = await sb.rpc('she_enviar_solicitud_gasto', { p_reporte: null, p_titulo: fv('sgs-tit').trim(), p_descripcion: fv('sgs-desc').trim(), p_monto: m === '' ? null : Number(m) });
       if (error) return finErr(error.message);
       toast('Enviada a Solicitudes de gasto', 'success');
-    }, 'Enviar a Finanzas');
+    }, 'Enviar a Control de gastos');
 }
 
 /* ── Capacitaciones / DC-3 ── */
@@ -10600,10 +10600,10 @@ async function sheRenderAud(ex){
         <div style="flex:1;min-width:0">${esc(x.requisito)}<div style="font-size:10px;color:var(--text3)">${x.dependencia ? esc(x.dependencia) : ''}${x.responsable ? ' · ' + esc(x.responsable) : ''}${x.fecha_revision ? ' · rev. ' + sheFmtF(x.fecha_revision) : ''}</div></div>
         <span class="tag ${s[0]}">${s[1]}</span>${ges ? `<button class="btn sm" onclick="sheEditarRequisito('${esc(x.id)}')">Editar</button>` : ''}</div>`; }).join('')}</div>`).join('') : '<div class="empty" style="padding:24px"><div class="empty-sub">Aún no hay requisitos. Agrega los de cada norma que apliquen a la empresa.</div></div>'}
     ${sheTit('Proveedores de servicios SHE')}
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Los proveedores se dan de alta en Finanzas; aquí solo se etiquetan con su servicio y su autorización.</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Los proveedores se dan de alta en Control de gastos; aquí solo se etiquetan con su servicio y su autorización.</div>
     <div class="panel" style="padding:6px 14px">${SHE.prov.length ? SHE.prov.map(p => `<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
       <div style="flex:1;min-width:0"><div style="font-weight:700">${esc(p.razon_social)}</div><div style="font-size:10px;color:var(--text3)">${p.servicio ? esc(p.servicio) + (p.autorizacion ? ' · aut. ' + esc(p.autorizacion) : '') + (p.vence ? ' · vence ' + sheFmtF(p.vence) : '') : 'Sin etiquetar como proveedor SHE'}${p.contacto_nombre ? ' · ' + esc(p.contacto_nombre) : ''}${p.contacto_tel ? ' ' + esc(p.contacto_tel) : ''}</div></div>
-      ${ges ? `<button class="btn sm" onclick="sheEtiquetarProv('${esc(p.id)}')">${p.servicio ? 'Editar' : 'Etiquetar'}</button>` : ''}</div>`).join('') : '<div class="empty" style="padding:18px"><div class="empty-sub">No hay proveedores en Finanzas todavía</div></div>'}</div>`;
+      ${ges ? `<button class="btn sm" onclick="sheEtiquetarProv('${esc(p.id)}')">${p.servicio ? 'Editar' : 'Etiquetar'}</button>` : ''}</div>`).join('') : '<div class="empty" style="padding:18px"><div class="empty-sub">No hay proveedores en Control de gastos todavía</div></div>'}</div>`;
 }
 function sheFormRequisito(x){
   return `<label class="form-lbl req">Norma</label><input class="form-input" id="sn-nor" list="sn-normas" maxlength="120" value="${esc(x.norma || '')}" style="margin-bottom:10px"><datalist id="sn-normas">${SHE_NORMAS.map(n => `<option value="${esc(n)}">`).join('')}</datalist>`
@@ -11376,7 +11376,7 @@ const SOL_TIPOS = {
 /* Evidencia por tipo (el servidor aplica la misma regla) */
 const SOL_EV = { combustible:'requerida', falla_urgente:'requerida', incapacidad:'requerida', viaticos:'requerida', permiso:'opcional', material_unidad:'opcional', epp_uniforme:'opcional', cambio_unidad:'opcional' };
 const SOL_AP = { operativo:'Gerente Operativo', rh_op:'RH o Gerente Operativo', rh:'Recursos Humanos', finanzas:'Gerente Administrativo', she:'SHE' };
-const SOL = { lista:[], goce:{} };
+const SOL = { lista:[] };
 function solPuedeResolver(ap){
   if (opEsDireccion()) return true;
   const m = { operativo:['supervisor'], finanzas:['administracion'], she:['she'], rh:['rh'], rh_op:['rh', 'supervisor'] }[ap] || [];
@@ -11388,13 +11388,10 @@ async function renderSolicitudes(){
   if (error){ cont.innerHTML = `<div class="empty-sub" style="padding:20px">No se pudieron cargar las solicitudes.</div>`; return; }
   SOL.lista = data || [];
   await solCargarEtapas(SOL.lista);
-  // El goce de sueldo solo lo devuelve el servidor a quien aprueba; el solicitante nunca lo recibe
-  const gz = await sb.from('solicitudes_goce').select('solicitud_id,goce');
-  SOL.goce = {}; (gz.data || []).forEach(g => { SOL.goce[g.solicitud_id] = g.goce; });
   const tag = e => e === 'aprobada' ? '<span class="tag g">Aprobada</span>' : e === 'rechazada' ? '<span class="tag r">Rechazada</span>' : '<span class="tag a">Pendiente</span>';
   const resumen = d => Object.entries(d || {}).filter(([, v]) => v !== '' && v != null).map(([k, v]) => `${esc(k)}: ${esc(String(v))}`).join(' · ');
   const fila = s => { const def = SOL_TIPOS[s.tipo] || { t:s.tipo }, puede = s.estatus === 'pendiente' && solPuedeResolver(s.aprobador);
-    return `<div class="panel" style="padding:14px;margin-bottom:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px"><span class="tag b">${esc(def.t)}</span>${tag(s.estatus)}${SOL.goce[s.id] === true ? '<span class="tag g">Con goce de sueldo</span>' : SOL.goce[s.id] === false ? '<span class="tag a">Sin goce de sueldo</span>' : ''}<span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(s.created_at)}</span></div>
+    return `<div class="panel" style="padding:14px;margin-bottom:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px"><span class="tag b">${esc(def.t)}</span>${tag(s.estatus)}<span style="font-size:10px;color:var(--text3);margin-left:auto">${opFechaHora(s.created_at)}</span></div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${esc(s.solicitante_nombre || '—')} · Aprueba: ${esc(SOL_AP[s.aprobador] || s.aprobador)}</div>
       <div style="font-size:13px;white-space:pre-wrap">${esc(s.detalle)}</div>
       ${resumen(s.datos) ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${resumen(s.datos)}</div>` : ''}
@@ -11489,20 +11486,6 @@ async function solEnviar(){
 function solRefrescar(){ if (document.getElementById('page-mantenimiento')?.classList.contains('active')) renderMantenimiento(); else renderSolicitudes(); }
 async function solResolver(id, aprobar){
   if (aprobar){
-    let s = SOL.lista.find(x => x.id === id);
-    if (!s){ const r = await sb.from('solicitudes_op').select('tipo').eq('id', id).single(); s = r.data; }
-    if (s && s.tipo === 'permiso'){
-      finModal('Aprobar permiso',
-        '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Define cómo se paga este permiso.</div>' +
-        finSelect('¿Con goce de sueldo?', 'sl-goce', [['si', 'Sí, con goce de sueldo'], ['no', 'No, sin goce de sueldo']], '', 'Selecciona…'),
-        async () => {
-          const g = fv('sl-goce'); if (!g) return finErr('Indica si es con goce de sueldo');
-          const { error } = await sb.rpc('resolver_solicitud_op2', { p_id:id, p_aprobar:true, p_motivo:null, p_goce: g === 'si' });
-          if (error) return finErr(error.message);
-          toast('Permiso aprobado', 'success'); solRefrescar();
-        }, 'Aprobar');
-      return;
-    }
     confirmar('¿Aprobar esta solicitud?', 'Aprobar solicitud', async () => {
       const { error } = await sb.rpc('resolver_solicitud_op2', { p_id:id, p_aprobar:true, p_motivo:null, p_goce:null });
       if (error) return toast(error.message, 'error');
