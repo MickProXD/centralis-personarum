@@ -3046,7 +3046,7 @@ select.form-input option{background:var(--bg2)}
       </button>
     </div>
     <div style="flex:1;overflow:hidden;padding:0">
-      <iframe id="responsiva-iframe" style="width:100%;height:100%;border:none;border-radius:0 0 var(--r2) var(--r2)"></iframe>
+      <iframe id="responsiva-iframe" sandbox="allow-scripts allow-modals" style="width:100%;height:100%;border:none;border-radius:0 0 var(--r2) var(--r2)"></iframe>
     </div>
   </div>
 </div>
@@ -4836,6 +4836,7 @@ async function reemitirCodigoCuenta(id, nombre){
     const { data, error } = await sb.functions.invoke('admin-create-user', { body:{ accion:'reemitir', user_id:id }, headers:{ Authorization:`Bearer ${session.access_token}` } });
     if (error || data?.error){ toast(data?.error || await errorFuncion(error, data), 'error'); return; }
     mostrarCodigoCuenta(nombre, data?.codigo);
+    if (currentUser.role === 'rh') renderSolicitudes();
   });
 }
 async function toggleUsuario(id, activoActual){
@@ -4890,14 +4891,50 @@ async function guardarEdicionPerfil(){
   renderUsuariosConfig();
 }
 
+async function llamarResetAdminSilencioso(body){
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const { data, error } = await sb.functions.invoke('admin-reset-password', { body, headers:{ Authorization:`Bearer ${session.access_token}` } });
+    return (error || data?.error) ? null : data;
+  } catch(e){ return null; }
+}
+/* ── RH: cuentas y contraseñas (códigos para quien no puede entrar o olvidó su contraseña) ── */
+const ROLES_CLAVES_RH = ['chofer','administrativo','monitoreo','mantenimiento','she'];
+window.RH_CTAS = {};
+async function solClavesRH(){
+  const [pr, lr] = await Promise.all([ sb.from('profiles').select('id,nombre,usuario,role,activo,debe_cambiar_password,correo_contacto').eq('activo', true).order('nombre'), llamarResetAdminSilencioso({ accion:'listar' }) ]);
+  const ctas = (pr.data || []).filter(u => ROLES_CLAVES_RH.includes(u.role) && u.id !== currentUser.userId);
+  const abiertas = {}; ((lr && lr.solicitudes) || []).forEach(r => { abiertas[r.user_id] = r; });
+  window.RH_CTAS = {}; ctas.forEach(u => { window.RH_CTAS[u.id] = { ...u, req: abiertas[u.id] || null }; });
+  const piden = ctas.filter(u => abiertas[u.id]?.estado === 'pendiente');
+  const sinEntrar = ctas.filter(u => u.debe_cambiar_password && abiertas[u.id]?.estado !== 'pendiente');
+  const resto = ctas.filter(u => !u.debe_cambiar_password && abiertas[u.id]?.estado !== 'pendiente');
+  const rol = u => (ROLES[u.role]?.label || u.role);
+  const fila = (u, accion) => `<div class="doc-row"><div style="flex:1"><div class="doc-name">${esc(u.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(u.usuario)}</span></div><div class="doc-meta">${esc(rol(u))}${u.debe_cambiar_password ? ' · Aún no entra por primera vez' : ''}</div></div>${accion}</div>`;
+  const btnClave = u => `<button class="btn sm ${abiertas[u.id]?.estado==='pendiente'?'primary':''}" onclick="rhResetClave('${esc(u.id)}')">Código de contraseña</button>`;
+  const btnNuevo = u => `<button class="btn sm primary" onclick="rhNuevoCodigo('${esc(u.id)}')">Nuevo código de acceso</button>`;
+  const btnRech = u => `<button class="btn sm danger" onclick="rhRechazarClave('${esc(u.id)}')" style="margin-left:4px">Rechazar</button>`;
+  let h = `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">Cuentas y contraseñas${piden.length ? ` <span class="tag a">${piden.length} pidieron código</span>` : ''}</div>`;
+  h += `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">Aquí generas el código para quien olvidó su contraseña o no pudo entrar la primera vez (el código del alta vale 7 días). Se muestra una sola vez; entrégaselo en persona o por un medio privado.</div>`;
+  if (piden.length) h += `<div class="panel" style="padding:6px 10px;margin-bottom:8px"><div style="font-size:11px;font-weight:700;margin:6px 0">Olvidaron su contraseña</div>${piden.map(u => fila(u, btnClave(u) + btnRech(u))).join('')}</div>`;
+  if (sinEntrar.length) h += `<div class="panel" style="padding:6px 10px;margin-bottom:8px"><div style="font-size:11px;font-weight:700;margin:6px 0">Aún no entran por primera vez</div>${sinEntrar.map(u => fila(u, btnNuevo(u))).join('')}</div>`;
+  if (resto.length) h += `<details style="margin-bottom:8px"><summary style="cursor:pointer;font-size:12px;font-weight:700;padding:6px 0">Todas las demás cuentas (${resto.length})</summary><div class="panel" style="padding:6px 10px">${resto.map(u => fila(u, btnClave(u))).join('')}</div></details>`;
+  if (!piden.length && !sinEntrar.length && !resto.length) h += '<div class="empty-sub" style="padding:12px">Sin cuentas por gestionar.</div>';
+  return h;
+}
+function rhResetClave(id){ const u = window.RH_CTAS[id]; if (u) abrirResetPassword(u.id, u.nombre, u.req?.id || '', u.req?.estado || ''); }
+function rhNuevoCodigo(id){ const u = window.RH_CTAS[id]; if (u) reemitirCodigoCuenta(u.id, u.nombre); }
+function rhRechazarClave(id){ const u = window.RH_CTAS[id]; if (u?.req?.id) confirmar('¿Rechazar la solicitud de ' + u.nombre + '?', 'Rechazar', () => rechazarResetPassword(u.req.id, u.nombre)); }
+
 async function llamarResetAdmin(body){
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-reset-password', { body, headers:{ Authorization:`Bearer ${session.access_token}` } });
   if (error || data?.error){ toast(data?.error || await errorFuncion(error, data), 'error'); return null; }
   return data;
 }
+const puedeGestionarClaves = () => esDireccionReal() || (!!currentUser && currentUser.role === 'rh');
 function abrirResetPassword(userId, nombre, reqId, estado){
-  if (!esDireccionReal()) return;
+  if (!puedeGestionarClaves()) return;
   const aviso = estado === 'pendiente' ? 'Esta persona pidió restablecer su contraseña.' : (estado === 'autorizada' ? 'Ya hay un código vigente; si generas otro, el anterior deja de servir.' : 'Nadie lo pidió todavía; puedes autorizarlo tú si te lo solicitó por otro medio.');
   confirmar(`¿Autorizar que ${nombre} restablezca su contraseña? ${aviso} Se genera un código de un solo uso que le entregarás tú.`, 'Generar código', async () => {
     const r = await llamarResetAdmin({ accion:'autorizar', user_id:userId });
@@ -4906,14 +4943,14 @@ function abrirResetPassword(userId, nombre, reqId, estado){
     document.getElementById('rc-quien').innerHTML = 'Para <strong>' + esc(r.nombre) + '</strong><br>Correo que debe escribir: <strong>' + esc(r.correo || '') + '</strong>';
     document.getElementById('rc-codigo').textContent = r.codigo;
     openModal('modal-reset-codigo');
-    renderUsuariosConfig();
+    if (currentUser.role === 'rh') renderSolicitudes(); else renderUsuariosConfig();
   });
 }
 async function rechazarResetPassword(id, nombre){
   const r = await llamarResetAdmin({ accion:'rechazar', id });
   if (!r) return;
   await audit('config', `Restablecimiento de contraseña rechazado para <strong>${nombre}</strong>`, 'a');
-  toast('Solicitud rechazada','success'); renderUsuariosConfig();
+  toast('Solicitud rechazada','success'); if (currentUser.role === 'rh') renderSolicitudes(); else renderUsuariosConfig();
 }
 
 function confirmarResetMFA(userId, nombre){
@@ -8183,8 +8220,8 @@ function generarResponsivaTelefono(celId){
     const u = DB.unidades.find(u => String(u.id) === String(colab.unidadId));
     if (u){
       unidadBlock = `
-        <tr><td class="lbl">Unidad asignada</td><td><strong>${u.bak||'—'}</strong></td></tr>
-        <tr><td class="lbl">Placas</td><td><strong>${u.placas||'—'}</strong></td></tr>`;
+        <tr><td class="lbl">Unidad asignada</td><td><strong>${esc(u.bak||'—')}</strong></td></tr>
+        <tr><td class="lbl">Placas</td><td><strong>${esc(u.placas||'—')}</strong></td></tr>`;
     }
   }
   const hoy = new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
@@ -8192,7 +8229,7 @@ function generarResponsivaTelefono(celId){
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Responsiva — ${e.cel_economico}</title>
+<title>Responsiva — ${esc(e.cel_economico)}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:Arial,sans-serif;font-size:11pt;color:#111;padding:32px 40px;max-width:720px;margin:auto}
@@ -8218,17 +8255,17 @@ function generarResponsivaTelefono(celId){
 <h1 style="font-size:12pt;margin-bottom:18px">Responsiva de Entrega de Teléfono y Accesorios</h1>
 <p class="section">Datos del colaborador</p>
 <table>
-  <tr><td class="lbl">Nombre</td><td>${colab.nombre||'—'}</td></tr>
-  <tr><td class="lbl">Puesto</td><td>${colab.puesto||'—'}</td></tr>
+  <tr><td class="lbl">Nombre</td><td>${esc(colab.nombre||'—')}</td></tr>
+  <tr><td class="lbl">Puesto</td><td>${esc(colab.puesto||'—')}</td></tr>
   ${unidadBlock}
 </table>
 <p class="section">Datos del equipo entregado</p>
 <table>
-  <tr><td class="lbl">Número económico</td><td><strong>${e.cel_economico}</strong></td></tr>
-  <tr><td class="lbl">Modelo</td><td>${e.modelo||'—'}</td></tr>
-  <tr><td class="lbl">IMEI</td><td>${e.imei||'—'}</td></tr>
-  <tr><td class="lbl">Línea telefónica (SIM)</td><td>${e.linea_telefonica||'Sin línea asignada'}</td></tr>
-  <tr><td class="lbl">Accesorios</td><td>${e.accesorios||'—'}</td></tr>
+  <tr><td class="lbl">Número económico</td><td><strong>${esc(e.cel_economico)}</strong></td></tr>
+  <tr><td class="lbl">Modelo</td><td>${esc(e.modelo||'—')}</td></tr>
+  <tr><td class="lbl">IMEI</td><td>${esc(e.imei||'—')}</td></tr>
+  <tr><td class="lbl">Línea telefónica (SIM)</td><td>${esc(e.linea_telefonica||'Sin línea asignada')}</td></tr>
+  <tr><td class="lbl">Accesorios</td><td>${esc(e.accesorios||'—')}</td></tr>
   <tr><td class="lbl">Fecha de entrega</td><td>${hoy}</td></tr>
 </table>
 <p class="section">Cláusulas y condiciones</p>
@@ -8247,7 +8284,7 @@ function generarResponsivaTelefono(celId){
 </div>
 <div class="firm">
   <div class="firm-box">
-    <div class="firm-line">Nombre y firma del colaborador<br><strong>${colab.nombre||'—'}</strong></div>
+    <div class="firm-line">Nombre y firma del colaborador<br><strong>${esc(colab.nombre||'—')}</strong></div>
   </div>
   <div class="firm-box">
     <div class="firm-line">Entregó — Dirección de Operaciones<br><strong>BIOAMBIENTALISTIK</strong></div>
@@ -8961,7 +8998,7 @@ async function renderAsistencias(){
     return `<div class="asis-hdr" style="${isHoy?'color:var(--green)':''}">${n}<br><span style="font-size:8px;font-weight:600">${d.getDate()}</span></div>`;
   }).join('') + '<div class="asis-hdr" title="Comentario por persona">💬</div>';
   activos.forEach(c=>{
-    html += `<div class="asis-name-cell">${c.nombre.split(' ').slice(0,2).join(' ')}</div>`;
+    html += `<div class="asis-name-cell">${esc(c.nombre.split(' ').slice(0,2).join(' '))}</div>`;
     dias.forEach(d=>{
       const key = `${fmtDate(d)}-${c.id}`;
       const reg = DB.asistencias[key];
@@ -11412,7 +11449,8 @@ async function renderSolicitudes(){
     const { data: cs } = await qc;
     if ((cs || []).length) cuentasHtml = `<div style="font-family:var(--head);font-size:12px;font-weight:800;margin:16px 0 8px">${currentUser.role === 'rh' ? 'Cuentas por aprobar' : 'Cuentas de operativos por aprobar'} <span class="tag a">${cs.length}</span></div><div style="display:flex;flex-direction:column;gap:10px">${cs.map(c => `<div class="panel" style="padding:14px;margin-bottom:0"><div style="font-weight:600;font-size:13px">${esc(c.nombre)} <span style="color:var(--text3);font-weight:400">· ${esc(c.usuario)}</span></div><div style="font-size:11px;color:var(--text3)">${esc(c.correo)} · ${opFechaHora(c.created_at)}</div>${c.funciones ? `<div style="font-size:12px;margin-top:4px">${esc(c.funciones)}</div>` : ''}<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="abrirAprobarSolicitud('${esc(c.id)}')">Aprobar</button><button class="btn sm danger" onclick="rechazarSolicitud('${esc(c.id)}')">Rechazar</button></div></div>`).join('')}</div>`;
   }
-  cont.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="solNueva()">Nueva solicitud</button></div>` + cuentasHtml +
+  const clavesHtml = currentUser.role === 'rh' ? await solClavesRH() : '';
+  cont.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="solNueva()">Nueva solicitud</button></div>` + cuentasHtml + clavesHtml +
     bloque(`Por resolver <span class="tag a">${porRes.length}</span>`, porRes) + bloque('Mis solicitudes', mias) +
     bloque('Otras solicitudes de mi área', otras) +
     (!SOL.lista.length ? '<div class="empty-sub" style="padding:20px">Aún no hay solicitudes. Usa “Nueva solicitud”.</div>' : '');
@@ -11685,10 +11723,11 @@ async function bellPendientes(){
     add(nl, nl === 1 ? 'Tienes un lavado pendiente de evidencia' : 'Tienes lavados pendientes de evidencia', 'mantenimiento');
   }
   if (!avUrl(currentUser.userId) && !(AV.dir[currentUser.userId] || {}).avatar_path) add(1, 'Pon tu foto de perfil (debes ser tú, con el rostro visible)', 'ajustes');
-  if (esDireccionReal()){
-    const { data } = await sb.from('reset_password').select('id').eq('estado', 'pendiente');
+  if (puedeGestionarClaves()){
+    const r = currentUser.role === 'rh' ? await llamarResetAdminSilencioso({ accion:'listar' }) : null;
+    const data = currentUser.role === 'rh' ? (r?.solicitudes || []).filter(x => x.estado === 'pendiente') : (await sb.from('reset_password').select('id').eq('estado', 'pendiente')).data;
     const n = (data || []).length;
-    add(n, n === 1 ? 'Una persona pide restablecer su contraseña' : n + ' personas piden restablecer su contraseña', 'configuracion');
+    add(n, n === 1 ? 'Una persona pide restablecer su contraseña' : n + ' personas piden restablecer su contraseña', currentUser.role === 'rh' ? 'solicitudes' : 'configuracion');
   }
   if (typeof CHAT !== 'undefined'){
     const ns = chatSolicitudesPendientes().length, nm = chatTotalSinLeer();
