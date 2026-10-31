@@ -12508,7 +12508,13 @@ async function rtCargarHistorial(){
   if (error || !data){ cont.innerHTML = ''; return; }
   const ids = [...new Set(data.map(o => o.creado_por).filter(Boolean))];
   const nombres = {};
-  if (ids.length){ const { data: ps } = await sb.from('profiles').select('id,nombre').in('id', ids); (ps||[]).forEach(p => nombres[p.id] = p.nombre); }
+  if (ids.length){
+    let ps = null;
+    const r = await sb.rpc('nombres_creadores_ordenes', { p_ids: ids });
+    if (!r.error) ps = r.data;
+    else { const q = await sb.from('profiles').select('id,nombre').in('id', ids); ps = q.data; }
+    (ps||[]).forEach(p => nombres[p.id] = p.nombre);
+  }
   if (currentUser.userId && nombres[currentUser.userId] === undefined) nombres[currentUser.userId] = 'Tú';
   const dias = {};
   data.forEach(o => {
