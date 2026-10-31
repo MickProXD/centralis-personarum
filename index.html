@@ -2108,7 +2108,7 @@ select.form-input option{background:var(--bg2)}
   </div>
 </div>
 
-<!-- HORARIO DE ASISTENCIA (solo RH modifica) -->
+<!-- HORARIO DE ASISTENCIA (RH y Dirección modifican) -->
 <div class="overlay" id="modal-horario" onclick="if(event.target===this)closeModal('modal-horario')">
   <div class="modal">
     <div class="modal-head">
@@ -2125,8 +2125,9 @@ select.form-input option{background:var(--bg2)}
         <div><label class="form-lbl req">Límite de precaución (min)</label><input class="form-input" type="number" min="0" id="hor-lim"></div>
       </div>
       <div style="font-size:10px;color:var(--text3);margin:6px 0 10px;line-height:1.5">Hasta la tolerancia = puntual. Después de la tolerancia y hasta el límite = precaución. Pasado el límite = retardo.</div>
-      <label class="form-lbl">Días laborales</label>
-      <div id="hor-dias" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px"></div>
+      <label class="form-lbl">Días laborales y entrada por día</label>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px;line-height:1.5">Marca los días que trabaja. Si un día entra a otra hora (ej. sábado a las 09:00), escríbela; si la dejas vacía usa la entrada general. El retardo se calcula con la hora de ese día.</div>
+      <div id="hor-dias" style="display:grid;gap:6px;margin-bottom:6px"></div>
       <div class="form-err" id="err-hor" style="margin-top:8px">—</div>
     </div>
     <div class="modal-foot">
@@ -7323,10 +7324,26 @@ function abrirExpedienteColab(id){
     document.getElementById('obs-saved-state').textContent = 'Guardado';
     obsEl.oninput = ()=>{ document.getElementById('obs-saved-state').textContent = 'Sin guardar'; document.getElementById('obs-saved-state').style.color = 'var(--amber)'; };
   }
-  renderExpDocs(); renderExpAsis(); renderExpHist(); renderExpActas();
+  renderExpDocs(); renderExpAsis(); renderExpHist(); renderExpActas(); renderExpHorario();
   nav('expediente', null);
   document.getElementById('tb-crumb').textContent = '/ ' + c.nombre;
   expTab('datos', document.querySelector('.tab-item'));
+}
+
+/* Horario de asistencia dentro del perfil (RH y Dirección lo editan; por día o general) */
+async function renderExpHorario(){
+  const cont = document.getElementById('exp-asignacion'); if (!cont || !currentColabId) return;
+  const id = currentColabId;
+  cont.querySelectorAll('.exp-horario-row').forEach(n => n.remove());
+  const { data } = await sb.from('horarios_asistencia').select('*').or(`colaborador_id.eq.${id},colaborador_id.is.null`);
+  if (id !== currentColabId) return;
+  const h = (data||[]).find(x => x.colaborador_id) || (data||[]).find(x => !x.colaborador_id);
+  if (!h) return;
+  const propio = !!h.colaborador_id;
+  const dias = (h.dias||[]).slice().sort().map(d => DIAS_LBL[d] + ' ' + String((h.entradas_dia||{})[d] || h.hora_entrada).slice(0,5)).join(' · ');
+  const div = document.createElement('div'); div.className = 'field-row exp-horario-row';
+  div.innerHTML = `<div class="field-lbl">Horario</div><div class="field-val">${esc(dias)}<div style="font-size:11px;color:var(--text3)">${propio ? 'Horario personalizado' : 'Horario base (todos)'} · salida ${esc(String(h.hora_salida).slice(0,5))}</div>${puedeEditarHorarios() ? `<button class="btn sm" style="margin-top:6px" onclick="abrirHorario('${esc(id)}')">Editar horario</button>` : ''}</div>`;
+  cont.appendChild(div);
 }
 
 function expTab(tab, el){
@@ -12299,11 +12316,11 @@ async function registrarAsistencia(tipo){
 /* ── Horarios (RH modifica; Dirección solo consulta) ── */
 async function renderHorariosConfig(){
   const cont = document.getElementById('cfg-horarios-list'); if (!cont) return;
-  const esRH = currentUser.role === 'rh';
+  const esRH = puedeEditarHorarios();
   const btn = document.getElementById('btn-horario-nuevo'); if (btn) btn.style.display = esRH ? '' : 'none';
   const { data, error } = await sb.from('horarios_asistencia').select('*');
   if (error){ cont.innerHTML = '<div class="empty-sub">No se pudieron cargar los horarios</div>'; return; }
-  const dias = h => (h.dias||[]).sort().map(d => DIAS_LBL[d]).join(' ');
+  const dias = h => (h.dias||[]).sort().map(d => DIAS_LBL[d] + ((h.entradas_dia||{})[d] ? ' ' + String(h.entradas_dia[d]).slice(0,5) : '')).join(' · ');
   const linea = (h, nombre, extra) => `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
     <div style="flex:1"><strong>${esc(nombre)}</strong><div style="color:var(--text3);font-size:11px">${h.hora_entrada.slice(0,5)} a ${h.hora_salida.slice(0,5)} · puntual ≤ ${h.tolerancia_min} min · precaución ≤ ${h.limite_precaucion_min} min · ${dias(h)}</div></div>${extra||''}</div>`;
   const base = data.find(h => !h.colaborador_id);
@@ -12312,11 +12329,12 @@ async function renderHorariosConfig(){
     pers.map(h => { const c = DB.colaboradores.find(x => x.id === h.colaborador_id);
       return linea(h, c ? c.nombre : 'Colaborador', esRH ? `<button class="btn sm" onclick="abrirHorario('${h.colaborador_id}')">Editar</button><button class="btn sm danger" onclick="quitarHorario('${h.colaborador_id}')">Quitar</button>` : ''); }).join('');
 }
+function puedeEditarHorarios(){ return !!currentUser && (currentUser.role === 'rh' || esDireccionReal()); }
 function abrirHorario(colabId){
-  if (currentUser.role !== 'rh'){ toast('Solo RH puede modificar los horarios','error'); return; }
+  if (!puedeEditarHorarios()){ toast('Solo RH y Dirección pueden modificar los horarios','error'); return; }
   document.getElementById('hor-colab').innerHTML = '<option value="">Horario base (todos)</option>' + DB.colaboradores.map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
   document.getElementById('hor-colab').value = colabId || '';
-  document.getElementById('hor-dias').innerHTML = [1,2,3,4,5,6,7].map(d => `<label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="hor-d${d}" value="${d}">${DIAS_LBL[d]}</label>`).join('');
+  document.getElementById('hor-dias').innerHTML = [1,2,3,4,5,6,7].map(d => `<div style="display:flex;align-items:center;gap:10px;font-size:12px"><label style="display:flex;align-items:center;gap:6px;width:90px"><input type="checkbox" id="hor-d${d}" value="${d}">${DIAS_LBL[d]}</label><input class="form-input" type="time" id="hor-e${d}" style="width:130px" title="Entrada de este día (vacío = entrada general)"></div>`).join('');
   document.getElementById('err-hor').classList.remove('show');
   cargarHorarioForm();
   openModal('modal-horario');
@@ -12332,10 +12350,10 @@ async function cargarHorarioForm(){
   document.getElementById('hor-salida').value = data.hora_salida.slice(0,5);
   document.getElementById('hor-tol').value = data.tolerancia_min;
   document.getElementById('hor-lim').value = data.limite_precaucion_min;
-  [1,2,3,4,5,6,7].forEach(d => { document.getElementById('hor-d'+d).checked = (data.dias||[]).includes(d); });
+  [1,2,3,4,5,6,7].forEach(d => { document.getElementById('hor-d'+d).checked = (data.dias||[]).includes(d); const v = (data.entradas_dia||{})[d]; document.getElementById('hor-e'+d).value = v ? String(v).slice(0,5) : ''; });
 }
 async function guardarHorario(){
-  if (currentUser.role !== 'rh') return;
+  if (!puedeEditarHorarios()) return;
   const err = document.getElementById('err-hor'); err.classList.remove('show');
   const fail = m => { err.textContent = m; err.classList.add('show'); };
   const colab = document.getElementById('hor-colab').value || null;
@@ -12346,13 +12364,15 @@ async function guardarHorario(){
   if (isNaN(tolerancia_min) || isNaN(limite_precaucion_min) || tolerancia_min < 0) return fail('Indica la tolerancia y el límite en minutos');
   if (limite_precaucion_min < tolerancia_min) return fail('El límite de precaución no puede ser menor que la tolerancia');
   if (!dias.length) return fail('Selecciona al menos un día laboral');
-  const campos = { hora_entrada, hora_salida, tolerancia_min, limite_precaucion_min, dias, actualizado_por: currentUser.userId, actualizado_en: new Date().toISOString() };
+  const entradas_dia = {};
+  dias.forEach(d => { const v = document.getElementById('hor-e'+d).value; if (v && v !== hora_entrada) entradas_dia[d] = v; });
+  const campos = { hora_entrada, hora_salida, tolerancia_min, limite_precaucion_min, dias, entradas_dia, actualizado_por: currentUser.userId, actualizado_en: new Date().toISOString() };
   const { error } = colab
     ? await sb.from('horarios_asistencia').upsert({ colaborador_id: colab, ...campos }, { onConflict:'colaborador_id' })
     : await sb.from('horarios_asistencia').update(campos).is('colaborador_id', null);
   if (error) return fail(error.message);
   await audit('config', `Horario de asistencia actualizado (${colab ? (DB.colaboradores.find(c=>c.id===colab)?.nombre||'persona') : 'base'})`, 'a');
-  closeModal('modal-horario'); toast('Horario guardado','success'); renderHorariosConfig();
+  closeModal('modal-horario'); toast('Horario guardado','success'); renderHorariosConfig(); if (typeof renderExpHorario === 'function' && currentColabId) renderExpHorario();
 }
 function quitarHorario(colabId){
   confirmar('¿Quitar el horario personalizado? Esta persona volverá a usar el horario base.', 'Quitar horario', async () => {
