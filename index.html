@@ -13739,8 +13739,10 @@ async function renderQrSedesAsis(){
   const p=document.getElementById('asis-qr-panel');
   if(!p) return;
   if(!['rh','direccion_ceo'].includes(currentUser.role)){ p.style.display='none'; return; }
-  const [{data:sites},{data:naves}]=await Promise.all([ sb.from('sites').select('id,nombre').order('nombre'), sb.from('bio_naves').select('id,nombre').order('nombre') ]);
-  _asisSedesLista=[...(sites||[]).map(x=>({id:x.id,nombre:x.nombre,k:'site:'+x.id})),...(naves||[]).map(x=>({id:x.id,nombre:x.nombre,k:'nave:'+x.id}))];
+  const [{data:sites},{data:naves},{data:cfgSites}]=await Promise.all([ sb.from('sites').select('id,nombre').order('nombre'), sb.from('bio_naves').select('id,nombre').order('nombre'), sb.from('sedes_asistencia_site').select('site_id') ]);
+  // Un Site sin ubicación/red propia para checar es el mismo lugar físico que su Bio-Nave: no se duplica el botón
+  const sitesConCfg = new Set((cfgSites||[]).map(x=>x.site_id));
+  _asisSedesLista=[...(sites||[]).filter(x=>sitesConCfg.has(x.id)).map(x=>({id:x.id,nombre:x.nombre,k:'site:'+x.id})),...(naves||[]).map(x=>({id:x.id,nombre:x.nombre,k:'nave:'+x.id}))];
   if (ASIS_SEDE && !_asisSedesLista.some(x => x.k === ASIS_SEDE)) ASIS_SEDE = '';
   p.style.display= _asisSedesLista.length?'block':'none';
   pintarFiltroSedesAsis();
