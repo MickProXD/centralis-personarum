@@ -362,6 +362,37 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 .page{display:none}.page.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fadein{animation:fadeUp .25s ease backwards}
+/* Hoja del logo que se llena como un vaso de agua (pantalla de carga) */
+.hoja-agua{position:relative;width:90px;height:160px;background:rgba(82,160,100,.16);-webkit-mask:url(data:image/png;base64,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) center/contain no-repeat;mask:url(data:image/png;base64,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) center/contain no-repeat;overflow:hidden}
+.hoja-agua-nivel{position:absolute;left:0;right:0;top:0;height:100%;animation:hojaLlena 3.6s cubic-bezier(.45,.05,.35,1) infinite}
+.hoja-ola{position:absolute;left:-60%;top:0;width:220%;height:220%;border-radius:42%;background:linear-gradient(180deg,#5fd08a,#2f7d3f);animation:hojaOla 4s linear infinite;opacity:.95}
+.hoja-ola.b{background:#3f9a55;opacity:.55;animation-duration:6s;animation-direction:reverse}
+@keyframes hojaLlena{0%{transform:translateY(100%)}70%,100%{transform:translateY(-6%)}}
+@keyframes hojaOla{to{transform:rotate(360deg)}}
+.carga-pts i{font-style:normal;animation:cargaPto 1.2s infinite both}.carga-pts i:nth-child(2){animation-delay:.2s}.carga-pts i:nth-child(3){animation-delay:.4s}
+@keyframes cargaPto{0%,80%,100%{opacity:.15}40%{opacity:1}}
+/* Desplazamiento lateral al cambiar de panel */
+.mov-in-r{animation:movInR .38s cubic-bezier(.22,.8,.3,1) backwards}
+.mov-in-l{animation:movInL .38s cubic-bezier(.22,.8,.3,1) backwards}
+@keyframes movInR{from{opacity:0;transform:translateX(42px)}to{opacity:1;transform:none}}
+@keyframes movInL{from{opacity:0;transform:translateX(-42px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.hoja-agua-nivel,.hoja-ola,.carga-pts i{animation:none}.hoja-agua-nivel{transform:translateY(10%)}.mov-in-r,.mov-in-l{animation:none}}
+/* Movimiento: entrada escalonada de tarjetas, elevación al pasar el cursor, confeti y +puntos */
+.page.active .mcard,.page.active .panel{animation:fadeUp .35s ease backwards}
+.page.active .mcard:nth-child(2),.page.active .panel:nth-of-type(2){animation-delay:.05s}
+.page.active .mcard:nth-child(3),.page.active .panel:nth-of-type(3){animation-delay:.1s}
+.page.active .mcard:nth-child(4),.page.active .panel:nth-of-type(4){animation-delay:.15s}
+.page.active .mcard:nth-child(n+5),.page.active .panel:nth-of-type(n+5){animation-delay:.2s}
+.mcard{transition:border-color .15s,transform .18s ease,box-shadow .18s ease}
+.mcard:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.btn{transition:transform .12s ease,filter .15s}
+.btn:active{transform:scale(.96)}
+.mov-barra{transition:width .9s cubic-bezier(.22,.8,.3,1)}
+.mov-confeti{position:fixed;left:0;top:0;width:8px;height:12px;pointer-events:none;z-index:3000;border-radius:2px;animation:movConfeti var(--t,1.4s) cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes movConfeti{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--r))}}
+.mov-puntos{position:fixed;pointer-events:none;z-index:3001;font-family:var(--head);font-weight:900;font-size:26px;color:var(--green);text-shadow:0 2px 10px rgba(0,0,0,.35);animation:movPuntos 1.5s ease-out forwards}
+@keyframes movPuntos{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}20%{opacity:1;transform:translate(-50%,-10px) scale(1.2)}100%{opacity:0;transform:translate(-50%,-90px) scale(1)}}
+@media (prefers-reduced-motion:reduce){.page.active .mcard,.page.active .panel{animation:none}.mcard:hover{transform:none}.mov-barra{transition:none}.mov-confeti,.mov-puntos{display:none}}
 .panel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);overflow:visible;margin-bottom:14px}
 .ph{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ph-title{font-family:var(--head);font-size:12px;font-weight:900;color:var(--text)}
@@ -651,7 +682,7 @@ select.form-input option{background:var(--bg2)}
      Modo "setup": primera vez (sin cuentas) → crear cuenta Dirección/CEO.
      Modo "login": usuario + contraseña con PBKDF2, bloqueo y timeout.
      ═══════════════════════════════════════════════════════════════════ -->
-<div id="carga-sesion" style="display:none;position:fixed;inset:0;z-index:998;background:var(--bg,#0d1512);align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--text2,#9ab);font-size:13px"><div style="font-weight:700;font-size:15px;color:var(--text,#fff)">Bio-centralis</div>Cargando tu perfil…</div>
+<div id="carga-sesion" style="display:none;position:fixed;inset:0;z-index:998;background:var(--bg,#0d1512);align-items:center;justify-content:center;flex-direction:column;gap:14px;color:var(--text2,#9ab);font-size:13px"><div class="hoja-agua"><div class="hoja-agua-nivel"><i class="hoja-ola"></i><i class="hoja-ola b"></i></div></div><div style="font-weight:700;font-size:15px;color:var(--text,#fff)">Bio-centralis</div><div class="carga-txt">Cargando tu perfil<span class="carga-pts"><i>.</i><i>.</i><i>.</i></span></div></div>
 <div id="login-screen" style="display:none;position:fixed;inset:0;z-index:999;overflow:auto">
   <div class="ls-wrap">
     <div class="ls-left">
@@ -1192,6 +1223,7 @@ select.form-input option{background:var(--bg2)}
         <div class="tab-item" onclick="expTab('asis',this)">📅 Asistencias</div>
         <div class="tab-item" onclick="expTab('hist',this)">🕐 Historial</div>
         <div class="tab-item" id="exp-tabbtn-actas" onclick="expTab('actas',this)">⚖️ Actas</div>
+        <div class="tab-item hidden-by-role" id="exp-tabbtn-vac" onclick="expTab('vac',this)">🌴 Vacaciones</div>
       </div>
       <div id="exp-tab-datos" class="tab-panel active">
         <div class="grid2">
@@ -1224,6 +1256,9 @@ select.form-input option{background:var(--bg2)}
           <div class="ph"><div class="ph-title">Asistencias últimas 4 semanas</div></div>
           <div id="exp-asis-list"></div>
         </div>
+      </div>
+      <div id="exp-tab-vac" class="tab-panel">
+        <div id="exp-vac"></div>
       </div>
       <div id="exp-tab-hist" class="tab-panel">
         <div class="panel">
@@ -1334,6 +1369,10 @@ select.form-input option{background:var(--bg2)}
           <button class="btn" onclick="descargarAsistenciaXLS()">⬇ XLS</button>
           <button class="btn" onclick="descargarAsistenciaPDF()">⬇ PDF</button>
         </div>
+      </div>
+      <div class="panel" id="asis-tipo-panel" style="margin-bottom:14px;padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;color:var(--text2)">Revisar asistencia de:</span>
+        <span id="asis-tipo-chips" style="display:inline-flex;gap:6px;flex-wrap:wrap"></span>
       </div>
       <div class="panel">
         <div class="asis-grid" id="asis-grid"></div>
@@ -5939,7 +5978,16 @@ function nav(page, el){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
   const pg = document.getElementById('page-' + page);
-  if (pg) { pg.classList.add('active'); void pg.offsetWidth; pg.classList.add('fadein'); }
+  if (pg) {
+    pg.classList.add('active'); void pg.offsetWidth; pg.classList.add('fadein');
+    if (!MOV_REDUCIDO()){
+      const orden = [...document.querySelectorAll('.sb-item')].map(i => i.getAttribute('data-page')), ant = window._movPagPrev;
+      const dir = (ant && orden.indexOf(page) >= 0 && orden.indexOf(ant) >= 0 && orden.indexOf(page) < orden.indexOf(ant)) ? 'mov-in-l' : 'mov-in-r';
+      pg.classList.remove('mov-in-r', 'mov-in-l'); void pg.offsetWidth; pg.classList.add(dir);
+      setTimeout(() => pg.classList.remove('mov-in-r', 'mov-in-l'), 450);
+    }
+    window._movPagPrev = page;
+  }
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
@@ -6016,6 +6064,48 @@ function toggleDot3(id){
 // ═══════════════════════════════════════════════════════════════════
 // TOAST + CONFIRM
 // ═══════════════════════════════════════════════════════════════════
+/* ── Movimiento ── */
+const MOV_REDUCIDO = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function movCelebrar(puntos){
+  if (MOV_REDUCIDO()) return;
+  try {
+    const cx = window.innerWidth / 2, cy = window.innerHeight * 0.35, col = ['#52d483', '#4da3ff', '#f5b942', '#b07cff', '#ff6b6b'];
+    for (let i = 0; i < 36; i++){
+      const e = document.createElement('i'); e.className = 'mov-confeti';
+      const a = Math.random() * Math.PI * 2, v = 90 + Math.random() * 190;
+      e.style.cssText = `left:${cx}px;top:${cy}px;background:${col[i % col.length]};--dx:${Math.cos(a) * v}px;--dy:${Math.sin(a) * v + 140}px;--r:${Math.random() * 720 - 360}deg;--t:${1.1 + Math.random() * .7}s`;
+      document.body.appendChild(e); setTimeout(() => e.remove(), 2000);
+    }
+    if (puntos){ const p = document.createElement('div'); p.className = 'mov-puntos'; p.textContent = '+' + puntos; p.style.left = cx + 'px'; p.style.top = cy + 'px'; document.body.appendChild(p); setTimeout(() => p.remove(), 1700); }
+  } catch(e){}
+}
+/* Números que cuentan y barras que se llenan al abrir una página (una sola vez por visita) */
+function movAnimarPagina(pg){
+  if (!pg || MOV_REDUCIDO()) return;
+  pg.querySelectorAll('.mcard-val').forEach(el => {
+    const nodo = [...el.childNodes].find(n => n.nodeType === 3 && /^\s*[\d,.]+%?\s*$/.test(n.textContent));
+    if (!nodo) return;
+    const txt = nodo.textContent.trim(), pct = txt.endsWith('%'), dec = (txt.match(/\.(\d+)/) || [, ''])[1].length;
+    const fin = parseFloat(txt.replace(/[,%]/g, '')); if (!isFinite(fin) || fin === 0) return;
+    const t0 = performance.now(), dur = 800, coma = txt.includes(',');
+    const paso = t => { const k = Math.min(1, (t - t0) / dur), v = fin * (1 - Math.pow(1 - k, 3)); const f = v.toFixed(dec); nodo.textContent = (coma ? Number(f).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : f) + (pct ? '%' : ''); if (k < 1) requestAnimationFrame(paso); else nodo.textContent = txt; };
+    nodo.textContent = (0).toFixed(dec) + (pct ? '%' : ''); requestAnimationFrame(paso);
+  });
+  pg.querySelectorAll('div[style*="height:100%"][style*="width:"]').forEach(b => {
+    const m = /width:\s*([\d.]+)%/.exec(b.getAttribute('style') || ''); if (!m) return;
+    const fin = m[1] + '%'; b.classList.add('mov-barra'); b.style.width = '0%';
+    requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = fin; }));
+  });
+}
+(function(){
+  try {
+    new MutationObserver(ms => ms.forEach(m => {
+      const el = m.target;
+      if (el.classList && el.classList.contains('page') && el.classList.contains('active') && !(m.oldValue || '').split(' ').includes('active')) setTimeout(() => movAnimarPagina(el), 350);
+    })).observe(document.body, { subtree:true, attributes:true, attributeFilter:['class'], attributeOldValue:true });
+  } catch(e){}
+})();
+
 function toast(msg, tipo='success'){
   const t = document.createElement('div');
   t.className = 'toast ' + tipo;
@@ -6027,6 +6117,7 @@ function toast(msg, tipo='success'){
   t.innerHTML = (icos[tipo]||icos.info) + msg;
   document.getElementById('toast-cont').appendChild(t);
   setTimeout(()=>t.remove(), 3000);
+  if (tipo === 'success'){ const m = /\(\+(\d+)\s*puntos?\)/i.exec(String(msg)); if (m) movCelebrar(m[1]); }
   if (tipo === 'success' && typeof insigniasProgramar === 'function') insigniasProgramar();
 }
 
@@ -7324,10 +7415,100 @@ function abrirExpedienteColab(id){
     document.getElementById('obs-saved-state').textContent = 'Guardado';
     obsEl.oninput = ()=>{ document.getElementById('obs-saved-state').textContent = 'Sin guardar'; document.getElementById('obs-saved-state').style.color = 'var(--amber)'; };
   }
-  renderExpDocs(); renderExpAsis(); renderExpHist(); renderExpActas(); renderExpHorario();
+  renderExpDocs(); renderExpAsis(); renderExpHist(); renderExpActas(); renderExpHorario(); renderExpVac();
   nav('expediente', null);
   document.getElementById('tb-crumb').textContent = '/ ' + c.nombre;
   expTab('datos', document.querySelector('.tab-item'));
+}
+
+/* ── Vacaciones: RH y Dirección determinan los días de cada año de servicio y registran los periodos tomados ── */
+const puedeGestionarVac = () => !!currentUser && (currentUser.role === 'rh' || esDireccionReal());
+// Referencia: Ley Federal del Trabajo (reforma 2023). Es solo una sugerencia; RH y Dirección determinan los días.
+function vacDiasLey(n){ return n <= 0 ? 0 : n <= 4 ? 10 + 2 * n : n <= 5 ? 20 : n <= 10 ? 22 : n <= 15 ? 24 : n <= 20 ? 26 : n <= 25 ? 28 : n <= 30 ? 30 : 32; }
+function vacAniosCumplidos(ingreso){
+  if (!ingreso) return 0;
+  const i = new Date(String(ingreso).slice(0, 10) + 'T12:00:00'); if (isNaN(i)) return 0;
+  const h = new Date(); let a = h.getFullYear() - i.getFullYear();
+  if (h < new Date(h.getFullYear(), i.getMonth(), i.getDate())) a--;
+  return Math.max(0, a);
+}
+const VAC = { per:[], tom:[] };
+async function renderExpVac(){
+  const tab = document.getElementById('exp-tabbtn-vac'), cont = document.getElementById('exp-vac');
+  const c = DB.colaboradores.find(c => String(c.id) === currentColabId);
+  if (!tab || !cont || !c) return;
+  const ok = puedeGestionarVac();
+  tab.classList.toggle('hidden-by-role', !ok);
+  if (!ok){ cont.innerHTML = ''; return; }
+  const [per, tom] = await Promise.all([
+    sb.from('vacaciones_periodos').select('*').eq('colaborador_id', c.id).order('anio_servicio'),
+    sb.from('vacaciones_tomadas').select('*').eq('colaborador_id', c.id).order('desde', { ascending:false })
+  ]);
+  if (String(c.id) !== currentColabId) return;
+  if (per.error || tom.error){ cont.innerHTML = '<div class="panel"><div class="empty-sub" style="padding:20px">No se pudieron cargar las vacaciones</div></div>'; return; }
+  VAC.per = per.data || []; VAC.tom = tom.data || [];
+  const cumplidos = vacAniosCumplidos(c.ingreso);
+  const anios = [...new Set([...Array.from({ length: cumplidos }, (_, i) => i + 1), ...VAC.per.map(x => x.anio_servicio)])].sort((a, b) => a - b);
+  const tomadosDe = n => VAC.tom.filter(t => t.anio_servicio === n).reduce((a, t) => a + t.dias, 0);
+  const totOtorg = VAC.per.reduce((a, x) => a + x.dias, 0), totTom = VAC.tom.reduce((a, t) => a + t.dias, 0), totPag = VAC.tom.filter(t => t.tipo === 'pagadas').reduce((a, t) => a + t.dias, 0);
+  const filas = anios.map(n => {
+    const p = VAC.per.find(x => x.anio_servicio === n), tdo = tomadosDe(n), ley = vacDiasLey(n);
+    const pag = VAC.tom.filter(t => t.anio_servicio === n && t.tipo === 'pagadas').reduce((a, t) => a + t.dias, 0), dis = tdo - pag;
+    return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--border);font-size:12px">
+      <div style="width:90px"><strong>Año ${n}</strong></div>
+      <div style="flex:1;min-width:200px">${p ? `<strong>${p.dias}</strong> días otorgados · disfrutados ${dis} · pagados ${pag} · <strong style="color:var(--${p.dias - tdo < 0 ? 'red' : 'green'})">disponibles ${p.dias - tdo}</strong>
+        <div style="font-size:11px;color:var(--text3)">Lo determinó ${esc(p.determinado_nombre || '—')} · ${esc(String(p.updated_at).slice(0, 10))}${p.nota ? ' · ' + esc(p.nota) : ''}</div>` : `<span class="tag a">Sin determinar</span> <span style="color:var(--text3)">usados ${tdo}</span>`}
+        <div style="font-size:11px;color:var(--text3)">Referencia de la Ley: ${ley} días</div></div>
+      <button class="btn sm" onclick="vacDeterminar(${n})">${p ? 'Cambiar días' : 'Determinar días'}</button></div>`;
+  }).join('');
+  const hist = VAC.tom.map(t => `<div style="display:flex;gap:10px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--border);font-size:12px">
+    <div style="width:190px">${t.tipo === 'pagadas' ? `<span class="tag b">Pagadas</span> ${esc(t.desde)}` : `<strong>${esc(t.desde)}</strong> al <strong>${esc(t.hasta)}</strong>`}</div><div style="width:110px">${t.dias} día${t.dias === 1 ? '' : 's'} · año ${t.anio_servicio}</div>
+    <div style="flex:1;min-width:160px;color:var(--text3)">${esc(t.nota || '')}${t.nota ? ' · ' : ''}Registró ${esc(t.registrado_nombre || '—')}</div></div>`).join('');
+  cont.innerHTML = `<div class="panel"><div class="ph"><div class="ph-title">Vacaciones de ${esc(c.nombre.split(' ').slice(0, 2).join(' '))}</div>
+      <button class="btn sm primary" onclick="vacRegistrar()" ${anios.length ? '' : 'disabled'}>＋ Registrar vacaciones</button></div>
+    <div style="padding:6px 16px 4px;font-size:12px;color:var(--text2)">Ingreso ${esc(c.ingreso || '—')} · ${cumplidos} año${cumplidos === 1 ? '' : 's'} cumplido${cumplidos === 1 ? '' : 's'} · Otorgados <strong>${totOtorg}</strong> · Disfrutados <strong>${totTom - totPag}</strong> · Pagados <strong>${totPag}</strong> · Disponibles <strong>${totOtorg - totTom}</strong></div>
+    <div style="padding:0 16px 10px">${filas || '<div class="empty-sub" style="padding:14px">Aún no cumple su primer año. Cuando lo cumpla podrás determinar sus días.</div>'}</div></div>
+    <div class="panel" style="margin-top:12px"><div class="ph"><div class="ph-title">Historial de vacaciones (disfrutadas y pagadas)</div></div><div style="padding:0 16px 10px">${hist || '<div class="empty-sub" style="padding:14px">Sin vacaciones registradas.</div>'}</div></div>`;
+}
+function vacDeterminar(n){
+  if (!puedeGestionarVac()) return;
+  const c = DB.colaboradores.find(c => String(c.id) === currentColabId); if (!c) return;
+  const p = VAC.per.find(x => x.anio_servicio === n);
+  finModal(`Días de vacaciones — año ${n}`,
+    `<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Referencia de la Ley Federal del Trabajo para el año ${n}: <strong>${vacDiasLey(n)} días</strong>. RH y Dirección determinan los días finales.</div>` +
+    finCampo('Días de vacaciones', 'vd-dias', 'number', p ? p.dias : vacDiasLey(n), 'min="0" max="60" inputmode="numeric"') + finArea('Nota (opcional)', 'vd-nota', p?.nota || ''),
+    async () => {
+      const dias = parseInt(fv('vd-dias')); if (isNaN(dias) || dias < 0 || dias > 60) return finErr('Indica los días (0 a 60)');
+      const { error } = await sb.from('vacaciones_periodos').upsert({ colaborador_id: c.id, anio_servicio: n, dias, nota: fv('vd-nota').trim() || null }, { onConflict:'colaborador_id,anio_servicio' });
+      if (error) return finErr(error.message);
+      await audit('edit', `Vacaciones año ${n}: ${dias} días para <strong>${esc(c.nombre)}</strong>`, 'a');
+      toast('Días de vacaciones guardados', 'success'); renderExpVac();
+    }, 'Guardar');
+}
+function vacRegistrar(){
+  if (!puedeGestionarVac()) return;
+  const c = DB.colaboradores.find(c => String(c.id) === currentColabId); if (!c) return;
+  const opciones = VAC.per.map(x => [x.anio_servicio, `Año ${x.anio_servicio} (disponibles ${x.dias - VAC.tom.filter(t => t.anio_servicio === x.anio_servicio).reduce((a, t) => a + t.dias, 0)})`]);
+  if (!opciones.length){ toast('Primero determina los días de vacaciones de algún año', 'error'); return; }
+  const hoy = hoyLocal();
+  finModal('Registrar vacaciones',
+    finSelect('¿Cómo se usan?', 'vr-tipo', [['disfrutadas', 'Las toma (descansa)'], ['pagadas', 'Se las pagan (no las toma)']], 'disfrutadas') +
+    finSelect('Descontar del', 'vr-anio', opciones, opciones[opciones.length - 1][0]) +
+    '<div style="display:flex;gap:8px"><div style="flex:1">' + finCampo('Desde (si se pagan: fecha del pago)', 'vr-desde', 'date', hoy) + '</div><div style="flex:1">' + finCampo('Hasta (si se pagan, igual)', 'vr-hasta', 'date', hoy) + '</div></div>' +
+    finCampo('Días a descontar', 'vr-dias', 'number', 1, 'min="1" max="60" inputmode="numeric"') +
+    '<div style="font-size:11px;color:var(--text3);margin:-4px 0 10px">Cuenta solo los días laborales que se ausenta (sin domingos ni descansos).</div>' + finArea('Nota (opcional)', 'vr-nota', ''),
+    async () => {
+      const tipo = fv('vr-tipo') === 'pagadas' ? 'pagadas' : 'disfrutadas';
+      const desde = fv('vr-desde'), hasta = tipo === 'pagadas' ? fv('vr-desde') : fv('vr-hasta'), dias = parseInt(fv('vr-dias')), anio = parseInt(fv('vr-anio'));
+      if (!desde || !hasta || hasta < desde) return finErr('Revisa las fechas');
+      if (isNaN(dias) || dias < 1 || dias > 60) return finErr('Indica los días a descontar');
+      const p = VAC.per.find(x => x.anio_servicio === anio), usados = VAC.tom.filter(t => t.anio_servicio === anio).reduce((a, t) => a + t.dias, 0);
+      if (p && usados + dias > p.dias) return finErr(`Solo quedan ${p.dias - usados} días disponibles en el año ${anio}`);
+      const { error } = await sb.from('vacaciones_tomadas').insert({ colaborador_id: c.id, anio_servicio: anio, tipo, desde, hasta, dias, nota: fv('vr-nota').trim() || null });
+      if (error) return finErr(error.message);
+      await audit('edit', `Vacaciones ${tipo} (${dias} días) para <strong>${esc(c.nombre)}</strong>`, 'a');
+      toast('Vacaciones registradas', 'success'); renderExpVac();
+    }, 'Registrar');
 }
 
 /* Horario de asistencia dentro del perfil (RH y Dirección lo editan; por día o general) */
@@ -8983,7 +9164,7 @@ async function renderFirmaEstado(){
 }
 
 async function renderAsistencias(){
-  renderQrSedesAsis();
+  renderQrSedesAsis(); pintarFiltroTipoAsis();
   // Scope real: supervisor solo marca/ve asistencias de colaboradores de sus propias sedes
   const activos = asisFiltrar(colaboradoresVisibles().filter(c=>c.estatus==='activo'));
   const dias = diasDeSemana(currentSemana);
@@ -10788,12 +10969,14 @@ async function renderMantenimiento(){
   const cont = document.getElementById('mant-body'); if (!cont) return;
   const ger = mantEsGerencia();
   if (ger){ try { await sb.rpc('mant_aplicar_vencidos'); } catch(e){} }
-  const [inf, uni, lav, sol] = await Promise.all([
+  const [inf, uni, lav, sol, cie] = await Promise.all([
     sb.from('mant_informes').select('*').order('created_at', { ascending:false }).limit(300),
     sb.from('unidades').select('id,bak,chofer_id').order('bak'),
     sb.from('lavados_programados').select('*').order('fecha_programada', { ascending:false }).limit(300),
-    sb.from('solicitudes_op').select('*').in('tipo', MANT_SOL_TIPOS.map(t => t[0])).order('created_at', { ascending:false }).limit(200)
+    sb.from('solicitudes_op').select('*').in('tipo', MANT_SOL_TIPOS.map(t => t[0])).order('created_at', { ascending:false }).limit(200),
+    sb.from('mant_cierres').select('*').order('created_at', { ascending:false }).limit(300)
   ]);
+  MANT.cierres = cie.data || [];
   MANT.inf = inf.data || []; MANT.unidades = uni.data || []; MANT.lav = lav.data || []; MANT.sol = (sol.data || []).filter(mantSolFiltro);
   await solCargarEtapas(MANT.sol);
   const ids = MANT.inf.map(i => i.id);
@@ -11022,6 +11205,7 @@ function mantVistaChofer(){
       <div style="font-size:12px;color:var(--text3)">${hecho ? 'Solo se entrega uno por día. Gracias.' : 'Revisa las condiciones físico-mecánicas de tu unidad antes de salir. Es uno por día y sumas puntos a tu score.'}</div></div>
       ${hecho ? `<span class="tag ${(MANT_NIVEL[hecho.nivel] || ['g'])[0]}">${(MANT_NIVEL[hecho.nivel] || [, ''])[1]}</span>` : '<button class="btn primary" onclick="mantNuevo()">Llenar checklist</button>'}
     </div>
+    ${hecho ? mantCierreCardChofer() : ''}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button></div>
     ${mantTitulo(`Lavados programados${pend.length ? ` <span class="tag a">${pend.length}</span>` : ''}`)}
     <div style="display:flex;flex-direction:column;gap:10px">${[...pend, ...hist].map(l => mantTarjetaLavado(l, false)).join('') || '<div class="empty-sub" style="padding:14px">No tienes lavados programados.</div>'}</div>
@@ -11075,6 +11259,7 @@ function mantDetalleUnidad(){
       <div style="font-family:var(--head);font-weight:900;font-size:17px">${esc(u.bak)}</div><span style="font-size:12px;color:var(--text3)">Chofer: ${esc(e.chofer)}</span>
       <button class="btn sm" style="margin-left:auto" onclick="mantBitacoraAbrir('${esc(u.id)}')">Bitácora</button>${currentUser.role === 'mantenimiento' ? '' : `<button class="btn sm primary" onclick="lavProgramar('${esc(u.id)}')">Programar lavado</button>`}</div>
     ${mantTitulo('Checklists')}<div style="display:flex;flex-direction:column;gap:10px">${inf.map(i => mantTarjetaInforme(i, true)).join('') || '<div class="empty-sub" style="padding:14px">Sin checklists todavía.</div>'}</div>
+    ${mantTitulo('Cierres de día')}<div style="display:flex;flex-direction:column;gap:6px">${mantCierresUnidadHtml(u.id)}</div>
     ${mantTitulo('Lavados y evidencia')}<div style="display:flex;flex-direction:column;gap:10px">${lav.map(l => mantTarjetaLavado(l, true)).join('') || '<div class="empty-sub" style="padding:14px">Sin lavados programados.</div>'}</div>
     ${mantTitulo('Solicitudes de mantenimiento')}<div style="display:flex;flex-direction:column;gap:8px">${sol.map(mantFilaSolicitud).join('') || '<div class="empty-sub" style="padding:14px">Sin solicitudes.</div>'}</div>`;
 }
@@ -11247,6 +11432,55 @@ async function mantEnviar(){
   await audit('config', 'Checklist de unidad enviado (' + (MANT_NIVEL[data.nivel] || [])[1] + ')', 'b');
   renderMantenimiento();
 }
+/* ── Cierre del día (checkout): más sencillo que el checklist; suma al score igual que el checklist ── */
+const CIERRE_COMB = { lleno:'Lleno', medio:'Medio', bajo:'Bajo' };
+function mantCierreHoy(){ const hoy = hoyLocal(); return (MANT.cierres || []).find(c => c.chofer_user === currentUser.userId && c.fecha === hoy); }
+function mantCierreCardChofer(){
+  const c = mantCierreHoy();
+  return `<div class="panel" style="padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px">
+    <div style="flex:1;min-width:200px"><div style="font-family:var(--head);font-weight:800;font-size:13px">${c ? 'Cierre del día entregado ✓' : 'Falta el cierre del día'}</div>
+    <div style="font-size:12px;color:var(--text3)">${c ? 'Gracias. Tu unidad quedó registrada al terminar la jornada.' : 'Al terminar tu jornada, confirma en un minuto cómo dejaste la unidad. Suma puntos a tu score.'}</div></div>
+    ${c ? (c.novedad ? '<span class="tag a">Con novedad</span>' : '<span class="tag g">Sin novedad</span>') : '<button class="btn primary" onclick="mantCierreNuevo()">Hacer cierre del día</button>'}</div>`;
+}
+function mantCierresUnidadHtml(uid){
+  const l = (MANT.cierres || []).filter(c => c.unidad_id === uid).slice(0, 10);
+  if (!l.length) return '<div class="empty-sub" style="padding:14px">Sin cierres todavía.</div>';
+  return l.map(c => `<div class="panel" style="padding:10px 14px;font-size:12px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong>${esc(c.fecha)}</strong><span style="color:var(--text3)">${esc(c.chofer_nombre || '')}</span>
+    <span class="tag m">Combustible: ${esc(CIERRE_COMB[c.combustible] || c.combustible)}</span>${c.odometro != null ? `<span class="tag m">${esc(String(c.odometro))} km</span>` : ''}
+    ${c.limpia ? '' : '<span class="tag a">Sucia</span>'}${c.en_nave ? '' : '<span class="tag a">Fuera de la nave</span>'}${c.novedad ? '<span class="tag r">Novedad</span>' : '<span class="tag g">Sin novedad</span>'}</div>
+    ${c.novedad && c.detalle ? `<div style="margin-top:6px;color:var(--text2)">${esc(c.detalle)}</div>` : ''}</div>`).join('');
+}
+function mantCierreNuevo(){
+  if (mantCierreHoy()){ toast('Ya entregaste tu cierre de hoy. Es uno por día.', 'info'); return; }
+  const yo = currentUser.colaboradorId;
+  const propias = MANT.unidades.filter(u => u.chofer_id && u.chofer_id === yo);
+  const lista = (propias.length && !opEsDireccion()) ? propias : MANT.unidades;
+  if (!lista.length){ toast('No tienes una unidad asignada. Pide a tu Gerente Operativo que te la asigne.', 'error'); return; }
+  const SN = [['si', 'Sí'], ['no', 'No']];
+  finModal('Cierre del día',
+    finSelect('Unidad', 'cd-uni', lista.map(u => [u.id, u.bak]), lista[0].id) +
+    finCampo('Kilometraje final (opcional)', 'cd-odo', 'number', '', 'min="0" inputmode="numeric"') +
+    finSelect('Combustible al cierre', 'cd-comb', [['lleno', 'Lleno'], ['medio', 'Medio'], ['bajo', 'Bajo']], 'medio') +
+    finSelect('¿La unidad quedó limpia?', 'cd-limpia', SN, 'si') +
+    finSelect('¿Quedó estacionada en la nave?', 'cd-nave', SN, 'si') +
+    finSelect('¿Hubo alguna novedad o falla hoy?', 'cd-nov', SN.slice().reverse(), 'no') +
+    finArea('Describe la novedad (solo si marcaste Sí)', 'cd-det', '') +
+    `<label class="form-lbl">Fotos (opcional, hasta 4)</label><input class="form-input" type="file" id="cd-fotos" accept="image/jpeg,image/png,image/webp" multiple style="margin-bottom:10px">`,
+    mantCierreEnviar, 'Enviar cierre');
+}
+async function mantCierreEnviar(){
+  const nov = fv('cd-nov') === 'si', det = fv('cd-det').trim(), files = [...(document.getElementById('cd-fotos').files || [])];
+  const ef = opValidarFotos(files, 4); if (ef) return finErr(ef);
+  if (nov && det.length < 5) return finErr('Describe brevemente la novedad');
+  const id = crypto.randomUUID(), odo = fv('cd-odo');
+  const paths = files.length ? await opSubirFotos('mant', id, files) : [];
+  const { error } = await sb.from('mant_cierres').insert({ id, unidad_id: fv('cd-uni'), odometro: odo === '' ? null : Number(odo), combustible: fv('cd-comb'),
+    limpia: fv('cd-limpia') === 'si', en_nave: fv('cd-nave') === 'si', novedad: nov, detalle: nov ? det : null, fotos: paths });
+  if (error){ if (paths.length) await sb.storage.from('mant').remove(paths); return finErr(/duplicate|unique/i.test(error.message) ? 'Ya entregaste tu cierre de hoy. Es uno por día.' : error.message); }
+  toast('Cierre entregado. ¡Gracias! (+3 puntos)', 'success');
+  await audit('config', 'Cierre del día de la unidad entregado', 'b');
+  renderMantenimiento();
+}
 function mantResponder(id){
   const i = MANT.inf.find(x => x.id === id); if (!i) return;
   finModal('Responder con evidencia',
@@ -11355,7 +11589,7 @@ async function renderLogrosMuro(){
   box.innerHTML = `<div class="panel" style="padding:12px 14px"><div style="font-family:var(--head);font-size:12px;font-weight:800;margin-bottom:8px">🏆 Logros del equipo</div>` +
     filas.map(({ x, l }) => `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--border)">${avatarHtml(x.user_id, x.nombre_usuario || '—', 34)}<div style="flex:1;min-width:0;font-size:12px"><strong>${esc(x.nombre_usuario || '—')}</strong> desbloqueó <strong>«${esc(l.n)}»</strong><div style="font-size:10px;color:var(--text3)">${tiempoRel(x.ganada_en)}</div></div>${logroMedalla(l, true, 34)}</div>`).join('') + `</div>`;
 }
-const INS_EV = { cumplimiento_total:'Mes con el 100% de parámetros', lavado_completo:'Lavado entregado con evidencia', lavado_tarde:'Lavado entregado fuera de fecha', lavado_incumplido:'Lavado sin evidencia en la fecha', checklist_omitido:'Checklist del día no entregado', checklist_llenado:'Checklist entregado', reporte_con_evidencia:'Falla reportada con fotos', mant_respuesta_a_tiempo:'Respuesta en plazo con evidencia', mant_respuesta_tarde:'Respuesta fuera de plazo', mant_sin_respuesta:'Falla sin respuesta en plazo', mant_sin_evidencia_adjunta:'Respuesta sin foto ni folio' };
+const INS_EV = { cumplimiento_total:'Mes con el 100% de parámetros', lavado_completo:'Lavado entregado con evidencia', lavado_tarde:'Lavado entregado fuera de fecha', lavado_incumplido:'Lavado sin evidencia en la fecha', checklist_omitido:'Checklist del día no entregado', checklist_llenado:'Checklist entregado', checkout_llenado:'Cierre del día entregado', checkout_omitido:'Cierre del día no entregado', reporte_con_evidencia:'Falla reportada con fotos', mant_respuesta_a_tiempo:'Respuesta en plazo con evidencia', mant_respuesta_tarde:'Respuesta fuera de plazo', mant_sin_respuesta:'Falla sin respuesta en plazo', mant_sin_evidencia_adjunta:'Respuesta sin foto ni folio' };
 function insNivel(t){
   if (t >= 125) return ['Oro', '#e0a100']; if (t >= 110) return ['Plata', '#8a97a8']; if (t >= 90) return ['Bronce', '#b8733a'];
   if (t >= 70) return ['En observación', '#e0a100']; return ['Requiere atención', '#d64545'];
@@ -13474,10 +13708,21 @@ async function subirFotoSede(id, tipo, inp){
 }
 let ASIS_SEDE = '';            // '' = todas · 'site:<id>' · 'nave:<id>'
 let _asisSedesLista = [];
+let ASIS_TIPO = '';            // '' = todo el personal · 'operativo' · 'administrativo'
+const esPuestoAdministrativo = c => /administrativ/i.test(c.puesto || '');
 function asisFiltrar(lista){
+  if (ASIS_TIPO) lista = lista.filter(c => ASIS_TIPO === 'administrativo' ? esPuestoAdministrativo(c) : !esPuestoAdministrativo(c));
   if (!ASIS_SEDE) return lista;
   const [t, id] = ASIS_SEDE.split(':');
   return lista.filter(c => t === 'site' ? String(c.siteId) === id : String(c.bodegaId) === id);
+}
+function asisElegirTipo(t){ ASIS_TIPO = t; pintarFiltroTipoAsis(); pintarFiltroSedesAsis(); renderAsistencias(); }
+function pintarFiltroTipoAsis(){
+  const el = document.getElementById('asis-tipo-chips'); if (!el) return;
+  const base = colaboradoresVisibles().filter(c => c.estatus === 'activo');
+  const nOp = base.filter(c => !esPuestoAdministrativo(c)).length, nAd = base.filter(esPuestoAdministrativo).length;
+  const chip = (k, txt, n) => `<button class="btn sm${ASIS_TIPO === k ? ' primary' : ''}" onclick="asisElegirTipo('${k}')">${txt} <span class="tag m" style="margin-left:6px">${n}</span></button>`;
+  el.innerHTML = chip('', 'Todo el personal', base.length) + chip('operativo', 'Operativo', nOp) + chip('administrativo', 'Administrativo', nAd);
 }
 function asisElegirSede(k){ ASIS_SEDE = (ASIS_SEDE === k) ? '' : k; pintarFiltroSedesAsis(); renderAsistencias(); }
 function asisQrSede(k){ const x = _asisSedesLista.find(i => i.k === k); if (x) verQrSede(x.id, x.nombre); }
