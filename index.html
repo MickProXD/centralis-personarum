@@ -374,6 +374,19 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 /* Desplazamiento lateral al cambiar de panel */
 .mov-in-r{animation:movInR .38s cubic-bezier(.22,.8,.3,1) backwards}
 .mov-in-l{animation:movInL .38s cubic-bezier(.22,.8,.3,1) backwards}
+/* ── Avisos de sesión con personalidad ── */
+.ses-vel{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,12,9,.72);backdrop-filter:blur(4px);animation:sesFade .25s ease-out}
+.ses-card{max-width:360px;width:100%;text-align:center;background:var(--surface,#16201a);color:var(--text,#e8f0ea);border:1px solid var(--border2,#2a3a30);border-radius:18px;padding:26px 22px 20px;box-shadow:0 18px 60px rgba(0,0,0,.5);animation:sesPop .4s cubic-bezier(.2,1.4,.4,1)}
+.ses-card .ses-ico{font-size:46px;display:inline-block;animation:sesMece 2.6s ease-in-out infinite;transform-origin:50% 90%}
+.ses-card h3{margin:8px 0 6px;font-size:17px}
+.ses-card p{margin:0 0 16px;font-size:12.5px;line-height:1.6;color:var(--text2,#9bb0a2)}
+.ses-card .ses-zz{display:inline-block;margin-left:2px;font-weight:700;color:var(--green);animation:sesZz 2s ease-in-out infinite}
+.ses-card .ses-cuenta{font-size:30px;font-weight:700;color:var(--green);margin:-4px 0 12px;font-variant-numeric:tabular-nums}
+@keyframes sesFade{from{opacity:0}to{opacity:1}}
+@keyframes sesPop{from{opacity:0;transform:translateY(18px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes sesMece{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes sesZz{0%{opacity:0;transform:translate(0,4px)}50%{opacity:1}100%{opacity:0;transform:translate(8px,-10px)}}
+@media (prefers-reduced-motion:reduce){.ses-card,.ses-vel,.ses-card .ses-ico,.ses-card .ses-zz{animation:none}}
 @keyframes movInR{from{opacity:0;transform:translateX(42px)}to{opacity:1;transform:none}}
 @keyframes movInL{from{opacity:0;transform:translateX(-42px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.hoja-agua-nivel,.hoja-ola,.carga-pts i{animation:none}.hoja-agua-nivel{transform:translateY(10%)}.mov-in-r,.mov-in-l{animation:none}}
@@ -712,6 +725,19 @@ select.form-input option{background:var(--bg2)}
     </div>
 
     <!-- MODO LOGIN -->
+    <!-- CANDADO CON HUELLA / ROSTRO (solo desbloquea la sesión ya guardada en este celular) -->
+    <div id="bio-lock-screen" style="display:none" class="panel">
+      <div class="ph"><div class="ph-title">Desbloquear</div></div>
+      <div style="padding:18px;text-align:center">
+        <div style="font-size:42px;margin:4px 0 8px">🔒</div>
+        <div id="bio-lock-nombre" style="font-size:13px;font-weight:600;margin-bottom:4px"></div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:14px">Usa tu huella, tu rostro o el PIN de tu celular para entrar.</div>
+        <div class="form-err" id="err-bio" style="margin-bottom:8px">—</div>
+        <button class="btn primary" id="bio-lock-btn" style="width:100%;justify-content:center;height:38px" onclick="bioDesbloquear()">Entrar con huella o rostro</button>
+        <button class="btn" style="width:100%;justify-content:center;height:34px;margin-top:8px" onclick="bioUsarPassword()">Usar mi contraseña</button>
+      </div>
+    </div>
+
     <div id="login-form" style="display:none" class="panel">
       <div class="ph"><div class="ph-title">Iniciar sesión</div></div>
       <div style="padding:18px">
@@ -4370,7 +4396,7 @@ let _lastActivity = Date.now();
 let _mfaFactorId = null;
 
 function mostrarPantalla(id){
-  ['login-setup','login-form','mfa-enroll-screen','mfa-challenge-screen','solicitud-screen','reset-screen','reclamo-screen'].forEach(x=>{
+  ['login-setup','login-form','bio-lock-screen','mfa-enroll-screen','mfa-challenge-screen','solicitud-screen','reset-screen','reclamo-screen'].forEach(x=>{
     const el = document.getElementById(x); if (el) el.style.display = (x===id) ? 'block' : 'none';
   });
 }
@@ -4488,6 +4514,115 @@ function reclamoEntrar(){
   intentarLogin();
 }
 
+/* ── Entrada con huella / rostro ──
+   Candado local: usa el desbloqueo del propio celular (WebAuthn). No guardamos ni vemos huellas ni rostros.
+   Solo protege la sesión que ya está guardada en este celular; si la sesión se vence, se pide la contraseña. ── */
+const BIO_KEY = 'bio_lock_v1';
+window._bioPasado = false;
+function _b64u(buf){ return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function _unb64u(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return Uint8Array.from(atob(s), c=>c.charCodeAt(0)); }
+function bioLeer(){ try { return JSON.parse(localStorage.getItem(BIO_KEY) || 'null'); } catch(e){ return null; } }
+function bioQuitar(){ try { localStorage.removeItem(BIO_KEY); } catch(e){} }
+async function bioDisponible(){
+  try { return !!(window.PublicKeyCredential && window.isSecureContext && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); }
+  catch(e){ return false; }
+}
+async function bioActivar(){
+  const u = currentUser; if (!u) return false;
+  try {
+    const cred = await navigator.credentials.create({ publicKey: {
+      challenge: crypto.getRandomValues(new Uint8Array(32)),
+      rp: { name: 'Bio-centralis', id: location.hostname },
+      user: { id: new TextEncoder().encode(u.userId), name: u.name, displayName: u.name },
+      pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
+      authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged' },
+      timeout: 60000, attestation: 'none'
+    }});
+    localStorage.setItem(BIO_KEY, JSON.stringify({ userId: u.userId, nombre: u.name, credId: _b64u(cred.rawId), en: Date.now() }));
+    return true;
+  } catch(e){ return false; }
+}
+async function bioVerificar(lock){
+  try {
+    const r = await navigator.credentials.get({ publicKey: {
+      challenge: crypto.getRandomValues(new Uint8Array(32)), rpId: location.hostname,
+      allowCredentials: [{ type:'public-key', id: _unb64u(lock.credId), transports:['internal'] }],
+      userVerification: 'required', timeout: 60000
+    }});
+    return !!r;
+  } catch(e){ return false; }
+}
+/* ── Avisos de sesión: "¿sigues ahí?" antes de cerrar, y aviso claro cuando ya se cerró ── */
+function sesTarjeta(ico, titulo, texto, botones, extra){
+  document.getElementById('ses-vel')?.remove();
+  const v = document.createElement('div'); v.id = 'ses-vel'; v.className = 'ses-vel';
+  v.innerHTML = `<div class="ses-card"><div class="ses-ico">${ico}</div><h3>${titulo}</h3>${extra||''}<p>${texto}</p><div style="display:flex;flex-direction:column;gap:8px"></div></div>`;
+  const cont = v.querySelector('div > div:last-child');
+  (botones||[]).forEach(b=>{ const x = document.createElement('button'); x.className = 'btn' + (b.primary?' primary':''); x.style.cssText = 'width:100%;justify-content:center;height:38px'; x.textContent = b.t; x.onclick = ()=>{ v.remove(); b.f && b.f(); }; cont.appendChild(x); });
+  document.body.appendChild(v);
+  return v;
+}
+function sesAvisoCerrada(motivo){
+  if (motivo === 'inactividad') sesTarjeta('😴', 'Te quedaste dormido', 'Pasó un buen rato sin actividad y cerramos tu sesión para cuidar tu cuenta. <span class="ses-zz">z</span><span class="ses-zz" style="animation-delay:.5s">z</span><span class="ses-zz" style="animation-delay:1s">Z</span><br>Entra de nuevo y seguimos donde te quedaste.', [{ t:'Volver a entrar', primary:true }]);
+  else if (motivo === 'expirada') sesTarjeta('🔑', 'Tu sesión se cerró', 'Entraste o saliste desde otra pestaña o equipo, y por seguridad esta ya no sigue abierta. Inicia sesión de nuevo y listo.', [{ t:'Iniciar sesión', primary:true }]);
+}
+let _sesAviso = null, _sesCuenta = null;
+function sesAdvertir(ms){
+  if (document.getElementById('ses-vel')) return;
+  let seg = Math.ceil(ms/1000);
+  const v = sesTarjeta('👀', '¿Sigues ahí?', 'No hemos notado actividad. Si no haces nada, cerraremos tu sesión para cuidar tu cuenta.', [{ t:'Sí, sigo aquí', primary:true, f:()=>{ _lastActivity = Date.now(); clearInterval(_sesCuenta); } }], `<div class="ses-cuenta" id="ses-seg">${seg}</div>`);
+  v.dataset.adv = '1';
+  clearInterval(_sesCuenta);
+  _sesCuenta = setInterval(()=>{ seg--; const e = document.getElementById('ses-seg'); if (e) e.textContent = Math.max(seg,0); if (!document.getElementById('ses-vel')) clearInterval(_sesCuenta); }, 1000);
+}
+/* Si este equipo tiene huella/rostro activados, en vez de cerrar la sesión por inactividad solo se bloquea la pantalla */
+function bioBloquear(){
+  const lock = bioLeer();
+  if (!currentUser || !lock || lock.userId !== currentUser.userId) return false;
+  document.getElementById('ses-vel')?.remove(); closeAllModals();
+  window._bioBloqueado = true;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('bio-lock-nombre').textContent = lock.nombre || '';
+  mostrarPantalla('bio-lock-screen');
+  return true;
+}
+async function bioDesbloquear(){
+  const lock = bioLeer(); const err = document.getElementById('err-bio'); err.classList.remove('show');
+  if (!lock){ return bioUsarPassword(); }
+  const btn = document.getElementById('bio-lock-btn'); btn.disabled = true;
+  const ok = await bioVerificar(lock);
+  btn.disabled = false;
+  if (!ok){ err.textContent = 'No se pudo verificar. Intenta de nuevo o usa tu contraseña.'; err.classList.add('show'); return; }
+  window._bioPasado = true;
+  if (window._bioBloqueado){ window._bioBloqueado = false; _lastActivity = Date.now(); document.getElementById('login-screen').style.display = 'none'; return; }
+  try { await initAuth(); } catch(e){ err.textContent = 'Error al abrir tu sesión'; err.classList.add('show'); }
+}
+async function bioUsarPassword(){
+  window._bioBloqueado = false; _sesionActiva = false;
+  bioQuitar();
+  try { await sb.auth.signOut(); } catch(e){}
+  window._bioPasado = true;
+  const scr = document.getElementById('login-screen'); scr.style.display = 'flex';
+  mostrarPantalla('login-form');
+}
+/* Ofrece activarlo una sola vez, en celulares/tabletas (no en la PC compartida de la oficina) */
+async function bioOfrecer(){
+  try {
+    if (!currentUser || bioLeer()?.userId === currentUser.userId) return;
+    if (!window.matchMedia('(pointer:coarse)').matches && currentUser.role !== 'administrativo') return; // PC: solo administrativos (Windows Hello)
+    const no = Number(localStorage.getItem('bio_no_' + currentUser.userId) || 0);
+    if (no && Date.now() - no < 7*24*3600_000) return;
+    if (!(await bioDisponible())) return;
+    if (document.getElementById('bio-oferta')) return;
+    const d = document.createElement('div'); d.id = 'bio-oferta';
+    d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:14px;z-index:998;background:var(--panel,#16201a);border:1px solid var(--green,#4caf50);border-radius:12px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.45);max-width:420px;margin:0 auto';
+    d.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:4px">¿Entrar con tu huella o rostro?</div><div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px">La próxima vez entras directo, sin escribir contraseña. Tu huella o rostro nunca salen de tu celular.</div><div style="display:flex;gap:8px"><button class="btn primary" style="flex:1;justify-content:center" id="bio-si">Activar</button><button class="btn" style="flex:1;justify-content:center" id="bio-no">Ahora no</button></div>';
+    document.body.appendChild(d);
+    d.querySelector('#bio-si').onclick = async ()=>{ d.remove(); toast((await bioActivar()) ? 'Listo: la próxima vez entras con tu huella o rostro' : 'No se activó. Puedes intentarlo después', 'success'); };
+    d.querySelector('#bio-no').onclick = ()=>{ try{ localStorage.setItem('bio_no_' + currentUser.userId, String(Date.now())); }catch(e){} d.remove(); };
+  } catch(e){}
+}
+
 async function initAuth(){
   const scr = document.getElementById('login-screen');
   const { data: { session } } = await sb.auth.getSession();
@@ -4502,6 +4637,14 @@ async function initAuth(){
     return false;
   }
 
+  const _lock = bioLeer();
+  if (_lock && _lock.userId === session.user.id && !window._bioPasado){
+    scr.style.display = 'flex';
+    document.getElementById('bio-lock-nombre').textContent = _lock.nombre || '';
+    mostrarPantalla('bio-lock-screen');
+    setTimeout(()=>{ try{ bioDesbloquear(); }catch(e){} }, 300);
+    return false;
+  }
   const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
   if (aal.currentLevel === 'aal1' && aal.nextLevel === 'aal2'){
     const { data: factors } = await sb.auth.mfa.listFactors();
@@ -4627,6 +4770,7 @@ async function intentarLogin(){
     if (error.status === 0 || /fetch|network|retryable/.test(m)) return fail('No hay conexión con el servidor. Intenta de nuevo.');
     return fail('Correo o contraseña incorrectos');
   }
+  window._bioPasado = true;
   try { await initAuth(); }
   catch (e) { fail('Error al abrir tu sesión: ' + (e.message||e)); try{ await sb.auth.signOut(); }catch(_){} }
 }
@@ -4688,6 +4832,7 @@ async function cargarPerfilYActivarSesion(){
     initials: profile.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()
   };
   _sesionActiva = true; _lastActivity = Date.now();
+  setTimeout(bioOfrecer, 6000);
   Sentry.setUser({ id: currentUser.userId, username: currentUser.name });
   Sentry.setTag('rol', currentUser.role);
   document.getElementById('chat-widget-launcher').style.display = 'flex';
@@ -4760,6 +4905,7 @@ async function guardarCuestionarioBienvenida(){
 function cerrarSesion(motivo){
   try { ctDetener(); chatDetener(); vivoDetener(); } catch(e){}
   _sesionActiva = false;
+  if (motivo !== 'inactividad' && motivo !== 'expirada') bioQuitar();
   sb.auth.signOut();
   closeAllModals();
   const scr = document.getElementById('login-screen');
@@ -4767,9 +4913,10 @@ function cerrarSesion(motivo){
   mostrarPantalla('login-form');
   const lu=document.getElementById('login-correo'); if(lu) lu.value='';
   const lp=document.getElementById('login-pass'); if(lp) lp.value='';
-  if (motivo==='inactividad'){
+  if (motivo==='inactividad' || motivo==='expirada'){
     const err=document.getElementById('err-login');
-    err.textContent='Sesión cerrada por inactividad'; err.classList.add('show');
+    err.textContent = motivo==='expirada' ? 'Tu sesión se cerró en otra pestaña o equipo. Inicia sesión de nuevo.' : 'Sesión cerrada por inactividad'; err.classList.add('show');
+    sesAvisoCerrada(motivo);
   }
   setTimeout(()=>document.getElementById('login-correo')?.focus(), 100);
 }
@@ -4777,8 +4924,19 @@ function cerrarSesion(motivo){
 ['click','keydown','mousemove','touchstart','scroll'].forEach(ev=>
   document.addEventListener(ev, ()=>{ _lastActivity = Date.now(); }, { passive:true }));
 setInterval(()=>{
-  if (_sesionActiva && Date.now() - _lastActivity > INACTIVITY_MS) cerrarSesion('inactividad');
-}, 30000);
+  if (!_sesionActiva || window._bioBloqueado) return;
+  const _larga = currentUser && ['chofer','mantenimiento'].includes(currentUser.role); // operativos de campo: sesión larga, sin cierre por inactividad
+  if (_larga) return;
+  const quieto = Date.now() - _lastActivity;
+  if (quieto > INACTIVITY_MS){
+    document.getElementById('ses-vel')?.remove(); clearInterval(_sesCuenta);
+    if (!bioBloquear()) cerrarSesion('inactividad');
+  } else if (quieto > INACTIVITY_MS - 60000){
+    sesAdvertir(INACTIVITY_MS - quieto);
+  } else {
+    const adv = document.getElementById('ses-vel'); if (adv && adv.dataset.adv){ adv.remove(); clearInterval(_sesCuenta); } // volvió a usar la app
+  }
+}, 5000);
 
 /* ── Gestión de cuentas (Dirección/RH crean cuentas de otras personas) ──
    Usa la Edge Function admin-create-user: el service role NUNCA toca
@@ -4793,6 +4951,11 @@ async function errorFuncion(error, data){
   }
   m = m || error?.message || 'No se pudo completar la operación';
   if (/already been registered|already registered|email_exists/i.test(m)) return 'Ese correo ya tiene una cuenta. Revisa en Configuración → Cuentas: si es la misma persona, no hace falta crearla otra vez (puedes restablecer su contraseña o su verificación en dos pasos).';
+  if (/No autenticado|session_not_found|Invalid JWT|JWT expired/i.test(m)) {
+    // La sesión de este navegador ya no existe en el servidor (por ejemplo, se cerró en otra pestaña o equipo).
+    setTimeout(() => { if (_sesionActiva) cerrarSesion('expirada'); }, 1500);
+    return 'Tu sesión se cerró (probablemente entraste o saliste en otra pestaña). Vuelve a iniciar sesión y repite la acción.';
+  }
   return m;
 }
 
@@ -4936,6 +5099,7 @@ async function llamarResetAdminSilencioso(body){
   try {
     const { data: { session } } = await sb.auth.getSession();
     const { data, error } = await sb.functions.invoke('admin-reset-password', { body, headers:{ Authorization:`Bearer ${session.access_token}` } });
+    if (error && error.context && error.context.status === 401 && _sesionActiva) cerrarSesion('expirada');
     return (error || data?.error) ? null : data;
   } catch(e){ return null; }
 }
