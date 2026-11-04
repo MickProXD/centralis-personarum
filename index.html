@@ -387,6 +387,21 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 @keyframes sesMece{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
 @keyframes sesZz{0%{opacity:0;transform:translate(0,4px)}50%{opacity:1}100%{opacity:0;transform:translate(8px,-10px)}}
 @media (prefers-reduced-motion:reduce){.ses-card,.ses-vel,.ses-card .ses-ico,.ses-card .ses-zz{animation:none}}
+/* ── Reto semanal ── */
+.reto-card{display:flex;gap:14px;align-items:center;padding:14px 16px;margin-bottom:14px;border:1px solid var(--border2);border-radius:14px;background:linear-gradient(135deg,rgba(78,200,122,.10),rgba(77,163,255,.06))}
+.reto-ico{font-size:34px;flex:none;animation:sesMece 3s ease-in-out infinite;transform-origin:50% 90%}
+.reto-body{flex:1;min-width:0}
+.reto-tit{font-size:13px;font-weight:800;margin-bottom:2px}
+.reto-sub{font-size:11px;color:var(--text2);line-height:1.5}
+.reto-barra{position:relative;height:10px;border-radius:6px;background:var(--surface2,#1c2a22);margin:8px 0 4px;overflow:visible}
+.reto-barra>i{display:block;height:100%;border-radius:6px;background:var(--green);transition:width 1.2s cubic-bezier(.2,.9,.3,1)}
+.reto-meta{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--amber,#f5b942)}
+.reto-dias{display:flex;gap:4px;margin-top:6px}
+.reto-dias span{flex:1;text-align:center;font-size:9px;padding:3px 0;border-radius:5px;background:var(--surface2,#1c2a22);color:var(--text3)}
+.reto-dias span.ok{background:rgba(78,200,122,.22);color:var(--green)}
+.reto-dias span.mal{background:rgba(245,185,66,.2);color:var(--amber,#f5b942)}
+.reto-ganado{border-color:var(--green)}
+@media (prefers-reduced-motion:reduce){.reto-ico{animation:none}.reto-barra>i{transition:none}}
 @keyframes movInR{from{opacity:0;transform:translateX(42px)}to{opacity:1;transform:none}}
 @keyframes movInL{from{opacity:0;transform:translateX(-42px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.hoja-agua-nivel,.hoja-ola,.carga-pts i{animation:none}.hoja-agua-nivel{transform:translateY(10%)}.mov-in-r,.mov-in-l{animation:none}}
@@ -1090,6 +1105,7 @@ select.form-input option{background:var(--bg2)}
         </div>
       </div>
       <div id="dash-content" style="display:none">
+        <div id="dash-reto"></div>
         <div id="dash-banner" class="banner" style="display:none">
           <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M8 6v4M8 12v.5"/><path d="M2 13L8 2l6 11H2z"/></svg>
           <div class="banner-txt"><strong id="dash-banner-txt"></strong></div>
@@ -1392,6 +1408,7 @@ select.form-input option{background:var(--bg2)}
           <button class="btn" onclick="semanaAnterior()">← Anterior</button>
           <button class="btn" onclick="semanaSiguiente()">Siguiente →</button>
           <button class="btn amber-btn" data-min-role="supervisor" onclick="cerrarSemana()">✍ Firmar y cerrar semana</button>
+          <button class="btn" id="btn-retos" style="display:none" onclick="retosAbrir()">🏆 Retos del equipo</button>
           <button class="btn" onclick="descargarAsistenciaXLS()">⬇ XLS</button>
           <button class="btn" onclick="descargarAsistenciaPDF()">⬇ PDF</button>
         </div>
@@ -2174,6 +2191,37 @@ select.form-input option{background:var(--bg2)}
 </div>
 
 <!-- HORARIO DE ASISTENCIA (RH y Dirección modifican) -->
+<div class="overlay" id="modal-retos" onclick="if(event.target===this)closeModal('modal-retos')">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div class="modal-title">🏆 Retos semanales del equipo</div>
+      <button class="modal-close" onclick="closeModal('modal-retos')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:10px">El equipo gana el reto cuando el porcentaje de asistencias <strong>sin retardo</strong> (puntual o en precaución) de la semana llega a la meta. Solo se ve el avance del equipo, nunca el de una persona.</div>
+      <label class="form-lbl req">Nombre del reto</label>
+      <input class="form-input" id="reto-titulo" maxlength="80" placeholder="Ej. Semana sin retardos" style="margin-bottom:10px">
+      <div class="grid2">
+        <div><label class="form-lbl req">Del</label><input class="form-input" type="date" id="reto-ini"></div>
+        <div><label class="form-lbl req">Al</label><input class="form-input" type="date" id="reto-fin"></div>
+        <div><label class="form-lbl req">Meta (% sin retardo)</label><input class="form-input" type="number" min="1" max="100" id="reto-meta" value="90"></div>
+        <div><label class="form-lbl req">Tipo de personal</label>
+          <select class="form-input" id="reto-tipo" onchange="retosContar()"><option value="todos">Todo el personal</option><option value="operativo">Operativo</option><option value="administrativo">Administrativo</option></select></div>
+      </div>
+      <label class="form-lbl" style="margin-top:10px">Área (opcional · si no eliges ninguna, aplica a todas)</label>
+      <div id="reto-areas" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+      <label class="form-lbl">Sede o Bio-Nave (opcional)</label>
+      <div id="reto-sedes" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+      <div id="reto-cuenta" style="font-size:12px;font-weight:600;color:var(--green);margin:6px 0"></div>
+      <div class="form-err" id="err-reto">—</div>
+      <button class="btn primary" style="width:100%;justify-content:center;height:38px" onclick="retosGuardar()">Lanzar reto</button>
+      <div style="border-top:1px solid var(--border);margin:16px 0 10px"></div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">Retos activos</div>
+      <div id="reto-lista"></div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-horario" onclick="if(event.target===this)closeModal('modal-horario')">
   <div class="modal">
     <div class="modal-head">
@@ -4623,6 +4671,88 @@ async function bioOfrecer(){
   } catch(e){}
 }
 
+/* ── Reto semanal del equipo (lo lanza RH/Dirección; avance solo del equipo) ── */
+window.RETOS = [];
+const _hoyISO = () => new Date().toLocaleDateString('en-CA', { timeZone:'America/Mexico_City' });
+function retosPuede(){ return !!currentUser && (currentUser.role === 'rh' || esDireccionReal()); }
+async function retosCargar(){
+  try { const { data } = await sb.from('retos_semanales').select('*').eq('activo', true).order('semana_inicio', { ascending:false }); window.RETOS = data || []; } catch(e){ window.RETOS = []; }
+}
+async function retosAbrir(){
+  if (!retosPuede()){ toast('Solo RH y Dirección lanzan retos','error'); return; }
+  if (!DB.areas || !DB.areas.length){ try { await cargarAreasSupabase(); } catch(e){} }
+  const hoy = new Date(_hoyISO() + 'T12:00:00'), dow = (hoy.getDay() + 6) % 7;
+  const lun = new Date(hoy); lun.setDate(hoy.getDate() - dow); const dom = new Date(lun); dom.setDate(lun.getDate() + 6);
+  const f = d => d.toLocaleDateString('en-CA');
+  document.getElementById('reto-titulo').value = ''; document.getElementById('reto-ini').value = f(lun); document.getElementById('reto-fin').value = f(dom);
+  document.getElementById('reto-meta').value = 90; document.getElementById('reto-tipo').value = 'todos';
+  document.getElementById('err-reto').classList.remove('show');
+  const chip = (cls, id, txt) => `<label style="display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 9px;border:1px solid var(--border2);border-radius:14px;cursor:pointer"><input type="checkbox" class="${cls}" value="${id}" onchange="retosContar()">${esc(txt)}</label>`;
+  document.getElementById('reto-areas').innerHTML = (DB.areas || []).map(a => chip('reto-area-chk', a.id, a.nombre)).join('') || '<span style="font-size:11px;color:var(--text3)">Sin áreas registradas</span>';
+  document.getElementById('reto-sedes').innerHTML = [...(DB.bodegas||[]).map(b => chip('reto-sede-chk', b.id, b.nombre)), ...(DB.sites||[]).map(x => chip('reto-sede-chk', x.id, x.nombre))].join('');
+  retosContar(); openModal('modal-retos'); retosPintarLista();
+}
+function _retoSel(cls){ return [...document.querySelectorAll('.' + cls + ':checked')].map(x => x.value); }
+function _retoAplica(tipo, areas, sedes, c){
+  if (c.estatus !== 'activo') return false;
+  const adm = esPuestoAdministrativo(c);
+  if (tipo === 'administrativo' && !adm) return false;
+  if (tipo === 'operativo' && adm) return false;
+  if (areas.length && !areas.includes(c.areaId)) return false;
+  if (sedes.length && !(sedes.includes(c.siteId) || sedes.includes(c.bodegaId))) return false;
+  return true;
+}
+function retosContar(){
+  const n = DB.colaboradores.filter(c => _retoAplica(document.getElementById('reto-tipo').value, _retoSel('reto-area-chk'), _retoSel('reto-sede-chk'), c)).length;
+  const e = document.getElementById('reto-cuenta'); e.textContent = n ? `Aplica a ${n} persona${n===1?'':'s'}` : 'Con esa selección no queda nadie. Quita algún filtro (las áreas aún no están llenas en los expedientes).';
+  e.style.color = n ? 'var(--green)' : 'var(--amber,#f5b942)';
+}
+async function retosGuardar(){
+  const err = document.getElementById('err-reto'); err.classList.remove('show');
+  const fail = m => { err.textContent = m; err.classList.add('show'); };
+  const titulo = document.getElementById('reto-titulo').value.trim(), ini = document.getElementById('reto-ini').value, fin = document.getElementById('reto-fin').value, meta = parseInt(document.getElementById('reto-meta').value, 10);
+  if (titulo.length < 3 || /[<>]/.test(titulo)) return fail('Ponle un nombre al reto (mínimo 3 letras, sin < >)');
+  if (!ini || !fin || fin < ini) return fail('Revisa las fechas del reto');
+  if (!(meta >= 1 && meta <= 100)) return fail('La meta va de 1 a 100');
+  const tipo = document.getElementById('reto-tipo').value, areas = _retoSel('reto-area-chk'), sedes = _retoSel('reto-sede-chk');
+  if (!DB.colaboradores.some(c => _retoAplica(tipo, areas, sedes, c))) return fail('Con esa selección no queda nadie. Quita algún filtro.');
+  const { error } = await sb.from('retos_semanales').insert({ titulo, semana_inicio: ini, semana_fin: fin, meta_pct: meta, tipo_personal: tipo, area_ids: areas, sede_ids: sedes, creado_por: currentUser.userId });
+  if (error) return fail(error.message);
+  try { await audit('config', `Reto semanal lanzado: ${titulo}`, 'g'); } catch(e){}
+  toast('¡Reto lanzado! El equipo ya lo ve en su inicio','success'); movCelebrar();
+  await retosCargar(); retosPintarLista(); retosPintarDashboard();
+}
+async function retosFinalizar(id){
+  const { error } = await sb.from('retos_semanales').update({ activo:false }).eq('id', id);
+  if (error){ toast(error.message,'error'); return; }
+  toast('Reto finalizado','success'); await retosCargar(); retosPintarLista(); retosPintarDashboard();
+}
+function retosPintarLista(){
+  const el = document.getElementById('reto-lista'); if (!el) return;
+  el.innerHTML = window.RETOS.length ? window.RETOS.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600">${esc(r.titulo)}</div><div style="font-size:10px;color:var(--text3)">${r.semana_inicio} → ${r.semana_fin} · meta ${r.meta_pct}% · ${r.tipo_personal === 'todos' ? 'todo el personal' : r.tipo_personal}</div></div><button class="btn sm" onclick="retosFinalizar('${r.id}')">Finalizar</button></div>`).join('') : '<div style="font-size:11px;color:var(--text3)">No hay retos activos.</div>';
+}
+async function retosPintarDashboard(){
+  const cont = document.getElementById('dash-reto'); if (!cont || !currentUser) return;
+  const btn = document.getElementById('btn-retos'); if (btn) btn.style.display = retosPuede() ? '' : 'none';
+  const hoy = _hoyISO();
+  const vigentes = window.RETOS.filter(r => r.semana_inicio <= hoy && hoy <= r.semana_fin);
+  const verTodos = ['rh','direccion_ceo','supervisor'].includes(currentUser.role);
+  const tarjetas = [];
+  for (const r of vigentes){
+    let p = null; try { const { data } = await sb.rpc('reto_progreso', { p_reto: r.id }); p = data; } catch(e){}
+    if (!p || (!p.aplica_a_mi && !verTodos)) continue;
+    const pct = p.total ? Math.round(p.a_tiempo * 100 / p.total) : 0, gana = p.total > 0 && pct >= r.meta_pct;
+    const porDia = {}; (p.por_dia || []).forEach(d => porDia[d.fecha] = d);
+    const dias = []; for (let d = new Date(r.semana_inicio + 'T12:00:00'); d <= new Date(r.semana_fin + 'T12:00:00') && dias.length < 10; d.setDate(d.getDate() + 1)){
+      const k = d.toLocaleDateString('en-CA'), x = porDia[k], lbl = ['D','L','M','M','J','V','S'][d.getDay()];
+      dias.push(`<span class="${x ? (x.a_tiempo === x.total ? 'ok' : 'mal') : ''}">${lbl}</span>`);
+    }
+    const frase = !p.total ? 'Aún no hay registros esta semana. ¡Que empiece el reto!' : gana ? '¡Lo lograron! Sigan así 🎉' : pct >= r.meta_pct - 10 ? '¡Ya casi! Un esfuerzo más.' : 'Cada llegada puntual suma al equipo.';
+    tarjetas.push(`<div class="reto-card${gana ? ' reto-ganado' : ''}"><div class="reto-ico">${gana ? '🏆' : '🎯'}</div><div class="reto-body"><div class="reto-tit">${esc(r.titulo)}</div><div class="reto-sub">${p.a_tiempo} de ${p.total} llegadas sin retardo · meta ${r.meta_pct}% · ${p.personas} personas</div><div class="reto-barra"><i style="width:${Math.min(pct,100)}%"></i><b class="reto-meta" style="left:${r.meta_pct}%"></b></div><div class="reto-sub"><strong>${pct}%</strong> · ${frase}</div><div class="reto-dias">${dias.join('')}</div></div></div>`);
+    if (gana){ const k = 'reto_ok_' + r.id; try { if (!localStorage.getItem(k)){ localStorage.setItem(k, '1'); setTimeout(() => movCelebrar(), 900); } } catch(e){} }
+  }
+  cont.innerHTML = tarjetas.join('');
+}
 async function initAuth(){
   const scr = document.getElementById('login-screen');
   const { data: { session } } = await sb.auth.getSession();
@@ -4833,6 +4963,7 @@ async function cargarPerfilYActivarSesion(){
   };
   _sesionActiva = true; _lastActivity = Date.now();
   setTimeout(bioOfrecer, 6000);
+  retosCargar().then(retosPintarDashboard);
   Sentry.setUser({ id: currentUser.userId, username: currentUser.name });
   Sentry.setTag('rol', currentUser.role);
   document.getElementById('chat-widget-launcher').style.display = 'flex';
@@ -6336,6 +6467,7 @@ function ejecutarBusqueda(i){
 // DASHBOARD
 // ═══════════════════════════════════════════════════════════════════
 function renderDashboard(){
+  try { retosPintarDashboard(); } catch(e){}
   const activos = DB.colaboradores.filter(c=>c.estatus==='activo').length;
   const bajas = DB.colaboradores.filter(c=>c.estatus==='baja').length;
   const rolDash = currentUser.role, esOpDash = rolDash === 'chofer', esRHDash = rolDash === 'rh';
