@@ -4657,6 +4657,7 @@ async function bioUsarPassword(){
 async function bioOfrecer(){
   try {
     if (!currentUser || bioLeer()?.userId === currentUser.userId) return;
+    if (document.getElementById('pwa-oferta')) return; // primero instalar la app; la huella se ofrece en la siguiente visita
     if (!window.matchMedia('(pointer:coarse)').matches && currentUser.role !== 'administrativo') return; // PC: solo administrativos (Windows Hello)
     const no = Number(localStorage.getItem('bio_no_' + currentUser.userId) || 0);
     if (no && Date.now() - no < 7*24*3600_000) return;
@@ -4752,6 +4753,58 @@ async function retosPintarDashboard(){
     if (gana){ const k = 'reto_ok_' + r.id; try { if (!localStorage.getItem(k)){ localStorage.setItem(k, '1'); setTimeout(() => movCelebrar(), 900); } } catch(e){} }
   }
   cont.innerHTML = tarjetas.join('');
+}
+/* ── Instalar la app en el celular (checar con un toque) y registro automático al escanear el QR ── */
+window._pwaEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); window._pwaEvt = e; });
+window.addEventListener('appinstalled', () => { window._pwaEvt = null; document.getElementById('pwa-oferta')?.remove(); try { localStorage.setItem('pwa_ok', '1'); } catch(_){} toast('¡Listo! Ya tienes Bio-centralis en tu celular','success'); });
+const pwaInstalada = () => { try { const st = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; if (st) localStorage.setItem('pwa_ok', '1'); return st || localStorage.getItem('pwa_ok') === '1'; } catch(e){ return false; } };
+function pwaPasos(){
+  const ua = navigator.userAgent || '', ios = /iPhone|iPad|iPod/i.test(ua), safari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+  if (ios && !safari) return ['Abre este mismo enlace en <strong>Safari</strong> (iPhone solo permite instalar desde ahí).', 'Toca el botón <strong>Compartir</strong> (el cuadro con la flecha hacia arriba).', 'Elige <strong>Agregar a pantalla de inicio</strong> y toca <strong>Agregar</strong>.'];
+  if (ios) return ['Toca el botón <strong>Compartir</strong> (el cuadro con la flecha hacia arriba, abajo en la pantalla).', 'Baja y elige <strong>Agregar a pantalla de inicio</strong>.', 'Toca <strong>Agregar</strong>. Ya tendrás el ícono de Bio-centralis.'];
+  return ['Toca los <strong>tres puntos ⋮</strong> de tu navegador (arriba a la derecha).', 'Elige <strong>Instalar aplicación</strong> o <strong>Agregar a pantalla de inicio</strong>.', 'Confirma con <strong>Instalar</strong>. Ya tendrás el ícono de Bio-centralis.'];
+}
+async function pwaInstalar(){
+  if (window._pwaEvt){
+    try { const e = window._pwaEvt; e.prompt(); const r = await e.userChoice; window._pwaEvt = null; if (r && r.outcome === 'accepted') return; } catch(_){}
+  }
+  sesTarjeta('📲', 'Instálala en 3 pasos', 'Así tu asistencia queda a un toque, sin escribir nada:<ol style="text-align:left;margin:10px 0 0;padding-left:18px;line-height:1.7">' + pwaPasos().map(x => `<li>${x}</li>`).join('') + '</ol>', [{ t:'Entendido', primary:true }]);
+}
+function pwaOfrecer(){
+  try {
+    if (!currentUser || pwaInstalada() || !window.matchMedia('(pointer:coarse)').matches || document.getElementById('pwa-oferta')) return;
+    const no = Number(localStorage.getItem('pwa_no') || 0); if (no && Date.now() - no < 24*3600_000) return;
+    const d = document.createElement('div'); d.id = 'pwa-oferta';
+    d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:14px;z-index:998;background:var(--surface,#16201a);border:1px solid var(--green,#4caf50);border-radius:14px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.45);max-width:420px;margin:0 auto;animation:sesPop .4s cubic-bezier(.2,1.4,.4,1)';
+    d.innerHTML = '<div style="display:flex;gap:10px;align-items:flex-start"><div style="font-size:30px;line-height:1">📲</div><div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Checa tu asistencia en 1 toque</div><div style="font-size:11px;color:var(--text2);line-height:1.5">Instala Bio-centralis en tu celular: queda como una app, sin escribir correo ni contraseña cada vez.</div></div></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn primary" style="flex:1;justify-content:center" id="pwa-si">Instalar ahora</button><button class="btn" style="flex:1;justify-content:center" id="pwa-no">Más tarde</button></div>';
+    document.body.appendChild(d);
+    d.querySelector('#pwa-si').onclick = () => { d.remove(); pwaInstalar(); };
+    d.querySelector('#pwa-no').onclick = () => { try { localStorage.setItem('pwa_no', String(Date.now())); } catch(_){} d.remove(); };
+  } catch(e){}
+}
+/* Tarjeta fija en "Mi asistencia" mientras la app no esté instalada */
+function pwaTarjetaFija(){
+  try {
+    const host = document.getElementById('mia-hoy'); if (!host) return;
+    let c = document.getElementById('mia-pwa'); if (!c){ c = document.createElement('div'); c.id = 'mia-pwa'; host.parentNode.insertBefore(c, host.nextSibling); }
+    if (pwaInstalada() || !window.matchMedia('(pointer:coarse)').matches){ c.innerHTML = ''; return; }
+    c.innerHTML = '<div class="panel" style="padding:12px 16px;margin:12px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-color:var(--green)"><div style="font-size:26px">📲</div><div style="flex:1;min-width:180px;font-size:12px;line-height:1.5"><strong>Instala la app y checa en 1 toque.</strong><br><span style="color:var(--text2)">Se guarda tu sesión y solo te pide huella o rostro.</span></div><button class="btn primary" onclick="pwaInstalar()">Cómo instalarla</button></div>';
+  } catch(e){}
+}
+/* Al escanear el QR de la nave: si ya hay sesión, registra la entrada sola */
+async function qrAutoRegistrar(){
+  for (let i = 0; i < 20; i++){
+    const b = document.getElementById('mia-btn');
+    if (b){
+      const oc = b.getAttribute('onclick') || '';
+      if (oc.includes("'entrada'")){ toast('Registrando tu entrada…','info'); b.click(); }
+      else if (oc.includes("'salida'")) toast('Ya registraste tu entrada hoy. Si ya te vas, toca «Registrar salida».','info');
+      return;
+    }
+    if (document.getElementById('mia-hoy')?.textContent.includes('Jornada completa')) return;
+    await new Promise(r => setTimeout(r, 300));
+  }
 }
 async function initAuth(){
   const scr = document.getElementById('login-screen');
@@ -4962,7 +5015,8 @@ async function cargarPerfilYActivarSesion(){
     initials: profile.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()
   };
   _sesionActiva = true; _lastActivity = Date.now();
-  setTimeout(bioOfrecer, 6000);
+  setTimeout(pwaOfrecer, 3500);
+  setTimeout(bioOfrecer, 9000);
   retosCargar().then(retosPintarDashboard);
   Sentry.setUser({ id: currentUser.userId, username: currentUser.name });
   Sentry.setTag('rol', currentUser.role);
@@ -12763,7 +12817,7 @@ async function avisoAsistenciaInicio(){
     const qs = new URLSearchParams(location.search);
     if (qs.has('sede')){
       history.replaceState(null, '', location.pathname);
-      if (currentUser.role !== 'direccion_ceo'){ nav('miasistencia', null); return; }
+      if (currentUser.role !== 'direccion_ceo'){ nav('miasistencia', null); setTimeout(qrAutoRegistrar, 600); return; }
     }
     if (localStorage.getItem('bc-aviso-asis') === hoyLocal()) return;
     if (!(await asistenciaPendienteHoy())) return;
@@ -12815,6 +12869,7 @@ async function renderMiAsistencia(){
     <div id="mia-msg" style="font-size:12px;margin-top:10px"></div>${nota}
     <div style="font-size:10px;color:var(--text3);margin-top:10px">El registro requiere estar en la red de la empresa y dentro de la sede.</div>`;
   renderPanelAsistencia(rows||[], h);
+  pwaTarjetaFija();
   hist.innerHTML = (rows && rows.length) ? rows.slice(0,10).map(r => {
     const e = r.estado_puntualidad ? EST_ASIS[r.estado_puntualidad] : null;
     return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
@@ -12839,6 +12894,8 @@ async function registrarAsistencia(tipo){
     if (error || data?.error){ say(await mensajeErrorFuncion(error, data), false); if (btn) btn.disabled = false; return; }
     toast(tipo === 'entrada' ? 'Entrada registrada. ¡Que tengas un excelente día!' : 'Salida registrada. ¡Hasta mañana!', 'success');
     registrarEvento(tipo === 'entrada' ? 'asistencia_entrada' : 'asistencia_salida', 'asistencia');
+    if (tipo === 'entrada') movCelebrar();
+    setTimeout(pwaOfrecer, 3000);
     renderMiAsistencia();
   } catch(e){ say(e.message || 'No se pudo registrar', false); if (btn) btn.disabled = false; }
 }
