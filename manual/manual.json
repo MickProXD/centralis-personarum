@@ -1,6 +1,31 @@
 {
- "version": "2026-11-09b",
+ "version": "2026-11-09c",
  "novedades": [
+  {
+   "titulo": "Falta automática y notas visibles",
+   "fecha": "9 nov 2026",
+   "texto": "Si alguien no registra su asistencia en el día, el sistema le pone falta al cierre. Las notas que escribas en una asistencia ahora se guardan y se ven en la cuadrícula (📝), en la ventana del día y en el reporte.",
+   "perfiles": [
+    "supervisor",
+    "rh",
+    "direccion_ceo"
+   ]
+  },
+  {
+   "titulo": "Si no checas, se registra falta",
+   "fecha": "9 nov 2026",
+   "texto": "Registra tu entrada cada día: si no lo haces, el sistema marca falta al terminar el día.",
+   "perfiles": [
+    "chofer",
+    "ayudante",
+    "mantenimiento",
+    "monitoreo",
+    "administrativo_operativa",
+    "administrativo_finanzas",
+    "administracion",
+    "she"
+   ]
+  },
   {
    "titulo": "Hora de llegada y tendencia en Asistencias",
    "fecha": "9 nov 2026",

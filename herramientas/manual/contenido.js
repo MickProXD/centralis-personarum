@@ -1,7 +1,9 @@
 // Genera manual/manual.json. Lenguaje sencillo, sin detalles técnicos. Al publicar una mejora: subir `version`, agregar una novedad y regenerar capturas.
 const fs = require('fs');
-const VERSION = '2026-11-09b';
+const VERSION = '2026-11-09c';
 const novedades = [
+  { titulo:'Falta automática y notas visibles', fecha:'9 nov 2026', texto:'Si alguien no registra su asistencia en el día, el sistema le pone falta al cierre. Las notas que escribas en una asistencia ahora se guardan y se ven en la cuadrícula (📝), en la ventana del día y en el reporte.', perfiles:['supervisor','rh','direccion_ceo'] },
+  { titulo:'Si no checas, se registra falta', fecha:'9 nov 2026', texto:'Registra tu entrada cada día: si no lo haces, el sistema marca falta al terminar el día.', perfiles:['chofer','ayudante','mantenimiento','monitoreo','administrativo_operativa','administrativo_finanzas','administracion','she'] },
   { titulo:'Hora de llegada y tendencia en Asistencias', fecha:'9 nov 2026', texto:'Ahora ves a qué hora llegó cada persona y por qué fue retardo. Los reportes de Excel y PDF salen con el formato de RH e incluyen la tendencia de puntualidad.', perfiles:['supervisor','rh','direccion_ceo'] },
   { titulo:'Manual de usuario', fecha:'9 nov 2026', texto:'Ahora cada perfil tiene su propio manual con paso a paso e imágenes. Lo encuentras en el menú, en "Manual".' },
   { titulo:'Registro de asistencia con un toque', fecha:'6 nov 2026', texto:'Escanea el QR de tu Bio-Nave y se registra tu entrada. Instala la app en tu teléfono para hacerlo más rápido.', perfiles:['chofer','ayudante','supervisor','mantenimiento','monitoreo','administrativo_operativa','administrativo_finanzas','administracion','she','rh'] },

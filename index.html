@@ -590,6 +590,8 @@ select.form-input option{background:var(--bg2)}
 .asis-name-cell{font-family:var(--head);font-size:11px;font-weight:700;color:var(--text2);display:flex;align-items:center;padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asis-cell{height:30px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:9px;font-weight:800;cursor:pointer;transition:all .12s;border:1px solid transparent}
 .asis-cell:hover{transform:scale(1.06)}
+.asis-cell{position:relative}
+.asis-cell .ac-nota{position:absolute;top:1px;right:3px;font-size:9px;line-height:1}
 .asis-cell.P{background:var(--green3);color:var(--green);border-color:rgba(82,212,131,.2)}
 .asis-cell.F{background:var(--ra);color:var(--red);border-color:rgba(232,85,85,.2)}
 .asis-cell.FJ{background:var(--aa);color:var(--amber);border-color:rgba(232,184,74,.2)}
@@ -4117,7 +4119,7 @@ async function cargarDatosSupabase(){
   DB.equipos_moviles = (celR.data||[]).map(e=>({...e, id:String(e.id)}));
   DB.asistencias = {};
   (asisR.data||[]).forEach(a=>{
-    DB.asistencias[`${a.fecha}-${a.colaborador_id}`] = { tipo:a.tipo, capturadoPor:a.capturado_por, ts:a.created_at, horaEntrada:a.hora_entrada, horaSalida:a.hora_salida, estado:a.estado_puntualidad, minRetraso:a.minutos_retraso, origen:a.origen };
+    DB.asistencias[`${a.fecha}-${a.colaborador_id}`] = { tipo:a.tipo, capturadoPor:a.capturado_por, ts:a.created_at, horaEntrada:a.hora_entrada, horaSalida:a.hora_salida, estado:a.estado_puntualidad, minRetraso:a.minutos_retraso, origen:a.origen, nota:a.nota };
   });
   await cargarPermisosSupabase();
   const { data: cfgData } = await sb.from('configuracion').select('*').eq('id', 1).maybeSingle();
@@ -9657,6 +9659,7 @@ function asisHorarioDe(colabId, fechaStr){
 }
 function asisSumaMin(hhmm, min){ const [h, m] = hhmm.split(':').map(Number); const t = h * 60 + m + min; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
 function asisDetalleLlegada(reg, colabId, fechaStr){
+  if (reg && reg.origen === 'sistema' && reg.tipo === 'F' && !reg.horaEntrada) return '⚠️ <b>Falta automática</b>: el sistema la registró al cierre del día porque no hubo registro de entrada. Si fue un error, cámbiala a Presente, Justificada, Vacaciones o Incapacidad.';
   if (!reg || !reg.horaEntrada) return '';
   const hor = asisHorarioDe(colabId, fechaStr), est = reg.estado ? EST_ASIS[reg.estado] : null;
   let retraso = reg.minRetraso;
@@ -9711,8 +9714,11 @@ async function renderAsistencias(){
       const lbl = reg ? reg.tipo : '—';
       const conHora = !!(reg && reg.horaEntrada);
       const estC = conHora && reg.estado && reg.estado !== 'puntual' ? ' est-' + reg.estado : '';
-      const tip = conHora ? `${c.nombre} · ${fmtDate(d)} · entrada ${fmtHora(reg.horaEntrada)}${reg.estado ? ' · ' + (EST_ASIS[reg.estado]||{}).txt : ''}${reg.minRetraso > 0 ? ' (+' + reg.minRetraso + ' min)' : ''}` : `${c.nombre} · ${fmtDate(d)}`;
-      const interior = conHora ? `<span class="ac-l">${lbl}</span><span class="ac-h">${new Date(reg.horaEntrada).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:TZ_MX})}${reg.minRetraso > 0 ? ' +' + reg.minRetraso + "'" : ''}</span>` : (isFuture && !reg ? '' : lbl);
+      const tieneNota = !!(reg && reg.nota), esAuto = !!(reg && reg.origen === 'sistema' && reg.tipo === 'F');
+      const tip0 = conHora ? `${c.nombre} · ${fmtDate(d)} · entrada ${fmtHora(reg.horaEntrada)}${reg.estado ? ' · ' + (EST_ASIS[reg.estado]||{}).txt : ''}${reg.minRetraso > 0 ? ' (+' + reg.minRetraso + ' min)' : ''}` : `${c.nombre} · ${fmtDate(d)}${esAuto ? ' · falta automática: no registró asistencia' : ''}`;
+      const tip = tip0 + (tieneNota ? ' · Nota: ' + reg.nota : '');
+      const marca = tieneNota ? '<span class="ac-nota" title="Tiene nota">📝</span>' : '';
+      const interior = marca + (conHora ? `<span class="ac-l">${lbl}</span><span class="ac-h">${new Date(reg.horaEntrada).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:TZ_MX})}${reg.minRetraso > 0 ? ' +' + reg.minRetraso + "'" : ''}</span>` : (isFuture && !reg ? '' : lbl));
       html += `<div class="asis-cell ${cls}${conHora ? ' conhora' : ''}${estC}${isHoy?' hoy':''}" onclick="abrirAsistencia('${c.id}','${fmtDate(d)}')" title="${esc(tip)}">${interior}</div>`;
     });
     const tieneCom = !!(DB.asisComentarios[c.id]);
@@ -9812,10 +9818,10 @@ async function guardarAsistencia(){
   // PENDIENTE (siguiente bloque): subir el justificante PDF a Storage.
   const { error } = await sb.from('asistencias').upsert({
     fecha: asisCurrent.dia, colaborador_id: asisCurrent.colabId,
-    tipo: asisTipo, capturado_por: currentUser.userId
+    tipo: asisTipo, capturado_por: currentUser.userId, nota: (document.getElementById('asis-nota').value || '').trim() || null
   }, { onConflict: 'fecha,colaborador_id' });
   if (error){ toast(error.message,'error'); return; }
-  DB.asistencias[key] = { ...prev, tipo: asisTipo, capturadoPor: currentUser.userId, ts: new Date().toISOString() };
+  DB.asistencias[key] = { ...prev, tipo: asisTipo, capturadoPor: currentUser.userId, ts: new Date().toISOString(), origen: 'gerente', nota: (document.getElementById('asis-nota').value || '').trim() || null };
   const c = DB.colaboradores.find(c=>String(c.id)===asisCurrent.colabId);
   await audit('asistencia', `${esc(c?c.nombre:'—')}: ${asisTipo} en ${asisCurrent.dia}`, 'g');
   await registrarEvento('marcar_asistencia', 'asistencias');
@@ -12734,7 +12740,7 @@ async function _asisDatosSemana(){
   if (!(DB.horariosAsis || []).length){ const { data: hs } = await sb.from('horarios_asistencia').select('*'); DB.horariosAsis = hs || []; }
   const ids = new Set(personas.map(c => String(c.id))), regs = {};
   for (let desde = 0; ; desde += 1000){
-    const { data, error } = await sb.from('asistencias').select('colaborador_id,fecha,tipo,hora_entrada,estado_puntualidad').gte('fecha', f4).lte('fecha', fFin).order('fecha').range(desde, desde + 999);
+    const { data, error } = await sb.from('asistencias').select('colaborador_id,fecha,tipo,hora_entrada,estado_puntualidad,nota').gte('fecha', f4).lte('fecha', fFin).order('fecha').range(desde, desde + 999);
     if (error || !data) break;
     data.forEach(r => { if (ids.has(String(r.colaborador_id))) (regs[r.colaborador_id] = regs[r.colaborador_id] || []).push(r); });
     if (data.length < 1000) break;
@@ -12756,6 +12762,7 @@ async function _asisDatosSemana(){
     const motivo = atender ? [ret4 >= 3 ? ret4 + ' retardos' : '', falt4 >= 2 ? falt4 + ' faltas' : '', tend === 'Empeora' ? 'va empeorando' : ''].filter(Boolean).join(', ') : '';
     return { num: c.numEmpleado || '', nombre: String(c.nombre || '').toUpperCase(),
       faltas: sem.filter(r => r.tipo === 'F').length, retardos: sem.filter(r => r.estado_puntualidad === 'retardo').length, precaucion: sem.filter(r => r.estado_puntualidad === 'precaucion').length,
+      notas: sem.filter(r => r.nota).map(r => { const dd = fechaDe(r.fecha); return ['dom','lun','mar','mié','jue','vie','sáb'][dd.getDay()] + ' ' + dd.getDate() + ': ' + r.nota; }).join(' · '),
       llegada: txt(prom(sem.filter(conHora).map(r => hm(r.hora_entrada)))), punt: punt4 == null ? '—' : punt4 + '%', tend, tcls, atencion: atender ? 'Atender' : '', motivo };
   });
   const nota = 'Faltas, retardos, precaución y llegada promedio corresponden a la semana. Puntualidad y tendencia se calculan con las últimas 4 semanas: la tendencia compara el retraso promedio de las 2 semanas más recientes contra las 2 anteriores (cambio de 3 min o más). "Atender" = 3 o más retardos o 2 o más faltas en 4 semanas, o tendencia a empeorar.';
@@ -12765,18 +12772,18 @@ const _ASIS_COLS = [ ['No. empleado','num'], ['Colaborador','nombre'], ['Faltas'
 async function descargarAsistenciaXLS(){
   toast('Preparando reporte…','info');
   const D = await _asisDatosSemana(), enc = new TextEncoder(), X = s => enc.encode(s), e = s => esc(s);
-  const L = 'ABCDEFGHI', N = _ASIS_COLS.length;
+  const L = 'ABCDEFGHIJ', N = _ASIS_COLS.length + 1;
   const celda = (r, c, v, st) => { const ref = L[c] + r; return v === '' || v == null ? `<c r="${ref}" s="${st}"/>` : (typeof v === 'number' ? `<c r="${ref}" s="${st}"><v>${v}</v></c>` : `<c r="${ref}" s="${st}" t="inlineStr"><is><t>${e(v)}</t></is></c>`); };
   const vacias = (r, desde, st) => Array.from({ length: N - desde }, (_, i) => celda(r, desde + i, '', st)).join('');
   let filas = `<row r="1" ht="27" customHeight="1">${celda(1,0,'',0)}${celda(1,1,'',0)}${celda(1,2,'',0)}${celda(1,3,'ASISTENCIA',1)}${vacias(1,4,0)}</row><row r="2" ht="27" customHeight="1"/><row r="3" ht="27" customHeight="1"/>`;
   filas += `<row r="4" ht="20" customHeight="1">${celda(4,0,D.banda,2)}${vacias(4,1,2)}</row>`;
-  filas += `<row r="5" ht="30" customHeight="1">${celda(5,0,'',0)}${celda(5,1,'',0)}${_ASIS_COLS.slice(2).map((c, i) => celda(5, i + 2, c[0], i === 0 ? 3 : 8)).join('')}</row>`;
+  filas += `<row r="5" ht="30" customHeight="1">${celda(5,0,'',0)}${celda(5,1,'',0)}${_ASIS_COLS.slice(2).map((c, i) => celda(5, i + 2, c[0], i === 0 ? 3 : 8)).join('')}${celda(5, 9, 'Notas de la semana', 8)}</row>`;
   D.filas.forEach((f, i) => { const r = 6 + i;
-    filas += `<row r="${r}">${celda(r,0,f.num,4)}${celda(r,1,f.nombre,5)}${celda(r,2,f.faltas,f.faltas > 0 ? 7 : 6)}${celda(r,3,f.retardos,f.retardos > 0 ? 7 : 6)}${celda(r,4,f.precaucion,6)}${celda(r,5,f.llegada,4)}${celda(r,6,f.punt,4)}${celda(r,7,f.tend,f.tcls === 'mal' ? 10 : f.tcls === 'ok' ? 9 : 4)}${celda(r,8,f.atencion,f.atencion ? 10 : 4)}</row>`; });
+    filas += `<row r="${r}">${celda(r,0,f.num,4)}${celda(r,1,f.nombre,5)}${celda(r,2,f.faltas,f.faltas > 0 ? 7 : 6)}${celda(r,3,f.retardos,f.retardos > 0 ? 7 : 6)}${celda(r,4,f.precaucion,6)}${celda(r,5,f.llegada,4)}${celda(r,6,f.punt,4)}${celda(r,7,f.tend,f.tcls === 'mal' ? 10 : f.tcls === 'ok' ? 9 : 4)}${celda(r,8,f.atencion,f.atencion ? 10 : 4)}${celda(r,9,f.notas,12)}</row>`; });
   const rn = 7 + D.filas.length;
   filas += `<row r="${rn}" ht="48" customHeight="1">${celda(rn,0,D.nota,11)}${vacias(rn,1,11)}</row>`;
-  const hoja = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews><cols><col min="1" max="1" width="15" customWidth="1"/><col min="2" max="2" width="44" customWidth="1"/><col min="3" max="5" width="11" customWidth="1"/><col min="6" max="6" width="13" customWidth="1"/><col min="7" max="7" width="13" customWidth="1"/><col min="8" max="8" width="12" customWidth="1"/><col min="9" max="9" width="12" customWidth="1"/></cols><sheetData>${filas}</sheetData><mergeCells count="2"><mergeCell ref="A4:I4"/><mergeCell ref="A${rn}:I${rn}"/></mergeCells><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/><drawing r:id="rId1"/></worksheet>`;
-  const estilos = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="8"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="18"/><color rgb="FF1E4D2B"/><name val="Calibri"/></font><font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><sz val="11"/><color rgb="FFFF0000"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF1E7A3A"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFC00000"/><name val="Calibri"/></font><font><i/><sz val="9"/><color rgb="FF555555"/><name val="Calibri"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E4D2B"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFF0000"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FF000000"/></left><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="12"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right"/></xf><xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right"/></xf><xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="5" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="6" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf></cellXfs></styleSheet>`;
+  const hoja = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews><cols><col min="1" max="1" width="15" customWidth="1"/><col min="2" max="2" width="44" customWidth="1"/><col min="3" max="5" width="11" customWidth="1"/><col min="6" max="6" width="13" customWidth="1"/><col min="7" max="7" width="13" customWidth="1"/><col min="8" max="8" width="12" customWidth="1"/><col min="9" max="9" width="12" customWidth="1"/><col min="10" max="10" width="46" customWidth="1"/></cols><sheetData>${filas}</sheetData><mergeCells count="2"><mergeCell ref="A4:J4"/><mergeCell ref="A${rn}:J${rn}"/></mergeCells><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/><drawing r:id="rId1"/></worksheet>`;
+  const estilos = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="8"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="18"/><color rgb="FF1E4D2B"/><name val="Calibri"/></font><font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><sz val="11"/><color rgb="FFFF0000"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF1E7A3A"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFC00000"/><name val="Calibri"/></font><font><i/><sz val="9"/><color rgb="FF555555"/><name val="Calibri"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E4D2B"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFF0000"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FF000000"/></left><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="13"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right"/></xf><xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right"/></xf><xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="5" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="6" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf></cellXfs></styleSheet>`;
   const dib = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:oneCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>57150</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>38100</xdr:rowOff></xdr:from><xdr:ext cx="2762250" cy="877800"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="Logo"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="2762250" cy="877800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>`;
   const R = 'http://schemas.openxmlformats.org/package/2006/relationships', RO = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
   const logo = Uint8Array.from(atob(RT_LOGO_B64), ch => ch.charCodeAt(0));
@@ -12813,8 +12820,10 @@ async function descargarAsistenciaPDF(){
   const caja = (x, y, w, h) => `0 G 0.5 w ${x} ${y} ${w} ${h} re S\n`;
   const centro = (x, w, y, s, f, sz, col) => txt(x + Math.max(2, (w - ancho(s, sz)) / 2), y, s, f, sz, col);
   // La nota va al pie de la última hoja: se parte en renglones
-  const palabras = D.nota.split(' '), notaL = []; let ln = '';
-  palabras.forEach(w => { if ((ln + ' ' + w).length > 165){ notaL.push(ln); ln = w; } else ln = ln ? ln + ' ' + w : w; }); notaL.push(ln);
+  const envolver = (texto, lista) => { let ln = ''; texto.split(' ').forEach(w => { if ((ln + ' ' + w).length > 165){ lista.push(ln); ln = w; } else ln = ln ? ln + ' ' + w : w; }); lista.push(ln); };
+  const notaL = []; const conNotas = D.filas.filter(f => f.notas);
+  if (conNotas.length){ notaL.push('NOTAS DE LA SEMANA'); conNotas.forEach(f => envolver(f.nombre + ' — ' + f.notas, notaL)); notaL.push(''); }
+  envolver(D.nota, notaL);
   const yLogo = H - 30 - LOGO_H, yBanda = yLogo - 8 - 20, yHdr = yBanda - 26, topFilas = yHdr;
   const porPag = Math.floor((topFilas - 30) / FH), notaH = notaL.length * 10 + 8;
   let nPag = Math.max(1, Math.ceil(D.filas.length / porPag)); if (D.filas.length - (nPag - 1) * porPag > porPag - Math.ceil(notaH / FH) - 1) nPag++;
