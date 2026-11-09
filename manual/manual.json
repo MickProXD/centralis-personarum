@@ -1,0 +1,2291 @@
+{
+ "version": "2026-11-09",
+ "novedades": [
+  {
+   "titulo": "Manual de usuario",
+   "fecha": "9 nov 2026",
+   "texto": "Ahora cada perfil tiene su propio manual con paso a paso e imágenes. Lo encuentras en el menú, en \"Manual\"."
+  },
+  {
+   "titulo": "Registro de asistencia con un toque",
+   "fecha": "6 nov 2026",
+   "texto": "Escanea el QR de tu Bio-Nave y se registra tu entrada. Instala la app en tu teléfono para hacerlo más rápido.",
+   "perfiles": [
+    "chofer",
+    "ayudante",
+    "supervisor",
+    "mantenimiento",
+    "monitoreo",
+    "administrativo_operativa",
+    "administrativo_finanzas",
+    "administracion",
+    "she",
+    "rh"
+   ]
+  },
+  {
+   "titulo": "Reto semanal",
+   "fecha": "4 nov 2026",
+   "texto": "Cada semana hay un reto de asistencia para tu equipo. Míralo en \"Mi asistencia\".",
+   "perfiles": [
+    "chofer",
+    "ayudante",
+    "supervisor",
+    "mantenimiento",
+    "monitoreo",
+    "administrativo_operativa",
+    "administrativo_finanzas",
+    "administracion",
+    "she"
+   ]
+  }
+ ],
+ "perfiles": {
+  "chofer": {
+   "titulo": "Operativo",
+   "resumen": "Tu herramienta del día a día: asistencia, tu unidad, tus rutas y reportes de mantenimiento.",
+   "puedes": [
+    "Registrar entrada y salida",
+    "Ver tu unidad asignada",
+    "Llenar el checklist de tu unidad",
+    "Pedir mantenimiento o lavado",
+    "Ver tus rutas y servicios del día",
+    "Hacer solicitudes (permisos, material)",
+    "Reportar riesgos de seguridad",
+    "Ganar insignias y puntos"
+   ],
+   "nopuedes": [
+    "Datos de otros compañeros",
+    "Finanzas y nómina",
+    "Documentos de la empresa"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    },
+    {
+     "dato": "Kilometraje y fotos de tu unidad",
+     "para": "Para llevar el control de mantenimiento y cuidar tu seguridad en carretera."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Tu primera vez: la pantalla de bienvenida",
+     "min": "1 min",
+     "intro": "La primera vez que entras te preguntamos tres cosas rápidas.",
+     "pasos": [
+      {
+       "t": "Área",
+       "x": ". Dónde trabajas, para mostrarte lo que te toca."
+      },
+      {
+       "t": "Bio-Nave u oficina",
+       "x": ". Para registrar tu asistencia en el lugar correcto."
+      },
+      {
+       "t": "Funciones principales",
+       "x": ". Para entender qué haces y ayudarte mejor."
+      }
+     ]
+    },
+    {
+     "titulo": "Registrar tu asistencia",
+     "min": "1 min",
+     "intro": "Tu entrada y salida quedan guardadas con la hora y el lugar. Así se calcula tu puntualidad y tus puntos.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi asistencia\"",
+       "x": ". En el menú elige Mi asistencia.",
+       "img": "chofer/miasistencia.webp"
+      },
+      {
+       "t": "Toca \"Registrar entrada\"",
+       "x": ". Si estás en tu Bio-Nave, también puedes escanear el QR del cartel y se registra solo."
+      },
+      {
+       "t": "Al terminar tu jornada toca \"Registrar salida\""
+      },
+      {
+       "t": "Revisa tu mes",
+       "x": ". Verás cuántos días fuiste puntual, con precaución o con retardo, tus puntos y tu racha."
+      }
+     ],
+     "tip": "Registrar tu entrada a tiempo suma puntos y ayuda a que tu equipo cumpla el reto semanal."
+    },
+    {
+     "titulo": "Tu unidad y su checklist diario",
+     "min": "3 min",
+     "intro": "Antes de salir revisa tu unidad. Es rápido y evita problemas en ruta.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi unidad\"",
+       "x": ". Ahí ves tu unidad asignada.",
+       "img": "chofer/flota.webp"
+      },
+      {
+       "t": "Abre \"Mantenimiento\"",
+       "x": "",
+       "img": "chofer/mantenimiento.webp"
+      },
+      {
+       "t": "Toca \"Llenar checklist\" y responde cada punto",
+       "x": ". Si algo falla, márcalo y agrega foto."
+      },
+      {
+       "t": "Pide servicio si hace falta",
+       "x": ". Toca \"Solicitar mantenimiento\" y describe lo que notas."
+      }
+     ],
+     "tip": "Un checklist completo cada día suma puntos y te da la insignia \"Unidad impecable\"."
+    },
+    {
+     "titulo": "Tus rutas y servicios del día",
+     "min": "3 min",
+     "intro": "Ve a dónde vas, qué recoger y con quién.",
+     "pasos": [
+      {
+       "t": "Abre \"Rutas\"",
+       "x": "",
+       "img": "chofer/rutas.webp"
+      },
+      {
+       "t": "Revisa tu ruta del día",
+       "x": ". Cada servicio muestra cliente, dirección y tu avance."
+      },
+      {
+       "t": "Toca \"Ver servicios\"",
+       "x": " para abrir cada parada y registrar llegada, fotos y firma del cliente."
+      },
+      {
+       "t": "Al terminar, tu avance se actualiza solo"
+      }
+     ]
+    },
+    {
+     "titulo": "Hacer una solicitud",
+     "min": "2 min",
+     "intro": "Para pedir permisos, vacaciones, material u otros apoyos. Quien debe aprobarla la recibe y verás su respuesta.",
+     "tip": "Si es un permiso, tu supervisor lo revisa primero y después Recursos Humanos.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "chofer/solicitudes.webp"
+      },
+      {
+       "t": "Toca \"Nueva solicitud\"",
+       "x": " y elige el tipo."
+      },
+      {
+       "t": "Cuéntanos el detalle",
+       "x": ". Entre más claro, más rápido se resuelve."
+      },
+      {
+       "t": "Da seguimiento",
+       "x": ". Verás si está pendiente, aprobada o rechazada."
+      }
+     ]
+    },
+    {
+     "titulo": "Reportar un riesgo (Seguridad)",
+     "min": "2 min",
+     "intro": "Si ves algo inseguro —un piso mojado, un cable suelto— repórtalo para que se corrija a tiempo.",
+     "pasos": [
+      {
+       "t": "Abre \"Seguridad\"",
+       "x": "",
+       "img": "chofer/seguridad.webp"
+      },
+      {
+       "t": "Toca \"Reportar incidente o condición insegura\""
+      },
+      {
+       "t": "Cuenta qué pasó, dónde, y agrega fotos si puedes"
+      },
+      {
+       "t": "Consulta tus reportes",
+       "x": ". Verás cuándo se atiende y se cierra."
+      }
+     ]
+    },
+    {
+     "titulo": "Insignias y score",
+     "min": "1 min",
+     "intro": "Tu constancia se premia: cada logro desbloquea una insignia.",
+     "pasos": [
+      {
+       "t": "Abre \"Insignias\"",
+       "x": "",
+       "img": "chofer/insignias.webp"
+      },
+      {
+       "t": "Revisa qué logros te faltan",
+       "x": " y qué debes hacer para conseguirlos."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "chofer/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "chofer/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    },
+    {
+     "q": "Mi unidad no aparece",
+     "a": "Avisa a tu supervisor: puede que aún no te la hayan asignado."
+    }
+   ]
+  },
+  "ayudante": {
+   "titulo": "Ayudante general",
+   "resumen": "Lo esencial para tu jornada: asistencia, rutas, solicitudes y seguridad.",
+   "puedes": [
+    "Registrar entrada y salida",
+    "Ver las rutas donde participas",
+    "Hacer solicitudes",
+    "Reportar riesgos",
+    "Ganar insignias y puntos"
+   ],
+   "nopuedes": [
+    "Mantenimiento de unidades",
+    "Datos de otros compañeros",
+    "Finanzas"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Tu primera vez: la pantalla de bienvenida",
+     "min": "1 min",
+     "intro": "La primera vez que entras te preguntamos tres cosas rápidas.",
+     "pasos": [
+      {
+       "t": "Área",
+       "x": ". Dónde trabajas, para mostrarte lo que te toca."
+      },
+      {
+       "t": "Bio-Nave u oficina",
+       "x": ". Para registrar tu asistencia en el lugar correcto."
+      },
+      {
+       "t": "Funciones principales",
+       "x": ". Para entender qué haces y ayudarte mejor."
+      }
+     ]
+    },
+    {
+     "titulo": "Registrar tu asistencia",
+     "min": "1 min",
+     "intro": "Tu entrada y salida quedan guardadas con la hora y el lugar. Así se calcula tu puntualidad y tus puntos.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi asistencia\"",
+       "x": ". En el menú elige Mi asistencia.",
+       "img": "ayudante/miasistencia.webp"
+      },
+      {
+       "t": "Toca \"Registrar entrada\"",
+       "x": ". Si estás en tu Bio-Nave, también puedes escanear el QR del cartel y se registra solo."
+      },
+      {
+       "t": "Al terminar tu jornada toca \"Registrar salida\""
+      },
+      {
+       "t": "Revisa tu mes",
+       "x": ". Verás cuántos días fuiste puntual, con precaución o con retardo, tus puntos y tu racha."
+      }
+     ],
+     "tip": "Registrar tu entrada a tiempo suma puntos y ayuda a que tu equipo cumpla el reto semanal."
+    },
+    {
+     "titulo": "Tus rutas",
+     "min": "2 min",
+     "intro": "Consulta con quién y a dónde vas hoy.",
+     "pasos": [
+      {
+       "t": "Abre \"Rutas\"",
+       "x": "",
+       "img": "ayudante/rutas.webp"
+      },
+      {
+       "t": "Revisa tu ruta y los servicios del día"
+      },
+      {
+       "t": "Acompaña a tu operador",
+       "x": ". Él registra las llegadas y firmas; tú ves el avance."
+      }
+     ]
+    },
+    {
+     "titulo": "Hacer una solicitud",
+     "min": "2 min",
+     "intro": "Para pedir permisos, vacaciones, material u otros apoyos. Quien debe aprobarla la recibe y verás su respuesta.",
+     "tip": "Tu supervisor recibe tus solicitudes primero.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "ayudante/solicitudes.webp"
+      },
+      {
+       "t": "Toca \"Nueva solicitud\"",
+       "x": " y elige el tipo."
+      },
+      {
+       "t": "Cuéntanos el detalle",
+       "x": ". Entre más claro, más rápido se resuelve."
+      },
+      {
+       "t": "Da seguimiento",
+       "x": ". Verás si está pendiente, aprobada o rechazada."
+      }
+     ]
+    },
+    {
+     "titulo": "Reportar un riesgo (Seguridad)",
+     "min": "2 min",
+     "intro": "Si ves algo inseguro —un piso mojado, un cable suelto— repórtalo para que se corrija a tiempo.",
+     "pasos": [
+      {
+       "t": "Abre \"Seguridad\"",
+       "x": "",
+       "img": "ayudante/seguridad.webp"
+      },
+      {
+       "t": "Toca \"Reportar incidente o condición insegura\""
+      },
+      {
+       "t": "Cuenta qué pasó, dónde, y agrega fotos si puedes"
+      },
+      {
+       "t": "Consulta tus reportes",
+       "x": ". Verás cuándo se atiende y se cierra."
+      }
+     ]
+    },
+    {
+     "titulo": "Insignias y score",
+     "min": "1 min",
+     "intro": "Tu constancia se premia: cada logro desbloquea una insignia.",
+     "pasos": [
+      {
+       "t": "Abre \"Insignias\"",
+       "x": "",
+       "img": "ayudante/insignias.webp"
+      },
+      {
+       "t": "Revisa qué logros te faltan",
+       "x": " y qué debes hacer para conseguirlos."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "ayudante/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "ayudante/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "supervisor": {
+   "titulo": "Gerente Operativo",
+   "resumen": "Vigila a tu equipo: asistencia, solicitudes, flota, rutas y seguridad en un solo lugar.",
+   "puedes": [
+    "Ver la asistencia de tu equipo",
+    "Aprobar o rechazar solicitudes",
+    "Ver flota y mantenimiento",
+    "Dar seguimiento a rutas y servicios",
+    "Revisar reportes de seguridad",
+    "Consultar personal y documentos"
+   ],
+   "nopuedes": [
+    "Configuración del sistema",
+    "Auditoría"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    },
+    {
+     "dato": "Datos del personal a tu cargo",
+     "para": "Para organizar turnos, permisos y la operación."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Registrar tu asistencia",
+     "min": "1 min",
+     "intro": "Tu entrada y salida quedan guardadas con la hora y el lugar. Así se calcula tu puntualidad y tus puntos.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi asistencia\"",
+       "x": ". En el menú elige Mi asistencia.",
+       "img": "supervisor/miasistencia.webp"
+      },
+      {
+       "t": "Toca \"Registrar entrada\"",
+       "x": ". Si estás en tu Bio-Nave, también puedes escanear el QR del cartel y se registra solo."
+      },
+      {
+       "t": "Al terminar tu jornada toca \"Registrar salida\""
+      },
+      {
+       "t": "Revisa tu mes",
+       "x": ". Verás cuántos días fuiste puntual, con precaución o con retardo, tus puntos y tu racha."
+      }
+     ],
+     "tip": "Registrar tu entrada a tiempo suma puntos y ayuda a que tu equipo cumpla el reto semanal."
+    },
+    {
+     "titulo": "Asistencia de tu equipo",
+     "min": "3 min",
+     "intro": "Quién llegó, quién llegó tarde y quién falta.",
+     "pasos": [
+      {
+       "t": "Abre \"Asistencias\"",
+       "x": "",
+       "img": "supervisor/asistencias.webp"
+      },
+      {
+       "t": "Elige la fecha",
+       "x": " y revisa el estado de cada persona."
+      },
+      {
+       "t": "Detecta retardos y faltas",
+       "x": " para hablar con el equipo a tiempo."
+      }
+     ]
+    },
+    {
+     "titulo": "Aprobar solicitudes y permisos",
+     "min": "3 min",
+     "intro": "Tu equipo te pide permisos y material; tú decides.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "supervisor/solicitudes.webp"
+      },
+      {
+       "t": "Abre una solicitud pendiente"
+      },
+      {
+       "t": "Aprueba o rechaza",
+       "x": " y, si rechazas, escribe el motivo."
+      }
+     ],
+     "tip": "Responder rápido evita que tu equipo se quede esperando."
+    },
+    {
+     "titulo": "Flota y mantenimiento",
+     "min": "3 min",
+     "intro": "El estado de las unidades.",
+     "pasos": [
+      {
+       "t": "Abre \"Flota\"",
+       "x": "",
+       "img": "supervisor/flota.webp"
+      },
+      {
+       "t": "Abre \"Mantenimiento\"",
+       "x": "",
+       "img": "supervisor/mantenimiento.webp"
+      },
+      {
+       "t": "Atiende los informes de las unidades",
+       "x": " que tus operadores reportan."
+      }
+     ]
+    },
+    {
+     "titulo": "Rutas y servicios",
+     "min": "2 min",
+     "intro": "Cumplimiento del día.",
+     "pasos": [
+      {
+       "t": "Abre \"Rutas\"",
+       "x": "",
+       "img": "supervisor/rutas.webp"
+      },
+      {
+       "t": "Revisa avance y pendientes de cada ruta"
+      }
+     ]
+    },
+    {
+     "titulo": "Reportar un riesgo (Seguridad)",
+     "min": "2 min",
+     "intro": "Si ves algo inseguro —un piso mojado, un cable suelto— repórtalo para que se corrija a tiempo.",
+     "pasos": [
+      {
+       "t": "Abre \"Seguridad\"",
+       "x": "",
+       "img": "supervisor/seguridad.webp"
+      },
+      {
+       "t": "Toca \"Reportar incidente o condición insegura\""
+      },
+      {
+       "t": "Cuenta qué pasó, dónde, y agrega fotos si puedes"
+      },
+      {
+       "t": "Consulta tus reportes",
+       "x": ". Verás cuándo se atiende y se cierra."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "supervisor/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "supervisor/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "rh": {
+   "titulo": "Recursos Humanos",
+   "resumen": "Altas, expedientes, asistencia, solicitudes y accesos del personal.",
+   "puedes": [
+    "Dar de alta y editar personal",
+    "Ver y capturar asistencia",
+    "Aprobar solicitudes",
+    "Generar accesos y reiniciar contraseñas",
+    "Ver compliance y reportes",
+    "Crear el reto semanal"
+   ],
+   "nopuedes": [
+    "Finanzas"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    },
+    {
+     "dato": "CURP, RFC, ingreso y contrato",
+     "para": "Para el expediente y la nómina de cada colaborador."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Personal y expedientes",
+     "min": "4 min",
+     "intro": "Aquí vive la información de cada colaborador.",
+     "pasos": [
+      {
+       "t": "Abre \"Personal\"",
+       "x": "",
+       "img": "rh/personal.webp"
+      },
+      {
+       "t": "Busca a la persona o toca \"Nuevo\""
+      },
+      {
+       "t": "Completa sus datos y documentos",
+       "x": ". Se piden para su expediente y nómina."
+      }
+     ]
+    },
+    {
+     "titulo": "Asistencia del equipo",
+     "min": "3 min",
+     "intro": "Control diario y por equipo.",
+     "pasos": [
+      {
+       "t": "Abre \"Asistencias\"",
+       "x": "",
+       "img": "rh/asistencias.webp"
+      },
+      {
+       "t": "Abre \"Asistencia de equipo\"",
+       "x": "",
+       "img": "rh/equipoasis.webp"
+      },
+      {
+       "t": "Crea el reto semanal",
+       "x": " y elige a qué tipo de personal y área aplica."
+      }
+     ]
+    },
+    {
+     "titulo": "Solicitudes",
+     "min": "3 min",
+     "intro": "Revisa y resuelve lo que llega.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "rh/solicitudes.webp"
+      },
+      {
+       "t": "Abre una pendiente y aprueba o rechaza"
+      }
+     ]
+    },
+    {
+     "titulo": "Accesos y contraseñas",
+     "min": "2 min",
+     "intro": "Cuando alguien olvide su contraseña, tú se la restableces desde el sistema.",
+     "pasos": [
+      {
+       "t": "Busca a la persona en Personal"
+      },
+      {
+       "t": "Genera su nuevo acceso desde su ficha"
+      },
+      {
+       "t": "Compártelo solo con esa persona"
+      }
+     ],
+     "tip": "Nunca guardes contraseñas en chats ni notas."
+    },
+    {
+     "titulo": "Compliance y reportes",
+     "min": "3 min",
+     "intro": "Vigencia de documentos e indicadores.",
+     "pasos": [
+      {
+       "t": "Abre \"Compliance\"",
+       "x": "",
+       "img": "rh/compliance.webp"
+      },
+      {
+       "t": "Abre \"Reportes\"",
+       "x": "",
+       "img": "rh/reportes.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Reportar un riesgo (Seguridad)",
+     "min": "2 min",
+     "intro": "Si ves algo inseguro —un piso mojado, un cable suelto— repórtalo para que se corrija a tiempo.",
+     "pasos": [
+      {
+       "t": "Abre \"Seguridad\"",
+       "x": "",
+       "img": "rh/seguridad.webp"
+      },
+      {
+       "t": "Toca \"Reportar incidente o condición insegura\""
+      },
+      {
+       "t": "Cuenta qué pasó, dónde, y agrega fotos si puedes"
+      },
+      {
+       "t": "Consulta tus reportes",
+       "x": ". Verás cuándo se atiende y se cierra."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "rh/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "rh/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "direccion_ceo": {
+   "titulo": "Dirección",
+   "resumen": "Visión completa de la empresa y control de todos los módulos.",
+   "puedes": [
+    "Ver todos los módulos",
+    "Cambiar de vista para ver como otro perfil",
+    "Consultar finanzas y KPIs",
+    "Revisar auditoría",
+    "Configurar la empresa"
+   ],
+   "nopuedes": [],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Tablero principal",
+     "min": "2 min",
+     "intro": "El resumen del día.",
+     "pasos": [
+      {
+       "t": "Abre \"Dashboard\"",
+       "x": "",
+       "img": "direccion/dashboard.webp"
+      },
+      {
+       "t": "Revisa alertas y cifras clave"
+      }
+     ]
+    },
+    {
+     "titulo": "Ver como otro perfil",
+     "min": "2 min",
+     "intro": "Para saber qué ve cada persona de tu equipo.",
+     "pasos": [
+      {
+       "t": "Usa el selector \"Vista\"",
+       "x": " en la parte superior."
+      },
+      {
+       "t": "Elige el perfil",
+       "x": " y recorre sus pantallas. Vuelve a Dirección cuando termines."
+      }
+     ]
+    },
+    {
+     "titulo": "Indicadores y finanzas",
+     "min": "3 min",
+     "intro": "Cómo va el negocio.",
+     "pasos": [
+      {
+       "t": "Abre \"KPIs\"",
+       "x": "",
+       "img": "direccion/kpis.webp"
+      },
+      {
+       "t": "Abre \"Finanzas\"",
+       "x": "",
+       "img": "direccion/finanzas.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Personal, asistencia y solicitudes",
+     "min": "3 min",
+     "intro": "Control de la gente.",
+     "pasos": [
+      {
+       "t": "Abre \"Personal\"",
+       "x": "",
+       "img": "direccion/personal.webp"
+      },
+      {
+       "t": "Abre \"Asistencias\"",
+       "x": "",
+       "img": "direccion/asistencias.webp"
+      },
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "direccion/solicitudes.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Auditoría y configuración",
+     "min": "2 min",
+     "intro": "Quién hizo qué, y ajustes generales.",
+     "pasos": [
+      {
+       "t": "Abre \"Auditoría\"",
+       "x": "",
+       "img": "direccion/auditoria.webp"
+      },
+      {
+       "t": "Abre \"Configuración\"",
+       "x": "",
+       "img": "direccion/configuracion.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "direccion/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "direccion/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "mantenimiento": {
+   "titulo": "Mantenimiento",
+   "resumen": "Atiende los informes y servicios de las unidades.",
+   "puedes": [
+    "Ver informes de las unidades",
+    "Atender solicitudes de mantenimiento"
+   ],
+   "nopuedes": [
+    "Personal, finanzas y rutas"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Atender mantenimiento",
+     "min": "3 min",
+     "intro": "Lo que los operadores reportan llega a ti.",
+     "pasos": [
+      {
+       "t": "Abre \"Mantenimiento\"",
+       "x": "",
+       "img": "mantenimiento/mantenimiento.webp"
+      },
+      {
+       "t": "Revisa los informes recientes y su nivel de urgencia"
+      },
+      {
+       "t": "Atiende la unidad y deja registro de lo realizado"
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "mantenimiento/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "monitoreo": {
+   "titulo": "Monitoreo",
+   "resumen": "Vigila la flota y la operación en tiempo real.",
+   "puedes": [
+    "Ver flota y equipos",
+    "Consultar documentos",
+    "Registrar asistencia",
+    "Hacer solicitudes",
+    "Reportar riesgos"
+   ],
+   "nopuedes": [
+    "Finanzas",
+    "Personal"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Registrar tu asistencia",
+     "min": "1 min",
+     "intro": "Tu entrada y salida quedan guardadas con la hora y el lugar. Así se calcula tu puntualidad y tus puntos.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi asistencia\"",
+       "x": ". En el menú elige Mi asistencia.",
+       "img": "monitoreo/miasistencia.webp"
+      },
+      {
+       "t": "Toca \"Registrar entrada\"",
+       "x": ". Si estás en tu Bio-Nave, también puedes escanear el QR del cartel y se registra solo."
+      },
+      {
+       "t": "Al terminar tu jornada toca \"Registrar salida\""
+      },
+      {
+       "t": "Revisa tu mes",
+       "x": ". Verás cuántos días fuiste puntual, con precaución o con retardo, tus puntos y tu racha."
+      }
+     ],
+     "tip": "Registrar tu entrada a tiempo suma puntos y ayuda a que tu equipo cumpla el reto semanal."
+    },
+    {
+     "titulo": "Flota y equipos",
+     "min": "3 min",
+     "intro": "Estado de unidades y equipos.",
+     "pasos": [
+      {
+       "t": "Abre \"Flota\"",
+       "x": "",
+       "img": "monitoreo/flota.webp"
+      },
+      {
+       "t": "Abre \"Equipos\"",
+       "x": "",
+       "img": "monitoreo/equipos.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Documentos",
+     "min": "2 min",
+     "intro": "Consulta los documentos vigentes.",
+     "pasos": [
+      {
+       "t": "Abre \"Documentos\"",
+       "x": "",
+       "img": "monitoreo/documentos.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Hacer una solicitud",
+     "min": "2 min",
+     "intro": "Para pedir permisos, vacaciones, material u otros apoyos. Quien debe aprobarla la recibe y verás su respuesta.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "monitoreo/solicitudes.webp"
+      },
+      {
+       "t": "Toca \"Nueva solicitud\"",
+       "x": " y elige el tipo."
+      },
+      {
+       "t": "Cuéntanos el detalle",
+       "x": ". Entre más claro, más rápido se resuelve."
+      },
+      {
+       "t": "Da seguimiento",
+       "x": ". Verás si está pendiente, aprobada o rechazada."
+      }
+     ]
+    },
+    {
+     "titulo": "Reportar un riesgo (Seguridad)",
+     "min": "2 min",
+     "intro": "Si ves algo inseguro —un piso mojado, un cable suelto— repórtalo para que se corrija a tiempo.",
+     "pasos": [
+      {
+       "t": "Abre \"Seguridad\"",
+       "x": "",
+       "img": "monitoreo/seguridad.webp"
+      },
+      {
+       "t": "Toca \"Reportar incidente o condición insegura\""
+      },
+      {
+       "t": "Cuenta qué pasó, dónde, y agrega fotos si puedes"
+      },
+      {
+       "t": "Consulta tus reportes",
+       "x": ". Verás cuándo se atiende y se cierra."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "monitoreo/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "monitoreo/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "administrativo_operativa": {
+   "titulo": "Administrativo · operativa",
+   "resumen": "Apoyo administrativo de tu área.",
+   "puedes": [
+    "Registrar asistencia",
+    "Hacer solicitudes",
+    "Consultar calendario y procesos",
+    "Ver flota, rutas y documentos"
+   ],
+   "nopuedes": [
+    "Finanzas"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Registrar tu asistencia",
+     "min": "1 min",
+     "intro": "Tu entrada y salida quedan guardadas con la hora y el lugar. Así se calcula tu puntualidad y tus puntos.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi asistencia\"",
+       "x": ". En el menú elige Mi asistencia.",
+       "img": "administrativo/miasistencia.webp"
+      },
+      {
+       "t": "Toca \"Registrar entrada\"",
+       "x": ". Si estás en tu Bio-Nave, también puedes escanear el QR del cartel y se registra solo."
+      },
+      {
+       "t": "Al terminar tu jornada toca \"Registrar salida\""
+      },
+      {
+       "t": "Revisa tu mes",
+       "x": ". Verás cuántos días fuiste puntual, con precaución o con retardo, tus puntos y tu racha."
+      }
+     ],
+     "tip": "Registrar tu entrada a tiempo suma puntos y ayuda a que tu equipo cumpla el reto semanal."
+    },
+    {
+     "titulo": "Calendario y procesos",
+     "min": "2 min",
+     "intro": "Fechas importantes y los pasos de cada proceso.",
+     "pasos": [
+      {
+       "t": "Abre \"Calendario\"",
+       "x": "",
+       "img": "administrativo/calendario.webp"
+      },
+      {
+       "t": "Abre \"Procesos\"",
+       "x": "",
+       "img": "administrativo/procesos.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Flota, rutas y documentos",
+     "min": "3 min",
+     "intro": "Consulta lo que necesitas para tu trabajo.",
+     "pasos": [
+      {
+       "t": "Abre \"Flota\"",
+       "x": "",
+       "img": "administrativo/flota.webp"
+      },
+      {
+       "t": "Abre \"Rutas\"",
+       "x": "",
+       "img": "administrativo/rutas.webp"
+      },
+      {
+       "t": "Abre \"Documentos\"",
+       "x": "",
+       "img": "administrativo/documentos.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Hacer una solicitud",
+     "min": "2 min",
+     "intro": "Para pedir permisos, vacaciones, material u otros apoyos. Quien debe aprobarla la recibe y verás su respuesta.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "administrativo/solicitudes.webp"
+      },
+      {
+       "t": "Toca \"Nueva solicitud\"",
+       "x": " y elige el tipo."
+      },
+      {
+       "t": "Cuéntanos el detalle",
+       "x": ". Entre más claro, más rápido se resuelve."
+      },
+      {
+       "t": "Da seguimiento",
+       "x": ". Verás si está pendiente, aprobada o rechazada."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "administrativo/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "administrativo/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "administrativo_finanzas": {
+   "titulo": "Administrativo · finanzas",
+   "resumen": "Apoyo administrativo de tu área.",
+   "puedes": [
+    "Registrar asistencia",
+    "Hacer solicitudes",
+    "Consultar calendario y procesos",
+    "Consultar finanzas"
+   ],
+   "nopuedes": [
+    "Flota y rutas"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Registrar tu asistencia",
+     "min": "1 min",
+     "intro": "Tu entrada y salida quedan guardadas con la hora y el lugar. Así se calcula tu puntualidad y tus puntos.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi asistencia\"",
+       "x": ". En el menú elige Mi asistencia.",
+       "img": "finanzas/miasistencia.webp"
+      },
+      {
+       "t": "Toca \"Registrar entrada\"",
+       "x": ". Si estás en tu Bio-Nave, también puedes escanear el QR del cartel y se registra solo."
+      },
+      {
+       "t": "Al terminar tu jornada toca \"Registrar salida\""
+      },
+      {
+       "t": "Revisa tu mes",
+       "x": ". Verás cuántos días fuiste puntual, con precaución o con retardo, tus puntos y tu racha."
+      }
+     ],
+     "tip": "Registrar tu entrada a tiempo suma puntos y ayuda a que tu equipo cumpla el reto semanal."
+    },
+    {
+     "titulo": "Calendario y procesos",
+     "min": "2 min",
+     "intro": "Fechas importantes y los pasos de cada proceso.",
+     "pasos": [
+      {
+       "t": "Abre \"Calendario\"",
+       "x": "",
+       "img": "finanzas/calendario.webp"
+      },
+      {
+       "t": "Abre \"Procesos\"",
+       "x": "",
+       "img": "finanzas/procesos.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Finanzas",
+     "min": "3 min",
+     "intro": "Consulta y da seguimiento.",
+     "pasos": [
+      {
+       "t": "Abre \"Finanzas\"",
+       "x": "",
+       "img": "finanzas/finanzas.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Hacer una solicitud",
+     "min": "2 min",
+     "intro": "Para pedir permisos, vacaciones, material u otros apoyos. Quien debe aprobarla la recibe y verás su respuesta.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "finanzas/solicitudes.webp"
+      },
+      {
+       "t": "Toca \"Nueva solicitud\"",
+       "x": " y elige el tipo."
+      },
+      {
+       "t": "Cuéntanos el detalle",
+       "x": ". Entre más claro, más rápido se resuelve."
+      },
+      {
+       "t": "Da seguimiento",
+       "x": ". Verás si está pendiente, aprobada o rechazada."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "finanzas/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "finanzas/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "administracion": {
+   "titulo": "Gerente Administrativo",
+   "resumen": "Finanzas, procesos y calendario de la empresa.",
+   "puedes": [
+    "Consultar y aprobar finanzas",
+    "Ver calendario y procesos",
+    "Registrar asistencia",
+    "Hacer solicitudes"
+   ],
+   "nopuedes": [
+    "Flota y rutas"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Registrar tu asistencia",
+     "min": "1 min",
+     "intro": "Tu entrada y salida quedan guardadas con la hora y el lugar. Así se calcula tu puntualidad y tus puntos.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi asistencia\"",
+       "x": ". En el menú elige Mi asistencia.",
+       "img": "administracion/miasistencia.webp"
+      },
+      {
+       "t": "Toca \"Registrar entrada\"",
+       "x": ". Si estás en tu Bio-Nave, también puedes escanear el QR del cartel y se registra solo."
+      },
+      {
+       "t": "Al terminar tu jornada toca \"Registrar salida\""
+      },
+      {
+       "t": "Revisa tu mes",
+       "x": ". Verás cuántos días fuiste puntual, con precaución o con retardo, tus puntos y tu racha."
+      }
+     ],
+     "tip": "Registrar tu entrada a tiempo suma puntos y ayuda a que tu equipo cumpla el reto semanal."
+    },
+    {
+     "titulo": "Finanzas",
+     "min": "3 min",
+     "intro": "Revisa y da seguimiento.",
+     "pasos": [
+      {
+       "t": "Abre \"Finanzas\"",
+       "x": "",
+       "img": "administracion/finanzas.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Calendario y procesos",
+     "min": "2 min",
+     "intro": "Fechas y procesos.",
+     "pasos": [
+      {
+       "t": "Abre \"Calendario\"",
+       "x": "",
+       "img": "administracion/calendario.webp"
+      },
+      {
+       "t": "Abre \"Procesos\"",
+       "x": "",
+       "img": "administracion/procesos.webp"
+      }
+     ]
+    },
+    {
+     "titulo": "Hacer una solicitud",
+     "min": "2 min",
+     "intro": "Para pedir permisos, vacaciones, material u otros apoyos. Quien debe aprobarla la recibe y verás su respuesta.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "administracion/solicitudes.webp"
+      },
+      {
+       "t": "Toca \"Nueva solicitud\"",
+       "x": " y elige el tipo."
+      },
+      {
+       "t": "Cuéntanos el detalle",
+       "x": ". Entre más claro, más rápido se resuelve."
+      },
+      {
+       "t": "Da seguimiento",
+       "x": ". Verás si está pendiente, aprobada o rechazada."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "administracion/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "administracion/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  },
+  "she": {
+   "titulo": "Seguridad, Salud y Ambiente",
+   "resumen": "Atiende los reportes de seguridad y da seguimiento hasta cerrarlos.",
+   "puedes": [
+    "Ver y atender reportes de seguridad",
+    "Cerrar reportes con acción correctiva",
+    "Registrar asistencia",
+    "Hacer solicitudes"
+   ],
+   "nopuedes": [
+    "Finanzas",
+    "Personal"
+   ],
+   "datos": [
+    {
+     "dato": "Nombre, puesto y área",
+     "para": "Para saber quién eres y mostrarte solo lo que corresponde a tu trabajo."
+    },
+    {
+     "dato": "Correo",
+     "para": "Es tu usuario para entrar y donde llegan tus avisos."
+    },
+    {
+     "dato": "Hora y lugar de tu entrada/salida",
+     "para": "Para calcular tu puntualidad, tus puntos y el reto del equipo."
+    },
+    {
+     "dato": "Teléfono y contacto de emergencia",
+     "para": "Para localizarte o avisar a alguien de confianza si pasa algo."
+    }
+   ],
+   "secciones": [
+    {
+     "titulo": "Entrar a Bio-centralis",
+     "min": "2 min",
+     "intro": "Entras con tu correo, tu contraseña y un código de seguridad que cambia cada 30 segundos.",
+     "pasos": [
+      {
+       "t": "Escribe tu correo y contraseña",
+       "x": ". Son los que te dio Recursos Humanos al darte de alta."
+      },
+      {
+       "t": "Escribe el código de seguridad",
+       "x": ". Lo ves en tu aplicación de códigos (la que configuraste al entrar por primera vez)."
+      },
+      {
+       "t": "Instala la app en tu teléfono",
+       "x": ". Cuando te lo sugiera, acepta. Así entras más rápido y puedes activar huella o rostro para no escribir tu contraseña."
+      }
+     ],
+     "tip": "Si olvidaste tu contraseña, avisa a Recursos Humanos; ellos te generan una nueva desde el sistema. Nadie más debe pedírtela."
+    },
+    {
+     "titulo": "Registrar tu asistencia",
+     "min": "1 min",
+     "intro": "Tu entrada y salida quedan guardadas con la hora y el lugar. Así se calcula tu puntualidad y tus puntos.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi asistencia\"",
+       "x": ". En el menú elige Mi asistencia.",
+       "img": "she/miasistencia.webp"
+      },
+      {
+       "t": "Toca \"Registrar entrada\"",
+       "x": ". Si estás en tu Bio-Nave, también puedes escanear el QR del cartel y se registra solo."
+      },
+      {
+       "t": "Al terminar tu jornada toca \"Registrar salida\""
+      },
+      {
+       "t": "Revisa tu mes",
+       "x": ". Verás cuántos días fuiste puntual, con precaución o con retardo, tus puntos y tu racha."
+      }
+     ],
+     "tip": "Registrar tu entrada a tiempo suma puntos y ayuda a que tu equipo cumpla el reto semanal."
+    },
+    {
+     "titulo": "Atender reportes de seguridad",
+     "min": "4 min",
+     "intro": "Todo lo que el equipo reporta llega aquí.",
+     "pasos": [
+      {
+       "t": "Abre \"Seguridad\"",
+       "x": "",
+       "img": "she/seguridad.webp"
+      },
+      {
+       "t": "Revisa el semáforo y las fotos"
+      },
+      {
+       "t": "Define la acción correctiva"
+      },
+      {
+       "t": "Cierra el reporte cuando esté resuelto"
+      }
+     ]
+    },
+    {
+     "titulo": "Hacer una solicitud",
+     "min": "2 min",
+     "intro": "Para pedir permisos, vacaciones, material u otros apoyos. Quien debe aprobarla la recibe y verás su respuesta.",
+     "pasos": [
+      {
+       "t": "Abre \"Solicitudes\"",
+       "x": "",
+       "img": "she/solicitudes.webp"
+      },
+      {
+       "t": "Toca \"Nueva solicitud\"",
+       "x": " y elige el tipo."
+      },
+      {
+       "t": "Cuéntanos el detalle",
+       "x": ". Entre más claro, más rápido se resuelve."
+      },
+      {
+       "t": "Da seguimiento",
+       "x": ". Verás si está pendiente, aprobada o rechazada."
+      }
+     ]
+    },
+    {
+     "titulo": "Bio-Muro: avisos y reconocimientos",
+     "min": "1 min",
+     "intro": "Es el tablón de la empresa: avisos importantes y felicitaciones.",
+     "pasos": [
+      {
+       "t": "Abre \"Bio-Muro\"",
+       "x": "",
+       "img": "she/muro.webp"
+      },
+      {
+       "t": "Lee los avisos fijados arriba",
+       "x": ". Son los más importantes."
+      },
+      {
+       "t": "Reacciona con 👍 ❤️ 🎉 ⭐",
+       "x": " para felicitar a tus compañeros."
+      }
+     ]
+    },
+    {
+     "titulo": "Tu perfil y tu cuenta",
+     "min": "2 min",
+     "intro": "Aquí ves tus datos y puedes cambiar tu contraseña.",
+     "pasos": [
+      {
+       "t": "Abre \"Mi perfil\"",
+       "x": "",
+       "img": "she/miperfil.webp"
+      },
+      {
+       "t": "Cambia tu contraseña cuando lo necesites",
+       "x": ". Elige una que solo tú conozcas; no la compartas."
+      },
+      {
+       "t": "Cierra sesión al terminar si usas un equipo compartido"
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Olvidé mi contraseña, ¿qué hago?",
+     "a": "Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie."
+    },
+    {
+     "q": "No me aparece el código de seguridad",
+     "a": "Abre tu aplicación de códigos y busca \"Bio-centralis\". Si no la tienes configurada, pide a Recursos Humanos que reinicien tu acceso."
+    },
+    {
+     "q": "Se me olvidó registrar mi entrada",
+     "a": "Regístrala en cuanto lo recuerdes y avisa a tu supervisor para que lo tenga en cuenta."
+    },
+    {
+     "q": "¿Para qué piden mis datos?",
+     "a": "Solo los necesarios para tu nómina, tu seguridad y tu operación diaria. Se usan dentro de la empresa y nadie ajeno los ve."
+    }
+   ]
+  }
+ }
+}

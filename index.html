@@ -374,6 +374,42 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 /* Desplazamiento lateral al cambiar de panel */
 .mov-in-r{animation:movInR .38s cubic-bezier(.22,.8,.3,1) backwards}
 .mov-in-l{animation:movInL .38s cubic-bezier(.22,.8,.3,1) backwards}
+/* ── Manual de usuario ── */
+.man-hero{display:flex;gap:14px;align-items:center;padding:18px 20px;margin-bottom:14px;border-radius:16px;border:1px solid var(--border2);background:linear-gradient(135deg,rgba(78,200,122,.12),rgba(77,163,255,.05))}
+.man-hero .man-ico{font-size:38px;flex:none}
+.man-hero h2{margin:0 0 4px;font-family:var(--head);font-size:18px}
+.man-hero p{margin:0;font-size:12.5px;line-height:1.6;color:var(--text2)}
+.man-nuevo{padding:12px 16px;margin-bottom:14px;border-radius:12px;border:1px dashed var(--green);background:rgba(78,200,122,.06);font-size:12px;line-height:1.6}
+.man-nuevo b{color:var(--green)}
+.man-blq{margin-bottom:14px}
+.man-blq>h3{font-family:var(--head);font-size:13px;margin:0 0 8px}
+.man-chips{display:flex;flex-wrap:wrap;gap:6px}
+.man-chip{font-size:11.5px;padding:5px 11px;border-radius:14px;background:var(--surface2,#1c2a22);border:1px solid var(--border2)}
+.man-chip.no{opacity:.75;border-style:dashed}
+.man-tabla{width:100%;border-collapse:collapse;font-size:12px}
+.man-tabla td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+.man-tabla td:first-child{font-weight:700;width:34%}
+.man-sec{border:1px solid var(--border2);border-radius:14px;margin-bottom:10px;background:var(--surface,#16201a);overflow:hidden}
+.man-sec>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:13px 16px;font-weight:700;font-size:13.5px}
+.man-sec>summary::-webkit-details-marker{display:none}
+.man-sec>summary .man-num{width:26px;height:26px;border-radius:50%;background:var(--green);color:#0a2418;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.man-sec>summary .man-t{flex:1}
+.man-sec>summary .man-min{font-size:10.5px;font-weight:500;color:var(--text3)}
+.man-sec>summary::after{content:'+';font-size:18px;color:var(--text3)}
+.man-sec[open]>summary::after{content:'–'}
+.man-sec .man-cuerpo{padding:0 16px 16px}
+.man-intro{font-size:12.5px;line-height:1.65;color:var(--text2);margin:0 0 12px}
+.man-paso{display:flex;gap:12px;margin-bottom:16px}
+.man-paso .man-pn{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--green);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-top:1px}
+.man-paso .man-px{flex:1;min-width:0;font-size:12.5px;line-height:1.65}
+.man-paso .man-px b{display:block;margin-bottom:2px}
+.man-img{display:block;width:100%;max-width:560px;margin-top:8px;border-radius:10px;border:1px solid var(--border2);cursor:zoom-in;background:#0b120e}
+.man-tip{font-size:12px;line-height:1.6;padding:10px 12px;border-radius:10px;background:rgba(245,185,66,.1);border:1px solid rgba(245,185,66,.35)}
+.man-faq details{border-bottom:1px solid var(--border);padding:9px 0;font-size:12.5px}
+.man-faq summary{cursor:pointer;font-weight:600}
+.man-faq p{margin:6px 0 0;color:var(--text2);line-height:1.6}
+.man-zoom{position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:14px;cursor:zoom-out;animation:sesFade .2s}
+.man-zoom img{max-width:100%;max-height:100%;border-radius:10px}
 /* ── Avisos de sesión con personalidad ── */
 .ses-vel{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,12,9,.72);backdrop-filter:blur(4px);animation:sesFade .25s ease-out}
 .ses-card{max-width:360px;width:100%;text-align:center;background:var(--surface,#16201a);color:var(--text,#e8f0ea);border:1px solid var(--border2,#2a3a30);border-radius:18px;padding:26px 22px 20px;box-shadow:0 18px 60px rgba(0,0,0,.5);animation:sesPop .4s cubic-bezier(.2,1.4,.4,1)}
@@ -1005,6 +1041,10 @@ select.form-input option{background:var(--bg2)}
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="5.5" r="2.8"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>
       Mi perfil
     </div>
+    <div class="sb-item" data-page="manual" onclick="nav('manual',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M2.5 3.2c1.8-.8 3.7-.8 5.5.4 1.8-1.2 3.7-1.2 5.5-.4v9.3c-1.8-.8-3.7-.8-5.5.4-1.8-1.2-3.7-1.2-5.5-.4z"/><path d="M8 3.6v9.3"/></svg>
+      Manual
+    </div>
     <div class="sb-item" data-page="auditoria" onclick="nav('auditoria',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M8 4v4l3 2"/></svg>
       Auditoría
@@ -1499,6 +1539,8 @@ select.form-input option{background:var(--bg2)}
       <div style="padding:14px"><button class="btn primary" onclick="nav('configuracion',null)">Abrir configuración</button></div>
     </div>
   </div>
+
+  <div id="page-manual" class="page fadein" style="max-width:860px;margin:0 auto"><div id="man-contenido"></div></div>
 
   <div id="page-miperfil" class="page fadein" style="max-width:720px;margin:0 auto">
     <div class="panel" style="padding:18px" id="mp-cabecera"></div>
@@ -3914,14 +3956,14 @@ const ROLES = {
 const CAPS = {
   she: {
     // SHE: Bio-Muro (pestaña Seguridad), su asistencia y su perfil. Datos de salud y gasto los limita el servidor.
-    pages:['dashboard','miasistencia','miperfil','muro','seguridad','solicitudes','insignias'],
+    pages:['dashboard','miasistencia','miperfil','manual','muro','seguridad','solicitudes','insignias'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   monitoreo: {
-    pages:['dashboard','flota','documentos','equipos','miasistencia','miperfil','muro','seguridad','solicitudes','insignias'],
+    pages:['dashboard','flota','documentos','equipos','miasistencia','miperfil','manual','muro','seguridad','solicitudes','insignias'],
     fleet:true, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3929,7 +3971,7 @@ const CAPS = {
   },
   mantenimiento: {
     // Mantenimiento: solo solicitudes de mantenimiento aprobadas, informes de reparación y avance. Nada de personal, finanzas ni documentos.
-    pages:['mantenimiento','miperfil'],
+    pages:['mantenimiento','miperfil','manual'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3937,28 +3979,28 @@ const CAPS = {
   },
   chofer: {
     // Operativo: solo ve su camión asignado (RLS lo limita), su asistencia y el Muro
-    pages:['dashboard','flota','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','muro','seguridad'],
+    pages:['dashboard','flota','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','manual','muro','seguridad'],
     fleet:false, personnel:'self', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   supervisor: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','muro','seguridad'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','manual','muro','seguridad'],
     fleet:true, personnel:'own_sites', editPersonnel:'own_sites', baja:false,
     sites:'own', createSite:true, permisosLegales:false, permisos:true,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'own', actas:'own_sites', firmaAsistencia:true, equipos:true
   },
   rh: {
-    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','solicitudes','miasistencia','miperfil','muro','seguridad','insignias'],
+    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','solicitudes','miasistencia','miperfil','manual','muro','seguridad','insignias'],
     fleet:false, personnel:'all', editPersonnel:'all', baja:false,
     sites:'all_view', createSite:false, permisosLegales:false, permisos:false,
     config:'personnel', auditoria:false, kpis:true, compliance:true,
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
   administracion: {
-    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','muro','seguridad','insignias'],
+    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','manual','muro','seguridad','insignias'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -3966,14 +4008,14 @@ const CAPS = {
   },
   administrativo: {
     // El área (finanzas/operativa) amplía las páginas en caps(); en Finanzas el Administrativo de finanzas captura
-    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','muro','seguridad','insignias'],
+    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','manual','muro','seguridad','insignias'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   direccion_ceo: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','seguridad','miperfil','muro'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','seguridad','miperfil','manual','muro'],
     fleet:true, personnel:'all', editPersonnel:'all', baja:true,
     sites:'all', createSite:true, permisosLegales:true, permisos:true,
     config:true, auditoria:true, kpis:true, compliance:true,
@@ -4600,6 +4642,61 @@ async function bioVerificar(lock){
     return !!r;
   } catch(e){ return false; }
 }
+/* ── Manual de usuario: contenido en manual/manual.json (no se ven detalles técnicos); se actualiza con cada mejora ── */
+window._MAN = null;
+async function manualCargar(){
+  if (window._MAN) return window._MAN;
+  try { const r = await fetch('manual/manual.json', { cache:'no-cache' }); window._MAN = r.ok ? await r.json() : null; } catch(e){ window._MAN = null; }
+  return window._MAN;
+}
+/* Qué manual le toca a esta persona (según su perfil real, no según la "vista" de prueba de Dirección) */
+function manualClave(){
+  if (!currentUser) return null;
+  if (currentUser.role === 'administrativo') return currentUser.areaAdmin === 'finanzas' ? 'administrativo_finanzas' : 'administrativo_operativa';
+  if (currentUser.role === 'chofer' && esAyudanteGeneral()) return 'ayudante';
+  return currentUser.role;
+}
+const _manLS = (k, v) => { try { if (v === undefined) return localStorage.getItem(k + '_' + currentUser.userId); localStorage.setItem(k + '_' + currentUser.userId, v); } catch(e){ return null; } };
+function manualMarcarVisto(){ const m = window._MAN; if (!m) return; _manLS('man_ver', m.version); _manLS('man_aviso', String(Date.now())); toast('¡Genial! Te recordaremos el manual en una semana','success'); }
+function manualZoom(src){ const z = document.createElement('div'); z.className = 'man-zoom'; z.innerHTML = `<img src="${src}" alt="">`; z.onclick = () => z.remove(); document.body.appendChild(z); }
+async function renderManual(){
+  const cont = document.getElementById('man-contenido'); if (!cont) return;
+  cont.innerHTML = '<div class="empty-sub" style="padding:30px">Cargando tu manual…</div>';
+  const M = await manualCargar(); const k = manualClave(); const P = M && M.perfiles && (M.perfiles[k] || M.perfiles[currentUser.role]);
+  if (!P){ cont.innerHTML = '<div class="empty-sub" style="padding:30px">Tu manual se está preparando. Vuelve pronto.</div>'; return; }
+  const nov = (M.novedades || []).filter(n => !n.perfiles || n.perfiles.includes(k) || n.perfiles.includes(currentUser.role)).slice(0, 4);
+  const lista = a => (a || []).map(x => `<span class="man-chip">${esc(x)}</span>`).join('');
+  cont.innerHTML = `
+    <div class="man-hero"><div class="man-ico">📖</div><div><h2>Manual · ${esc(P.titulo)}</h2><p>${esc(P.resumen)}</p></div></div>
+    ${nov.length ? `<div class="man-nuevo"><b>🆕 Lo nuevo</b><br>${nov.map(n => `<strong>${esc(n.titulo)}</strong> · ${esc(n.fecha)} — ${esc(n.texto)}`).join('<br>')}</div>` : ''}
+    <div class="panel man-blq" style="padding:14px 16px"><h3>Lo que puedes hacer</h3><div class="man-chips">${lista(P.puedes)}</div>
+      ${(P.nopuedes || []).length ? `<h3 style="margin-top:12px">Lo que no verás en tu perfil</h3><div class="man-chips">${(P.nopuedes).map(x => `<span class="man-chip no">${esc(x)}</span>`).join('')}</div>` : ''}</div>
+    ${(P.datos || []).length ? `<div class="panel man-blq" style="padding:14px 16px"><h3>Los datos que te pedimos y para qué</h3><table class="man-tabla">${P.datos.map(d => `<tr><td>${esc(d.dato)}</td><td>${esc(d.para)}</td></tr>`).join('')}</table></div>` : ''}
+    <div style="font-family:var(--head);font-weight:800;font-size:13px;margin:18px 0 8px">Paso a paso</div>
+    ${(P.secciones || []).map((sec, i) => `<details class="man-sec"${i === 0 ? ' open' : ''}><summary><span class="man-num">${i + 1}</span><span class="man-t">${esc(sec.titulo)}</span>${sec.min ? `<span class="man-min">${esc(sec.min)}</span>` : ''}</summary><div class="man-cuerpo">
+      ${sec.intro ? `<p class="man-intro">${esc(sec.intro)}</p>` : ''}
+      ${(sec.pasos || []).map((p, j) => `<div class="man-paso"><div class="man-pn">${j + 1}</div><div class="man-px"><b>${esc(p.t)}</b>${p.x ? '<br>' + esc(String(p.x).replace(/^[.\s]+/, '')) : ''}${p.img ? `<img class="man-img" loading="lazy" src="manual/img/${esc(p.img)}" alt="${esc(p.t)}" onclick="manualZoom(this.src)">` : ''}</div></div>`).join('')}
+      ${sec.tip ? `<div class="man-tip">💡 ${esc(sec.tip)}</div>` : ''}</div></details>`).join('')}
+    ${(P.faq || []).length ? `<div class="panel man-blq man-faq" style="padding:14px 16px;margin-top:16px"><h3>Preguntas frecuentes</h3>${P.faq.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}</div>` : ''}
+    <div style="text-align:center;margin:18px 0 30px"><button class="btn primary" onclick="manualMarcarVisto()">Ya conozco mi perfil</button><div style="font-size:11px;color:var(--text3);margin-top:6px">Versión del manual: ${esc(M.version)}</div></div>`;
+  _manLS('man_ver', M.version); // al abrir el manual se da por enterado de las novedades
+}
+/* Aviso en pantalla: una vez por semana, o antes si el manual de su perfil cambió */
+async function manualAvisoSemanal(intento = 0){
+  try {
+    if (!currentUser || !currentUser.tourCompletado || !_sesionActiva) return;
+    if (document.querySelector('.overlay.open, #ses-vel, #pwa-oferta, #bio-oferta')){ if (intento < 4) setTimeout(() => manualAvisoSemanal(intento + 1), 20000); return; }
+    const M = await manualCargar(); const k = manualClave(); const P = M && M.perfiles && (M.perfiles[k] || M.perfiles[currentUser.role]); if (!P) return;
+    const ult = Number(_manLS('man_aviso') || 0), visto = _manLS('man_ver');
+    const hayNovedad = !!visto && visto !== M.version && (M.novedades || []).some(n => !n.perfiles || n.perfiles.includes(k) || n.perfiles.includes(currentUser.role));
+    if (!(hayNovedad || !ult || Date.now() - ult >= 7 * 24 * 3600_000)) return;
+    _manLS('man_aviso', String(Date.now()));
+    sesTarjeta('📖', hayNovedad ? '¡Hay novedades en tu manual!' : '¿Ya conoces tu perfil?', hayNovedad ? 'Agregamos mejoras a Bio-centralis y actualizamos tu manual. Échale un vistazo para sacarles provecho.' : 'Tienes un manual con el paso a paso y capturas de todo lo que puedes hacer aquí. Te toma 2 minutos y te ahorra dudas.', [
+      { t: hayNovedad ? 'Ver novedades' : 'Ver manual', primary: true, f: () => nav('manual', null) },
+      { t: 'Ya lo conozco', f: () => { _manLS('man_ver', M.version); } }
+    ]);
+  } catch(e){}
+}
 /* ── Avisos de sesión: "¿sigues ahí?" antes de cerrar, y aviso claro cuando ya se cerró ── */
 function sesTarjeta(ico, titulo, texto, botones, extra){
   document.getElementById('ses-vel')?.remove();
@@ -5016,6 +5113,7 @@ async function cargarPerfilYActivarSesion(){
   };
   _sesionActiva = true; _lastActivity = Date.now();
   setTimeout(pwaOfrecer, 3500);
+  setTimeout(manualAvisoSemanal, 9000);
   setTimeout(bioOfrecer, 9000);
   retosCargar().then(retosPintarDashboard);
   Sentry.setUser({ id: currentUser.userId, username: currentUser.name });
@@ -6340,7 +6438,7 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sedes', sitedetail:'Sede', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Control de gastos', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score' };
+  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sedes', sitedetail:'Sede', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Control de gastos', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score', manual:'Manual de usuario' };
   if (currentUser.role === 'chofer'){ titles.flota = 'Mi unidad'; titles.unidad = 'Mi unidad'; }
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
@@ -6359,6 +6457,7 @@ function nav(page, el){
   if (page === 'miasistencia') renderMiAsistencia();
   if (page === 'rutas') renderRutas(); else rtDetener();
   if (page === 'miperfil') renderMiPerfil();
+  if (page === 'manual') renderManual();
   if (page === 'ajustes') renderAjustes();
   if (page === 'seguridad'){ renderSeg(); renderRojosMuro(); }
   if (page === 'mantenimiento'){ MANT.sel = null; renderMantenimiento(); }
