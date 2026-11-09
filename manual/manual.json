@@ -1,6 +1,16 @@
 {
- "version": "2026-11-09",
+ "version": "2026-11-09b",
  "novedades": [
+  {
+   "titulo": "Hora de llegada y tendencia en Asistencias",
+   "fecha": "9 nov 2026",
+   "texto": "Ahora ves a qué hora llegó cada persona y por qué fue retardo. Los reportes de Excel y PDF salen con el formato de RH e incluyen la tendencia de puntualidad.",
+   "perfiles": [
+    "supervisor",
+    "rh",
+    "direccion_ceo"
+   ]
+  },
   {
    "titulo": "Manual de usuario",
    "fecha": "9 nov 2026",

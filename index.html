@@ -597,6 +597,14 @@ select.form-input option{background:var(--bg2)}
 .asis-cell.I{background:var(--pa);color:var(--purple);border-color:rgba(178,124,232,.2)}
 .asis-cell.em{background:var(--surface);color:var(--text3)}
 .asis-cell.hoy{outline:1.5px solid var(--green);outline-offset:2px}
+.asis-cell.conhora{flex-direction:column;gap:1px;height:36px;line-height:1.1}
+.asis-cell .ac-h{font-size:8px;font-weight:700;opacity:.9;white-space:nowrap}
+.asis-cell.est-precaucion{border-color:rgba(232,184,74,.65);background:var(--aa)}
+.asis-cell.est-precaucion .ac-l,.asis-cell.est-precaucion .ac-h{color:var(--amber)}
+.asis-cell.est-retardo{border-color:rgba(232,85,85,.7);background:var(--ra)}
+.asis-cell.est-retardo .ac-l,.asis-cell.est-retardo .ac-h{color:var(--red)}
+.asis-llegada{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin:8px 0;font-size:12px;line-height:1.5;color:var(--text2)}
+.asis-llegada b{color:var(--text)}
 .leg-row{display:flex;gap:12px;padding:8px 14px;flex-wrap:wrap;border-top:1px solid var(--border)}
 .leg{display:flex;align-items:center;gap:5px;font-family:var(--body);font-size:10px;color:var(--text3)}
 .leg-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
@@ -2653,6 +2661,8 @@ select.form-input option{background:var(--bg2)}
           <div class="form-err" id="err-curp">CURP inválida (debe tener 18 caracteres)</div>
           <label class="form-lbl">RFC</label>
           <input class="form-input" id="ac-rfc" placeholder="AAAA000000XXX" maxlength="13">
+          <label class="form-lbl">Número de empleado <span style="font-weight:400;color:var(--text3)">(opcional, aparece en el reporte de asistencia)</span></label>
+          <input class="form-input" id="ac-numemp" placeholder="Ej. 5071956" maxlength="20" inputmode="numeric">
           <label class="form-lbl req">Fecha de ingreso</label>
           <input class="form-input" type="date" id="ac-ingreso">
           <label class="form-lbl" style="margin-top:8px;display:block">Fecha de nacimiento <span style="font-weight:400;color:var(--text3)">(opcional, para cumpleaños en el Muro)</span></label>
@@ -3081,6 +3091,7 @@ select.form-input option{background:var(--bg2)}
           <div style="flex:1"><div class="file-chip-name" id="just-fn">—</div><div class="file-chip-size" id="just-fs">—</div></div>
         </div>
       </div>
+      <div class="asis-llegada" id="asis-llegada" style="display:none"></div>
       <label class="form-lbl">Nota</label>
       <input class="form-input" id="asis-nota">
     </div>
@@ -4057,7 +4068,7 @@ function mapColabRow(r){
     operadorSubtipo:r.operador_subtipo, perfilOperativo:r.perfil_operativo, mecanicoSubtipo:r.mecanico_subtipo, mecanicoOtrosComentario:r.mecanico_otros_comentario,
     areaId:r.area_id, curp:r.curp, rfc:r.rfc, ingreso:r.ingreso, contrato:r.contrato_tipo, turno:r.turno,
     siteId:r.site_id, bodegaId:r.bio_nave_id, tel:r.tel, emerg:r.emerg, estatus:r.estatus, unidadId:r.unidad_id,
-    observaciones:r.observaciones, observacionesUpd:r.observaciones_upd, fechaNacimiento:r.fecha_nacimiento };
+    observaciones:r.observaciones, observacionesUpd:r.observaciones_upd, fechaNacimiento:r.fecha_nacimiento, numEmpleado:r.num_empleado };
 }
 function mapUnidadRow(r){ return { id:r.id, bak:r.bak, niv:r.niv, placas:r.placas, marca:r.marca, modelo:r.modelo, anio:r.anio, tipo:r.tipo, jurisdiccion:r.jurisdiccion, bodegaId:r.bio_nave_id, estatus:r.estatus, choferId:r.chofer_id }; }
 
@@ -4106,7 +4117,7 @@ async function cargarDatosSupabase(){
   DB.equipos_moviles = (celR.data||[]).map(e=>({...e, id:String(e.id)}));
   DB.asistencias = {};
   (asisR.data||[]).forEach(a=>{
-    DB.asistencias[`${a.fecha}-${a.colaborador_id}`] = { tipo:a.tipo, capturadoPor:a.capturado_por, ts:a.created_at };
+    DB.asistencias[`${a.fecha}-${a.colaborador_id}`] = { tipo:a.tipo, capturadoPor:a.capturado_por, ts:a.created_at, horaEntrada:a.hora_entrada, horaSalida:a.hora_salida, estado:a.estado_puntualidad, minRetraso:a.minutos_retraso, origen:a.origen };
   });
   await cargarPermisosSupabase();
   const { data: cfgData } = await sb.from('configuracion').select('*').eq('id', 1).maybeSingle();
@@ -7188,6 +7199,7 @@ async function guardarColab(){
     rfc: document.getElementById('ac-rfc').value.trim().toUpperCase(),
     ingreso, fecha_nacimiento: document.getElementById('ac-nacimiento').value || null,
     contrato_tipo: document.getElementById('ac-contrato').value,
+    num_empleado: (document.getElementById('ac-numemp').value || '').trim() || null,
     turno: document.getElementById('ac-turno').value,
     site_id: siteId, bio_nave_id: bodegaId,
     tel: document.getElementById('ac-tel').value.trim(),
@@ -7331,7 +7343,7 @@ function downloadColabTempDoc(){
 }
 
 function limpiarFormColab(){
-  ['ac-nombre','ac-curp','ac-rfc','ac-tel','ac-emerg','ac-ingreso','ac-nacimiento','ac-observ','ac-contrato-emision','ac-contrato-vig','ac-banco-digitos'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  ['ac-nombre','ac-curp','ac-rfc','ac-numemp','ac-tel','ac-emerg','ac-ingreso','ac-nacimiento','ac-observ','ac-contrato-emision','ac-contrato-vig','ac-banco-digitos'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
   document.getElementById('ac-banco-tipo').value = '';
   document.getElementById('ac-banco-fn').textContent = 'Sin archivo';
   tempBancoFile = null;
@@ -8081,6 +8093,7 @@ async function editarColab(){
   document.getElementById('ac-nombre').value = c.nombre;
   document.getElementById('ac-curp').value = c.curp||'';
   document.getElementById('ac-rfc').value = c.rfc||'';
+  document.getElementById('ac-numemp').value = c.numEmpleado||'';
   document.getElementById('ac-ingreso').value = c.ingreso||'';
   document.getElementById('ac-nacimiento').value = c.fechaNacimiento||'';
   document.getElementById('ac-puesto').value = c.puesto;
@@ -9612,6 +9625,24 @@ async function renderFirmaEstado(){
   }
 }
 
+/* Horario aplicable a una persona y día (el suyo, o el general) → hora programada, tolerancia y límite de precaución */
+function asisHorarioDe(colabId, fechaStr){
+  const lista = DB.horariosAsis || []; const h = lista.find(x => String(x.colaborador_id) === String(colabId)) || lista.find(x => !x.colaborador_id); if (!h) return null;
+  const dow = ((fechaDe(fechaStr).getDay() + 6) % 7) + 1;
+  const ent = String((h.entradas_dia || {})[dow] || h.hora_entrada || '').slice(0, 5);
+  return { ent, tol:h.tolerancia_min, lim:h.limite_precaucion_min };
+}
+function asisSumaMin(hhmm, min){ const [h, m] = hhmm.split(':').map(Number); const t = h * 60 + m + min; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
+function asisDetalleLlegada(reg, colabId, fechaStr){
+  if (!reg || !reg.horaEntrada) return '';
+  const hor = asisHorarioDe(colabId, fechaStr), est = reg.estado ? EST_ASIS[reg.estado] : null;
+  let retraso = reg.minRetraso;
+  if ((retraso == null || retraso === 0) && hor && hor.ent){ const llegada = new Date(reg.horaEntrada).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', hour12:false, timeZone:TZ_MX }); const [a, b] = llegada.split(':').map(Number), [c, d] = hor.ent.split(':').map(Number); if (!isNaN(a)) retraso = Math.max(0, a * 60 + b - (c * 60 + d)); }
+  let t = `🕒 Llegó a las <b>${fmtHora(reg.horaEntrada)}</b>` + (reg.horaSalida ? ` · salió a las <b>${fmtHora(reg.horaSalida)}</b>` : ' · aún sin salida');
+  if (est) t += `<br>Resultado: <b>${est.txt}</b>` + (retraso > 0 ? ` (${retraso} min después de su hora de entrada)` : '');
+  if (hor && hor.ent) t += `<br><span style="color:var(--text3)">Su horario: entrada ${hor.ent} · puntual hasta ${asisSumaMin(hor.ent, hor.tol)} · precaución hasta ${asisSumaMin(hor.ent, hor.lim)} · después de eso es retardo.</span>`;
+  return t;
+}
 async function renderAsistencias(){
   renderQrSedesAsis(); pintarFiltroTipoAsis();
   // Scope real: supervisor solo marca/ve asistencias de colaboradores de sus propias sedes
@@ -9629,6 +9660,7 @@ async function renderAsistencias(){
     estLbl.textContent = cerrada?'Cerrada':'Abierta';
   }
   const nomDias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  { const { data: hs } = await sb.from('horarios_asistencia').select('*'); DB.horariosAsis = hs || []; }
   const grid = document.getElementById('asis-grid');
   if (!grid) return;
   if (activos.length===0){
@@ -9654,7 +9686,11 @@ async function renderAsistencias(){
       const isFuture = d > hoy;
       const cls = reg ? reg.tipo : 'em';
       const lbl = reg ? reg.tipo : '—';
-      html += `<div class="asis-cell ${cls}${isHoy?' hoy':''}" onclick="abrirAsistencia('${c.id}','${fmtDate(d)}')" title="${esc(c.nombre)} · ${fmtDate(d)}">${isFuture&&!reg?'':lbl}</div>`;
+      const conHora = !!(reg && reg.horaEntrada);
+      const estC = conHora && reg.estado && reg.estado !== 'puntual' ? ' est-' + reg.estado : '';
+      const tip = conHora ? `${c.nombre} · ${fmtDate(d)} · entrada ${fmtHora(reg.horaEntrada)}${reg.estado ? ' · ' + (EST_ASIS[reg.estado]||{}).txt : ''}${reg.minRetraso > 0 ? ' (+' + reg.minRetraso + ' min)' : ''}` : `${c.nombre} · ${fmtDate(d)}`;
+      const interior = conHora ? `<span class="ac-l">${lbl}</span><span class="ac-h">${new Date(reg.horaEntrada).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:TZ_MX})}${reg.minRetraso > 0 ? ' +' + reg.minRetraso + "'" : ''}</span>` : (isFuture && !reg ? '' : lbl);
+      html += `<div class="asis-cell ${cls}${conHora ? ' conhora' : ''}${estC}${isHoy?' hoy':''}" onclick="abrirAsistencia('${c.id}','${fmtDate(d)}')" title="${esc(tip)}">${interior}</div>`;
     });
     const tieneCom = !!(DB.asisComentarios[c.id]);
     html += `<div class="asis-cell${tieneCom?' P':' em'}" onclick="abrirComentarioAsis('${c.id}')" title="${tieneCom?esc(DB.asisComentarios[c.id]):'Agregar comentario para '+esc(c.nombre)}" style="cursor:pointer;font-size:12px">${tieneCom?'💬':'+'}</div>`;
@@ -9688,6 +9724,7 @@ function abrirAsistencia(colabId, diaStr){
   document.getElementById('asis-nota').value = reg ? reg.nota||'' : '';
   justFile = null;
   asisTipo = '';
+  { const ll = document.getElementById('asis-llegada'), det = asisDetalleLlegada(reg, colabId, diaStr); if (ll){ ll.innerHTML = det; ll.style.display = det ? 'block' : 'none'; } }
   document.querySelectorAll('[id^="ab-"]').forEach(b=>b.classList.remove('primary'));
   if (reg){
     if (reg.tipo){
@@ -9755,7 +9792,7 @@ async function guardarAsistencia(){
     tipo: asisTipo, capturado_por: currentUser.userId
   }, { onConflict: 'fecha,colaborador_id' });
   if (error){ toast(error.message,'error'); return; }
-  DB.asistencias[key] = { tipo: asisTipo, capturadoPor: currentUser.userId, ts: new Date().toISOString() };
+  DB.asistencias[key] = { ...prev, tipo: asisTipo, capturadoPor: currentUser.userId, ts: new Date().toISOString() };
   const c = DB.colaboradores.find(c=>String(c.id)===asisCurrent.colabId);
   await audit('asistencia', `${esc(c?c.nombre:'—')}: ${asisTipo} en ${asisCurrent.dia}`, 'g');
   await registrarEvento('marcar_asistencia', 'asistencias');
@@ -12644,33 +12681,161 @@ function pdfHeader(titulo){
   return `BIOAMBIENTALISTIK\nRFC: ${DB.cfg.rfc}\n${titulo}\nGenerado: ${new Date().toLocaleString('es-MX')}\nResponsable: ${DB.cfg.resp}\n${'═'.repeat(60)}\n\n`;
 }
 
-function descargarAsistenciaXLS(){
-  const dias = diasDeSemana(currentSemana);
-  const nomDias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const activos = asisFiltrar(DB.colaboradores.filter(c=>c.estatus==='activo'));
-  const headers = ['#','Colaborador','Puesto','Bodega', ...nomDias.map((n,i)=>n+' '+dias[i].getDate()), 'Presentes','Faltas','Justif.','Vacaciones','Incap.'];
-  const rows = activos.map((c,i)=>{
-    const regs = dias.map(d=>DB.asistencias[`${fmtDate(d)}-${c.id}`]?.tipo||'');
-    const p=regs.filter(r=>r==='P').length, f=regs.filter(r=>r==='F').length, fj=regs.filter(r=>r==='FJ').length, v=regs.filter(r=>r==='V').length, inc=regs.filter(r=>r==='I').length;
-    return [i+1, c.nombre, c.puesto, c.bodega||'—', ...regs, p, f, fj, v, inc];
+/* ── Reporte semanal de asistencia: mismo formato que entrega RH (logo, franja de semana, No., nombre y Faltas).
+      Excel (.xlsx) y PDF reales, armados sin librerías externas. ── */
+const _crcT = (() => { const t = []; for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function _crc32(u8){ let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = _crcT[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function _zipSimple(archivos){ // archivos: [{n, d:Uint8Array}] — sin compresión
+  const enc = new TextEncoder(), partes = [], central = []; let pos = 0;
+  const u16 = v => [v & 255, (v >> 8) & 255], u32 = v => [v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >>> 24) & 255];
+  archivos.forEach(a => {
+    const nom = enc.encode(a.n), crc = _crc32(a.d);
+    const lh = new Uint8Array([0x50,0x4b,3,4, ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(a.d.length), ...u32(a.d.length), ...u16(nom.length), ...u16(0)]);
+    partes.push(lh, nom, a.d);
+    central.push(new Uint8Array([0x50,0x4b,1,2, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(a.d.length), ...u32(a.d.length), ...u16(nom.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(pos)]), nom);
+    pos += lh.length + nom.length + a.d.length;
   });
-  descargarCSV(`Asistencias_Sem${getNumSemana(currentSemana)}_${fmtDate(currentSemana)}.csv`, csvRows(headers, rows));
+  const cdLen = central.reduce((s, x) => s + x.length, 0);
+  const fin = new Uint8Array([0x50,0x4b,5,6, ...u16(0), ...u16(0), ...u16(archivos.length), ...u16(archivos.length), ...u32(cdLen), ...u32(pos), ...u16(0)]);
+  return new Blob([...partes, ...central, fin], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+/* Datos del reporte: semana elegida + tendencia de las últimas 4 semanas (calculada con los registros reales de llegada) */
+async function _asisDatosSemana(){
+  const dias = diasDeSemana(currentSemana);
+  const mes = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'], p2 = n => String(n).padStart(2, '0');
+  const a = dias[0], b = dias[6], fIni = fmtDate(a), fFin = fmtDate(b);
+  const banda = a.getMonth() === b.getMonth() ? `SEM ${p2(a.getDate())} - ${p2(b.getDate())} ${mes[b.getMonth()]} ${b.getFullYear()}` : `SEM ${p2(a.getDate())} ${mes[a.getMonth()]} - ${p2(b.getDate())} ${mes[b.getMonth()]} ${b.getFullYear()}`;
+  const personas = asisFiltrar(DB.colaboradores.filter(c => c.estatus === 'activo')).slice().sort((x, y) => x.nombre.localeCompare(y.nombre, 'es'));
+  const ini4 = new Date(a); ini4.setDate(ini4.getDate() - 21); const f4 = fmtDate(ini4);
+  const mitad = new Date(a); mitad.setDate(mitad.getDate() - 7); const fMitad = fmtDate(mitad); // últimas 2 semanas = desde aquí
+  if (!(DB.horariosAsis || []).length){ const { data: hs } = await sb.from('horarios_asistencia').select('*'); DB.horariosAsis = hs || []; }
+  const ids = new Set(personas.map(c => String(c.id))), regs = {};
+  for (let desde = 0; ; desde += 1000){
+    const { data, error } = await sb.from('asistencias').select('colaborador_id,fecha,tipo,hora_entrada,estado_puntualidad').gte('fecha', f4).lte('fecha', fFin).order('fecha').range(desde, desde + 999);
+    if (error || !data) break;
+    data.forEach(r => { if (ids.has(String(r.colaborador_id))) (regs[r.colaborador_id] = regs[r.colaborador_id] || []).push(r); });
+    if (data.length < 1000) break;
+  }
+  const hm = iso => { const [h, m] = new Date(iso).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', hour12:false, timeZone:TZ_MX }).split(':').map(Number); return h * 60 + m; };
+  const txt = min => min == null ? '—' : p2(Math.floor(min / 60)) + ':' + p2(Math.round(min % 60));
+  const prom = l => l.length ? l.reduce((s, x) => s + x, 0) / l.length : null;
+  const filas = personas.map(c => {
+    const R = regs[c.id] || [], sem = R.filter(r => r.fecha >= fIni && r.fecha <= fFin);
+    const conHora = r => !!r.hora_entrada;
+    const retraso = r => { const h = asisHorarioDe(c.id, r.fecha); if (!h || !h.ent) return null; const [x, y] = h.ent.split(':').map(Number); return hm(r.hora_entrada) - (x * 60 + y); };
+    const retr1 = R.filter(r => conHora(r) && r.fecha < fMitad).map(retraso).filter(v => v != null);
+    const retr2 = R.filter(r => conHora(r) && r.fecha >= fMitad).map(retraso).filter(v => v != null);
+    let tend = 'Sin datos', tcls = '';
+    if (retr1.length >= 2 && retr2.length >= 2){ const dif = prom(retr2) - prom(retr1); if (dif <= -3){ tend = 'Mejora'; tcls = 'ok'; } else if (dif >= 3){ tend = 'Empeora'; tcls = 'mal'; } else tend = 'Estable'; }
+    const reg4 = R.filter(conHora), punt4 = reg4.length ? Math.round(reg4.filter(r => r.estado_puntualidad === 'puntual').length / reg4.length * 100) : null;
+    const ret4 = R.filter(r => r.estado_puntualidad === 'retardo').length, falt4 = R.filter(r => r.tipo === 'F').length;
+    const atender = ret4 >= 3 || falt4 >= 2 || tend === 'Empeora';
+    const motivo = atender ? [ret4 >= 3 ? ret4 + ' retardos' : '', falt4 >= 2 ? falt4 + ' faltas' : '', tend === 'Empeora' ? 'va empeorando' : ''].filter(Boolean).join(', ') : '';
+    return { num: c.numEmpleado || '', nombre: String(c.nombre || '').toUpperCase(),
+      faltas: sem.filter(r => r.tipo === 'F').length, retardos: sem.filter(r => r.estado_puntualidad === 'retardo').length, precaucion: sem.filter(r => r.estado_puntualidad === 'precaucion').length,
+      llegada: txt(prom(sem.filter(conHora).map(r => hm(r.hora_entrada)))), punt: punt4 == null ? '—' : punt4 + '%', tend, tcls, atencion: atender ? 'Atender' : '', motivo };
+  });
+  const nota = 'Faltas, retardos, precaución y llegada promedio corresponden a la semana. Puntualidad y tendencia se calculan con las últimas 4 semanas: la tendencia compara el retraso promedio de las 2 semanas más recientes contra las 2 anteriores (cambio de 3 min o más). "Atender" = 3 o más retardos o 2 o más faltas en 4 semanas, o tendencia a empeorar.';
+  return { banda, filas, nota, archivo: `Asistencia_Sem${getNumSemana(currentSemana)}_${fmtDate(currentSemana)}` };
+}
+const _ASIS_COLS = [ ['No. empleado','num'], ['Colaborador','nombre'], ['Faltas','faltas'], ['Retardos','retardos'], ['Precaución','precaucion'], ['Llegada prom.','llegada'], ['Puntualidad 4 sem','punt'], ['Tendencia','tend'], ['Atención','atencion'] ];
+async function descargarAsistenciaXLS(){
+  toast('Preparando reporte…','info');
+  const D = await _asisDatosSemana(), enc = new TextEncoder(), X = s => enc.encode(s), e = s => esc(s);
+  const L = 'ABCDEFGHI', N = _ASIS_COLS.length;
+  const celda = (r, c, v, st) => { const ref = L[c] + r; return v === '' || v == null ? `<c r="${ref}" s="${st}"/>` : (typeof v === 'number' ? `<c r="${ref}" s="${st}"><v>${v}</v></c>` : `<c r="${ref}" s="${st}" t="inlineStr"><is><t>${e(v)}</t></is></c>`); };
+  const vacias = (r, desde, st) => Array.from({ length: N - desde }, (_, i) => celda(r, desde + i, '', st)).join('');
+  let filas = `<row r="1" ht="27" customHeight="1">${celda(1,0,'',0)}${celda(1,1,'',0)}${celda(1,2,'',0)}${celda(1,3,'ASISTENCIA',1)}${vacias(1,4,0)}</row><row r="2" ht="27" customHeight="1"/><row r="3" ht="27" customHeight="1"/>`;
+  filas += `<row r="4" ht="20" customHeight="1">${celda(4,0,D.banda,2)}${vacias(4,1,2)}</row>`;
+  filas += `<row r="5" ht="30" customHeight="1">${celda(5,0,'',0)}${celda(5,1,'',0)}${_ASIS_COLS.slice(2).map((c, i) => celda(5, i + 2, c[0], i === 0 ? 3 : 8)).join('')}</row>`;
+  D.filas.forEach((f, i) => { const r = 6 + i;
+    filas += `<row r="${r}">${celda(r,0,f.num,4)}${celda(r,1,f.nombre,5)}${celda(r,2,f.faltas,f.faltas > 0 ? 7 : 6)}${celda(r,3,f.retardos,f.retardos > 0 ? 7 : 6)}${celda(r,4,f.precaucion,6)}${celda(r,5,f.llegada,4)}${celda(r,6,f.punt,4)}${celda(r,7,f.tend,f.tcls === 'mal' ? 10 : f.tcls === 'ok' ? 9 : 4)}${celda(r,8,f.atencion,f.atencion ? 10 : 4)}</row>`; });
+  const rn = 7 + D.filas.length;
+  filas += `<row r="${rn}" ht="48" customHeight="1">${celda(rn,0,D.nota,11)}${vacias(rn,1,11)}</row>`;
+  const hoja = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews><cols><col min="1" max="1" width="15" customWidth="1"/><col min="2" max="2" width="44" customWidth="1"/><col min="3" max="5" width="11" customWidth="1"/><col min="6" max="6" width="13" customWidth="1"/><col min="7" max="7" width="13" customWidth="1"/><col min="8" max="8" width="12" customWidth="1"/><col min="9" max="9" width="12" customWidth="1"/></cols><sheetData>${filas}</sheetData><mergeCells count="2"><mergeCell ref="A4:I4"/><mergeCell ref="A${rn}:I${rn}"/></mergeCells><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/><drawing r:id="rId1"/></worksheet>`;
+  const estilos = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="8"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="18"/><color rgb="FF1E4D2B"/><name val="Calibri"/></font><font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><sz val="11"/><color rgb="FFFF0000"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF1E7A3A"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFC00000"/><name val="Calibri"/></font><font><i/><sz val="9"/><color rgb="FF555555"/><name val="Calibri"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E4D2B"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFF0000"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FF000000"/></left><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="12"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right"/></xf><xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right"/></xf><xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="5" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="6" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf></cellXfs></styleSheet>`;
+  const dib = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:oneCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>57150</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>38100</xdr:rowOff></xdr:from><xdr:ext cx="2762250" cy="877800"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="Logo"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="2762250" cy="877800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>`;
+  const R = 'http://schemas.openxmlformats.org/package/2006/relationships', RO = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const logo = Uint8Array.from(atob(RT_LOGO_B64), ch => ch.charCodeAt(0));
+  const xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const blob = _zipSimple([
+    { n:'[Content_Types].xml', d:X(`${xml}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>`) },
+    { n:'_rels/.rels', d:X(`${xml}<Relationships xmlns="${R}"><Relationship Id="rId1" Type="${RO}/officeDocument" Target="xl/workbook.xml"/></Relationships>`) },
+    { n:'xl/workbook.xml', d:X(`${xml}<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="${RO}"><sheets><sheet name="Asistencia" sheetId="1" r:id="rId1"/></sheets></workbook>`) },
+    { n:'xl/_rels/workbook.xml.rels', d:X(`${xml}<Relationships xmlns="${R}"><Relationship Id="rId1" Type="${RO}/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${RO}/styles" Target="styles.xml"/></Relationships>`) },
+    { n:'xl/styles.xml', d:X(estilos) },
+    { n:'xl/worksheets/sheet1.xml', d:X(hoja) },
+    { n:'xl/worksheets/_rels/sheet1.xml.rels', d:X(`${xml}<Relationships xmlns="${R}"><Relationship Id="rId1" Type="${RO}/drawing" Target="../drawings/drawing1.xml"/></Relationships>`) },
+    { n:'xl/drawings/drawing1.xml', d:X(dib) },
+    { n:'xl/drawings/_rels/drawing1.xml.rels', d:X(`${xml}<Relationships xmlns="${R}"><Relationship Id="rId1" Type="${RO}/image" Target="../media/logo.png"/></Relationships>`) },
+    { n:'xl/media/logo.png', d:logo },
+  ]);
+  descargarBlob(blob, D.archivo + '.xlsx');
   toast('Reporte de asistencias descargado','success');
 }
 
-function descargarAsistenciaPDF(){
-  const dias = diasDeSemana(currentSemana);
-  const activos = asisFiltrar(DB.colaboradores.filter(c=>c.estatus==='activo'));
-  let txt = pdfHeader(`REPORTE DE ASISTENCIAS — Semana ${getNumSemana(currentSemana)}`);
-  txt += `Período: ${fmt2(dias[0])} al ${fmt2(dias[6])}\n\n`;
-  activos.forEach(c=>{
-    const regs = dias.map(d=>DB.asistencias[`${fmtDate(d)}-${c.id}`]?.tipo||'—');
-    const p = regs.filter(r=>r==='P').length;
-    txt += `${c.nombre.padEnd(40)} ${c.puesto.padEnd(15)} ${regs.join(' ')} | P:${p}/7\n`;
-  });
-  const obsSem = (DB.observaciones||{})[fmtDate(currentSemana)];
-  if (obsSem) txt += '\nOBSERVACIONES:\n' + obsSem;
-  descargarBlob(new Blob([txt],{type:'text/plain'}), `Asistencias_Sem${getNumSemana(currentSemana)}.txt`);
+async function descargarAsistenciaPDF(){
+  toast('Preparando reporte…','info');
+  const D = await _asisDatosSemana();
+  const img = new Image(); await new Promise((ok, mal) => { img.onload = ok; img.onerror = mal; img.src = 'data:image/png;base64,' + RT_LOGO_B64; });
+  const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+  const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(img, 0, 0);
+  const jpg = atob(cv.toDataURL('image/jpeg', 0.92).split(',')[1]);
+  const W = 842, H = 595, MX = 36, ANCHO = W - MX * 2, FH = 17, LOGO_W = 170, LOGO_H = Math.round(170 * cv.height / cv.width);
+  const COLW = [68, 232, 42, 48, 54, 62, 70, 66, 0]; COLW[8] = ANCHO - COLW.slice(0, 8).reduce((s, x) => s + x, 0);
+  const win = s => String(s == null ? '' : s).replace(/[\\()]/g, '\\$&').replace(/\u2014/g, '\x97').replace(/\u2013/g, '\x96').replace(/[^\x20-\xFF]/g, '?');
+  const txt = (x, y, s, f, sz, col) => `BT /${f} ${sz} Tf ${col || '0 g'} ${x.toFixed(1)} ${y.toFixed(1)} Td (${win(s)}) Tj ET\n`;
+  const ancho = (s, sz) => String(s).length * sz * 0.53;
+  const rect = (x, y, w, h, fill) => `${fill} rg ${x} ${y} ${w} ${h} re f\n`;
+  const caja = (x, y, w, h) => `0 G 0.5 w ${x} ${y} ${w} ${h} re S\n`;
+  const centro = (x, w, y, s, f, sz, col) => txt(x + Math.max(2, (w - ancho(s, sz)) / 2), y, s, f, sz, col);
+  // La nota va al pie de la última hoja: se parte en renglones
+  const palabras = D.nota.split(' '), notaL = []; let ln = '';
+  palabras.forEach(w => { if ((ln + ' ' + w).length > 165){ notaL.push(ln); ln = w; } else ln = ln ? ln + ' ' + w : w; }); notaL.push(ln);
+  const yLogo = H - 30 - LOGO_H, yBanda = yLogo - 8 - 20, yHdr = yBanda - 26, topFilas = yHdr;
+  const porPag = Math.floor((topFilas - 30) / FH), notaH = notaL.length * 10 + 8;
+  let nPag = Math.max(1, Math.ceil(D.filas.length / porPag)); if (D.filas.length - (nPag - 1) * porPag > porPag - Math.ceil(notaH / FH) - 1) nPag++;
+  const objs = []; const add = s => { objs.push(s); return objs.length; };
+  add(''); add('');
+  const fN = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  const fB = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  const im = add(`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n${jpg}\nendstream`);
+  const pags = [], xs = COLW.reduce((a, w, i) => (a.push((a[i] || MX) + (i ? 0 : 0)), a), []);
+  const X0 = []; COLW.reduce((acc, w, i) => { X0[i] = acc; return acc + w; }, MX);
+  for (let p = 0; p < nPag; p++){
+    let c = `q ${LOGO_W} 0 0 ${LOGO_H} ${MX} ${yLogo} cm /Im1 Do Q\n`;
+    c += txt(MX + ANCHO - 150, yLogo + LOGO_H / 2 - 6, 'ASISTENCIA', 'F2', 18, '0.12 0.30 0.17 rg');
+    c += rect(MX, yBanda, ANCHO, 20, '0.12 0.30 0.17') + centro(MX, ANCHO, yBanda + 6, D.banda, 'F2', 12, '1 g');
+    _ASIS_COLS.slice(2).forEach((col, i) => { const k = i + 2; c += rect(X0[k], yHdr, COLW[k], 26, i === 0 ? '1 0 0' : '0.12 0.30 0.17') + caja(X0[k], yHdr, COLW[k], 26); const partes = col[0].split(' '); if (partes.length > 1 && col[0].length > 9){ const m = Math.ceil(partes.length / 2); c += centro(X0[k], COLW[k], yHdr + 15, partes.slice(0, m).join(' '), 'F2', 7.5, '1 g') + centro(X0[k], COLW[k], yHdr + 5, partes.slice(m).join(' '), 'F2', 7.5, '1 g'); } else c += centro(X0[k], COLW[k], yHdr + 9, col[0], 'F2', 8, '1 g'); });
+    const lote = D.filas.slice(p * porPag, (p + 1) * porPag);
+    lote.forEach((f, i) => {
+      const y = yHdr - FH * (i + 1);
+      COLW.forEach((w, k) => { c += caja(X0[k], y, w, FH); });
+      const rojo = '1 0 0 rg', verde = '0.12 0.48 0.23 rg', mal = '0.75 0 0 rg';
+      c += centro(X0[0], COLW[0], y + 5, f.num, 'F1', 9);
+      let nom = f.nombre; while (nom.length > 2 && ancho(nom, 9) > COLW[1] - 8) nom = nom.slice(0, -1);
+      c += txt(X0[1] + 4, y + 5, nom, 'F1', 9);
+      c += centro(X0[2], COLW[2], y + 5, f.faltas, 'F1', 9, f.faltas > 0 ? rojo : '0 g');
+      c += centro(X0[3], COLW[3], y + 5, f.retardos, 'F1', 9, f.retardos > 0 ? rojo : '0 g');
+      c += centro(X0[4], COLW[4], y + 5, f.precaucion, 'F1', 9);
+      c += centro(X0[5], COLW[5], y + 5, f.llegada, 'F1', 9);
+      c += centro(X0[6], COLW[6], y + 5, f.punt, 'F1', 9);
+      c += centro(X0[7], COLW[7], y + 5, f.tend, f.tcls ? 'F2' : 'F1', 9, f.tcls === 'mal' ? mal : f.tcls === 'ok' ? verde : '0 g');
+      c += centro(X0[8], COLW[8], y + 5, f.atencion, 'F2', 9, mal);
+    });
+    if (p === nPag - 1){ const yN = yHdr - FH * (lote.length + 1) - 6; notaL.forEach((l, i) => { c += txt(MX, yN - i * 10, l, 'F1', 7.5, '0.35 g'); }); }
+    if (nPag > 1) c += txt(W / 2 - 15, 16, `${p + 1} / ${nPag}`, 'F1', 8, '0.4 g');
+    const cn = add(`<< /Length ${c.length} >>\nstream\n${c}endstream`);
+    pags.push(add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 ${fN} 0 R /F2 ${fB} 0 R >> /XObject << /Im1 ${im} 0 R >> >> /Contents ${cn} 0 R >>`));
+  }
+  objs[0] = '<< /Type /Catalog /Pages 2 0 R >>';
+  objs[1] = `<< /Type /Pages /Kids [${pags.map(n => n + ' 0 R').join(' ')}] /Count ${pags.length} >>`;
+  let out = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'; const offs = [];
+  objs.forEach((o, i) => { offs.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xr = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offs.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`;
+  const u8 = new Uint8Array(out.length); for (let i = 0; i < out.length; i++) u8[i] = out.charCodeAt(i) & 255;
+  descargarBlob(new Blob([u8], { type:'application/pdf' }), D.archivo + '.pdf');
   toast('Reporte PDF descargado','success');
 }
 

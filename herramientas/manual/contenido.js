@@ -1,7 +1,8 @@
 // Genera manual/manual.json. Lenguaje sencillo, sin detalles técnicos. Al publicar una mejora: subir `version`, agregar una novedad y regenerar capturas.
 const fs = require('fs');
-const VERSION = '2026-11-09';
+const VERSION = '2026-11-09b';
 const novedades = [
+  { titulo:'Hora de llegada y tendencia en Asistencias', fecha:'9 nov 2026', texto:'Ahora ves a qué hora llegó cada persona y por qué fue retardo. Los reportes de Excel y PDF salen con el formato de RH e incluyen la tendencia de puntualidad.', perfiles:['supervisor','rh','direccion_ceo'] },
   { titulo:'Manual de usuario', fecha:'9 nov 2026', texto:'Ahora cada perfil tiene su propio manual con paso a paso e imágenes. Lo encuentras en el menú, en "Manual".' },
   { titulo:'Registro de asistencia con un toque', fecha:'6 nov 2026', texto:'Escanea el QR de tu Bio-Nave y se registra tu entrada. Instala la app en tu teléfono para hacerlo más rápido.', perfiles:['chofer','ayudante','supervisor','mantenimiento','monitoreo','administrativo_operativa','administrativo_finanzas','administracion','she','rh'] },
   { titulo:'Reto semanal', fecha:'4 nov 2026', texto:'Cada semana hay un reto de asistencia para tu equipo. Míralo en "Mi asistencia".', perfiles:['chofer','ayudante','supervisor','mantenimiento','monitoreo','administrativo_operativa','administrativo_finanzas','administracion','she'] },
