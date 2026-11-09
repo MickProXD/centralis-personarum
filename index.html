@@ -4692,6 +4692,29 @@ async function renderManual(){
     <div style="text-align:center;margin:18px 0 30px"><button class="btn primary" onclick="manualMarcarVisto()">Ya conozco mi perfil</button><div style="font-size:11px;color:var(--text3);margin-top:6px">Versión del manual: ${esc(M.version)}</div></div>`;
   _manLS('man_ver', M.version); // al abrir el manual se da por enterado de las novedades
 }
+/* Versión nueva: si publicamos una mejora mientras alguien tiene la app abierta, le avisamos para que actualice (si no, sigue usando la versión vieja) */
+let _verFirma = null, _verAvisado = false;
+async function verLeerFirma(){
+  try { const r = await fetch(location.pathname, { method:'HEAD', cache:'no-store' }); const f = (r.headers.get('etag') || '') + '|' + (r.headers.get('last-modified') || ''); return f === '|' ? null : f; } catch(e){ return null; }
+}
+async function verRevisar(){
+  if (_verAvisado || !_sesionActiva || !currentUser) return;
+  const f = await verLeerFirma(); if (!f) return;
+  if (!_verFirma){ _verFirma = f; return; }
+  if (f === _verFirma) return;
+  if (document.querySelector('.overlay.open, #ses-vel')) return; // no interrumpir: se reintenta en el siguiente chequeo
+  _verAvisado = true;
+  sesTarjeta('🆕', 'Hay una versión nueva', 'Mejoramos Bio-centralis. Actualiza para usar lo más reciente; tus datos no se pierden.', [
+    { t:'Actualizar ahora', primary:true, f: () => { const u = new URL(location.href); u.searchParams.set('v', Date.now()); location.replace(u.toString()); } },
+    { t:'Después', f: () => { setTimeout(() => { _verAvisado = false; }, 30 * 60 * 1000); } }
+  ]);
+}
+function verIniciar(){
+  if (window._verIniciado) return; window._verIniciado = true;
+  verLeerFirma().then(f => { _verFirma = f; });
+  setInterval(verRevisar, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') verRevisar(); });
+}
 /* Aviso en pantalla: una vez por semana, o antes si el manual de su perfil cambió */
 async function manualAvisoSemanal(intento = 0){
   try {
@@ -5124,7 +5147,7 @@ async function cargarPerfilYActivarSesion(){
   };
   _sesionActiva = true; _lastActivity = Date.now();
   setTimeout(pwaOfrecer, 3500);
-  setTimeout(manualAvisoSemanal, 9000);
+  setTimeout(manualAvisoSemanal, 9000); verIniciar();
   setTimeout(bioOfrecer, 9000);
   retosCargar().then(retosPintarDashboard);
   Sentry.setUser({ id: currentUser.userId, username: currentUser.name });
