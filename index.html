@@ -1204,7 +1204,7 @@ select.form-input option{background:var(--bg2)}
       <div id="sites-grid"></div>
       <div class="panel" id="panel-sedes" style="display:none;margin-top:16px">
         <div class="ph"><div class="ph-title">Sedes de asistencia — ubicación, red, foto y QR</div></div>
-        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada sede y cada Bio-Nave es una sede con su propio QR. Para dar de alta una sede, ponte físicamente en el lugar, conectado a su Wi-Fi, y usa los botones de ubicación actual y red actual. Sube también una foto del lugar por fuera. El registro de asistencia solo se acepta dentro del radio y desde las redes indicadas.</div>
+        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada sede y cada Bio-Nave es una sede con su propio QR. Para dar de alta una sede, ponte físicamente en el lugar y usa el botón de ubicación actual. Sube también una foto del lugar por fuera. El registro de asistencia solo se acepta dentro del radio de la sede; la red ya no se exige.</div>
         <div id="cfg-sedes-list" style="padding:6px 14px 12px"></div>
       </div>
     </div>
@@ -13163,7 +13163,7 @@ async function renderMiAsistencia(){
       ${accion}
     </div>
     <div id="mia-msg" style="font-size:12px;margin-top:10px"></div>${nota}
-    <div style="font-size:10px;color:var(--text3);margin-top:10px">El registro requiere estar en la red de la empresa y dentro de la sede.</div>`;
+    <div style="font-size:10px;color:var(--text3);margin-top:10px">El registro se valida con tu ubicación: debes estar dentro de la sede.</div>`;
   renderPanelAsistencia(rows||[], h);
   pwaTarjetaFija();
   hist.innerHTML = (rows && rows.length) ? rows.slice(0,10).map(r => {
@@ -14372,7 +14372,7 @@ async function renderSedesConfig(){
     ...(naves||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'nave', etiqueta:'Bio-Nave', s:(sedesN||[]).find(y => y.bio_nave_id === x.id) || {} }))
   ];
   cont.innerHTML = items.map(n => {
-    const s = n.s, ok = s.lat != null && (s.ips_permitidas||[]).length;
+    const s = n.s, ok = s.lat != null;
     return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><strong style="font-size:12px">${esc(n.nombre)}</strong>
         <span class="tag m">${n.etiqueta}</span>
@@ -14382,7 +14382,7 @@ async function renderSedesConfig(){
         <div><label class="form-lbl">Longitud</label><input class="form-input" id="sa-lng-${n.id}" value="${s.lng ?? ''}"></div>
         <div><label class="form-lbl">Radio permitido (m)</label><input class="form-input" type="number" id="sa-rad-${n.id}" value="${s.radio_m ?? 150}"></div>
       </div>
-      <label class="form-lbl" style="margin-top:8px">Redes permitidas (una por línea · puedes agregar varias: cada Wi-Fi/proveedor de la sede)</label>
+      <label class="form-lbl" style="margin-top:8px">Redes de la sede (opcional, solo informativo: ya no se exige para checar)</label>
       <textarea class="form-input" rows="2" id="sa-ips-${n.id}">${esc((s.ips_permitidas||[]).join('\n'))}</textarea>
       <div style="margin-top:10px"><label class="form-lbl">Foto del lugar por fuera</label>
         <div id="sf-prev-${n.id}" data-foto="${fotoDe(n.tipo,n.id)?esc(fotoDe(n.tipo,n.id).path):''}" style="margin-bottom:6px"></div>
@@ -14484,7 +14484,7 @@ async function guardarSede(id, nombre, tipo){
   const ips = document.getElementById('sa-ips-'+id).value.split('\n').map(x=>x.trim()).filter(Boolean);
   if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180){ toast('Latitud o longitud inválida','error'); return; }
   if (!(radio_m >= 30 && radio_m <= 1000)){ toast('El radio debe estar entre 30 y 1000 metros','error'); return; }
-  if (!ips.length || ips.some(x => !/^[0-9a-fA-F:.]{3,45}(\/\d{1,3})?$/.test(x))){ toast('Indica al menos una IP válida','error'); return; }
+  if (ips.some(x => !/^[0-9a-fA-F:.]{3,45}(\/\d{1,3})?$/.test(x))){ toast('Hay una IP con formato inválido','error'); return; }
   const fila = { lat, lng, radio_m, ips_permitidas:ips, actualizado_por:currentUser.userId, actualizado_en:new Date().toISOString() };
   const { error } = tipo === 'site'
     ? await sb.from('sedes_asistencia_site').upsert({ site_id:id, ...fila }, { onConflict:'site_id' })
