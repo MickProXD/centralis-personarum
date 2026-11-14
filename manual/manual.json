@@ -1,6 +1,16 @@
 {
- "version": "2026-11-09c",
+ "version": "2026-11-14a",
  "novedades": [
+  {
+   "titulo": "Puntualidad por semana y por mes",
+   "fecha": "14 nov 2026",
+   "texto": "Los reportes de Excel y PDF ahora muestran la puntualidad de la semana y la del mes, cada una con su porcentaje. Se calcula con los chequeos puntuales entre el total de chequeos del periodo.",
+   "perfiles": [
+    "supervisor",
+    "rh",
+    "direccion_ceo"
+   ]
+  },
   {
    "titulo": "Falta automática y notas visibles",
    "fecha": "9 nov 2026",

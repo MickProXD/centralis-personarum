@@ -1,7 +1,8 @@
 // Genera manual/manual.json. Lenguaje sencillo, sin detalles técnicos. Al publicar una mejora: subir `version`, agregar una novedad y regenerar capturas.
 const fs = require('fs');
-const VERSION = '2026-11-09c';
+const VERSION = '2026-11-14a';
 const novedades = [
+  { titulo:'Puntualidad por semana y por mes', fecha:'14 nov 2026', texto:'Los reportes de Excel y PDF ahora muestran la puntualidad de la semana y la del mes, cada una con su porcentaje. Se calcula con los chequeos puntuales entre el total de chequeos del periodo.', perfiles:['supervisor','rh','direccion_ceo'] },
   { titulo:'Falta automática y notas visibles', fecha:'9 nov 2026', texto:'Si alguien no registra su asistencia en el día, el sistema le pone falta al cierre. Las notas que escribas en una asistencia ahora se guardan y se ven en la cuadrícula (📝), en la ventana del día y en el reporte.', perfiles:['supervisor','rh','direccion_ceo'] },
   { titulo:'Si no checas, se registra falta', fecha:'9 nov 2026', texto:'Registra tu entrada cada día: si no lo haces, el sistema marca falta al terminar el día.', perfiles:['chofer','ayudante','mantenimiento','monitoreo','administrativo_operativa','administrativo_finanzas','administracion','she'] },
   { titulo:'Hora de llegada y tendencia en Asistencias', fecha:'9 nov 2026', texto:'Ahora ves a qué hora llegó cada persona y por qué fue retardo. Los reportes de Excel y PDF salen con el formato de RH e incluyen la tendencia de puntualidad.', perfiles:['supervisor','rh','direccion_ceo'] },
