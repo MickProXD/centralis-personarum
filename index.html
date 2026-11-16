@@ -598,6 +598,10 @@ select.form-input option{background:var(--bg2)}
 .asis-cell.V{background:var(--ba);color:var(--blue);border-color:rgba(90,174,232,.2)}
 .asis-cell.I{background:var(--pa);color:var(--purple);border-color:rgba(178,124,232,.2)}
 .asis-cell.em{background:var(--surface);color:var(--text3)}
+.asis-cell.fes{background:var(--surface);color:var(--text3);border:1px dashed var(--border);font-size:8px;letter-spacing:.3px}
+.dof-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.dof-row .dof-f{width:96px;font-family:var(--head);font-weight:800;color:var(--text2);flex-shrink:0}
+.dof-row .dof-n{flex:1;min-width:0}
 .asis-cell.hoy{outline:1.5px solid var(--green);outline-offset:2px}
 .asis-cell.conhora{flex-direction:column;gap:1px;height:36px;line-height:1.1}
 .asis-cell .ac-h{font-size:8px;font-weight:700;opacity:.9;white-space:nowrap}
@@ -1457,9 +1461,10 @@ select.form-input option{background:var(--bg2)}
         <div class="ml" style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" onclick="semanaAnterior()">← Anterior</button>
           <button class="btn" onclick="semanaSiguiente()">Siguiente →</button>
-          <button class="btn amber-btn" data-min-role="supervisor" onclick="cerrarSemana()">✍ Firmar y cerrar semana</button>
+          <button class="btn" onclick="abrirDiasOficiales()">📅 Días oficiales</button>
+          <button class="btn amber-btn" data-min-role="director" onclick="cerrarSemana()">✍ Firmar y cerrar semana</button>
           <button class="btn" id="btn-retos" style="display:none" onclick="retosAbrir()">🏆 Retos del equipo</button>
-          <button class="btn" onclick="descargarAsistenciaXLS()">⬇ XLS</button>
+          <button class="btn" data-min-role="director" onclick="descargarAsistenciaXLS()">⬇ XLS</button>
           <button class="btn" onclick="descargarAsistenciaPDF()">⬇ PDF</button>
         </div>
       </div>
@@ -3098,6 +3103,23 @@ select.form-input option{background:var(--bg2)}
       <input class="form-input" id="asis-nota">
     </div>
     <div class="modal-foot"><button class="btn" onclick="closeModal('modal-asistencia')">Cerrar</button><button class="btn primary" onclick="guardarAsistencia()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- DÍAS OFICIALES (México) -->
+<div class="overlay" id="modal-dias-oficiales" onclick="if(event.target===this)closeModal('modal-dias-oficiales')">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Días oficiales · México</div><button class="modal-close" onclick="closeModal('modal-dias-oficiales')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px">En estos días el sistema no marca falta automática y la cuadrícula los muestra como festivo (FES). Solo Dirección puede agregar, cambiar o quitar días.</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><button class="btn sm" onclick="dofCambiarAnio(-1)">←</button><div id="dof-anio" style="font-family:var(--head);font-weight:900;font-size:14px;min-width:48px;text-align:center">—</div><button class="btn sm" onclick="dofCambiarAnio(1)">→</button></div>
+      <div id="dof-list"></div>
+      <div id="dof-form" style="display:none;margin-top:14px">
+        <label class="form-lbl">Fecha</label><input class="form-input" type="date" id="dof-fecha" style="margin-bottom:8px">
+        <label class="form-lbl">Nombre del día</label><input class="form-input" id="dof-nombre" placeholder="Ej. Día de Muertos (descanso de la empresa)">
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-dias-oficiales')">Cerrar</button><button class="btn primary" id="dof-guardar" style="display:none" onclick="guardarDiaOficial()">Guardar día</button></div>
   </div>
 </div>
 
@@ -9522,6 +9544,7 @@ function semanaSiguiente(){
 }
 
 function cerrarSemana(){
+  if (currentUser.role !== 'direccion_ceo'){ toast('Solo Dirección puede aprobar y cerrar la semana','error'); return; }
   // Si el rol requiere firma digital (supervisor), pasa por el modal de firma.
   // Dirección/CEO y otros roles sin firmaAsistencia cierran directo (flujo legacy).
   if (can('firmaAsistencia')){
@@ -9687,6 +9710,7 @@ async function renderAsistencias(){
   }
   const nomDias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
   { const { data: hs } = await sb.from('horarios_asistencia').select('*'); DB.horariosAsis = hs || []; }
+  await cargarDiasOficiales();
   const grid = document.getElementById('asis-grid');
   if (!grid) return;
   if (activos.length===0){
@@ -9701,7 +9725,8 @@ async function renderAsistencias(){
   let html = '<div class="asis-hdr nm">Colaborador</div>' + nomDias.map((n,i)=>{
     const d = dias[i];
     const isHoy = fmtDate(d)===fmtDate(hoy);
-    return `<div class="asis-hdr" style="${isHoy?'color:var(--green)':''}">${n}<br><span style="font-size:8px;font-weight:600">${d.getDate()}</span></div>`;
+    const fesH = (DB.diasOficiales || {})[fmtDate(d)];
+    return `<div class="asis-hdr" style="${isHoy?'color:var(--green)':''}"${fesH ? ` title="${esc(fesH.nombre)}"` : ''}>${n}<br><span style="font-size:8px;font-weight:600">${d.getDate()}${fesH ? ' 🎌' : ''}</span></div>`;
   }).join('') + '<div class="asis-hdr" title="Comentario por persona">💬</div>';
   activos.forEach(c=>{
     html += `<div class="asis-name-cell">${esc(c.nombre.split(' ').slice(0,2).join(' '))}</div>`;
@@ -9710,15 +9735,16 @@ async function renderAsistencias(){
       const reg = DB.asistencias[key];
       const isHoy = fmtDate(d)===fmtDate(hoy);
       const isFuture = d > hoy;
-      const cls = reg ? reg.tipo : 'em';
-      const lbl = reg ? reg.tipo : '—';
+      const fes = !reg ? (DB.diasOficiales || {})[fmtDate(d)] : null;
+      const cls = reg ? reg.tipo : (fes ? 'fes' : 'em');
+      const lbl = reg ? reg.tipo : (fes ? 'FES' : '—');
       const conHora = !!(reg && reg.horaEntrada);
       const estC = conHora && reg.estado && reg.estado !== 'puntual' ? ' est-' + reg.estado : '';
       const tieneNota = !!(reg && reg.nota), esAuto = !!(reg && reg.origen === 'sistema' && reg.tipo === 'F');
       const tip0 = conHora ? `${c.nombre} · ${fmtDate(d)} · entrada ${fmtHora(reg.horaEntrada)}${reg.estado ? ' · ' + (EST_ASIS[reg.estado]||{}).txt : ''}${reg.minRetraso > 0 ? ' (+' + reg.minRetraso + ' min)' : ''}` : `${c.nombre} · ${fmtDate(d)}${esAuto ? ' · falta automática: no registró asistencia' : ''}`;
-      const tip = tip0 + (tieneNota ? ' · Nota: ' + reg.nota : '');
+      const tip = tip0 + (tieneNota ? ' · Nota: ' + reg.nota : '') + (fes ? ' · Día oficial: ' + fes.nombre : '');
       const marca = tieneNota ? '<span class="ac-nota" title="Tiene nota">📝</span>' : '';
-      const interior = marca + (conHora ? `<span class="ac-l">${lbl}</span><span class="ac-h">${new Date(reg.horaEntrada).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:TZ_MX})}${reg.minRetraso > 0 ? ' +' + reg.minRetraso + "'" : ''}</span>` : (isFuture && !reg ? '' : lbl));
+      const interior = marca + (conHora ? `<span class="ac-l">${lbl}</span><span class="ac-h">${new Date(reg.horaEntrada).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:TZ_MX})}${reg.minRetraso > 0 ? ' +' + reg.minRetraso + "'" : ''}</span>` : (isFuture && !reg && !fes ? '' : lbl));
       html += `<div class="asis-cell ${cls}${conHora ? ' conhora' : ''}${estC}${isHoy?' hoy':''}" onclick="abrirAsistencia('${c.id}','${fmtDate(d)}')" title="${esc(tip)}">${interior}</div>`;
     });
     const tieneCom = !!(DB.asisComentarios[c.id]);
@@ -9727,6 +9753,52 @@ async function renderAsistencias(){
   grid.innerHTML = html;
   const obsEl = document.getElementById('asis-obs');
   if (obsEl) obsEl.value = (cierreData && cierreData.observaciones) || '';
+}
+
+/* ── Días oficiales de México: calendario editable solo por Dirección ── */
+let _dofAnio = new Date().getFullYear(), _dofEditTipo = null;
+async function cargarDiasOficiales(){
+  const { data } = await sb.from('dias_oficiales').select('*').order('fecha');
+  DB.diasOficiales = {}; (data || []).forEach(x => { DB.diasOficiales[x.fecha] = x; });
+}
+function abrirDiasOficiales(){
+  _dofAnio = currentSemana.getFullYear(); _dofEditTipo = null;
+  const esDir = currentUser.role === 'direccion_ceo';
+  document.getElementById('dof-form').style.display = esDir ? 'block' : 'none';
+  document.getElementById('dof-guardar').style.display = esDir ? '' : 'none';
+  document.getElementById('dof-fecha').value = ''; document.getElementById('dof-nombre').value = '';
+  openModal('modal-dias-oficiales'); renderDiasOficiales();
+}
+function dofCambiarAnio(n){ _dofAnio += n; renderDiasOficiales(); }
+async function renderDiasOficiales(){
+  await cargarDiasOficiales();
+  const esDir = currentUser.role === 'direccion_ceo', mes = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'], dia = ['dom','lun','mar','mié','jue','vie','sáb'];
+  document.getElementById('dof-anio').textContent = _dofAnio;
+  const lista = Object.values(DB.diasOficiales).filter(x => x.fecha.slice(0, 4) === String(_dofAnio)).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  document.getElementById('dof-list').innerHTML = lista.length ? lista.map(x => { const d = fechaDe(x.fecha);
+    return `<div class="dof-row"><div class="dof-f">${dia[d.getDay()]} ${d.getDate()} ${mes[d.getMonth()]}</div><div class="dof-n">${esc(x.nombre)}</div><span class="tag ${x.tipo === 'oficial' ? 'g' : 'a'}">${x.tipo === 'oficial' ? 'Oficial' : 'Adicional'}</span>${esDir ? `<button class="btn sm" onclick="dofEditar('${x.fecha}')">✎</button><button class="btn sm danger" onclick="dofBorrar('${x.fecha}')">🗑</button>` : ''}</div>`; }).join('')
+    : '<div class="empty" style="padding:20px"><div class="empty-sub">No hay días registrados para este año.</div></div>';
+}
+function dofEditar(f){ const x = DB.diasOficiales[f]; if (!x) return; _dofEditTipo = x.tipo; document.getElementById('dof-fecha').value = x.fecha; document.getElementById('dof-nombre').value = x.nombre; }
+async function guardarDiaOficial(){
+  if (currentUser.role !== 'direccion_ceo'){ toast('Solo Dirección puede modificar el calendario','error'); return; }
+  const fecha = document.getElementById('dof-fecha').value, nombre = (document.getElementById('dof-nombre').value || '').trim();
+  if (!fecha || !nombre){ toast('Escribe la fecha y el nombre del día','error'); return; }
+  const previo = DB.diasOficiales[fecha];
+  const { error } = await sb.from('dias_oficiales').upsert({ fecha, nombre, tipo: previo ? previo.tipo : (_dofEditTipo || 'empresa') }, { onConflict: 'fecha' });
+  if (error){ toast(error.message,'error'); return; }
+  await audit('asistencia', `Día oficial ${previo ? 'actualizado' : 'agregado'}: ${esc(nombre)} (${fecha})`, 'a');
+  _dofEditTipo = null; document.getElementById('dof-fecha').value = ''; document.getElementById('dof-nombre').value = '';
+  await renderDiasOficiales(); renderAsistencias(); toast('Día guardado','success');
+}
+function dofBorrar(f){
+  const x = DB.diasOficiales[f]; if (!x) return;
+  confirmar(`¿Quitar "${esc(x.nombre)}" (${f}) del calendario? Ese día volverá a contar como laborable.`, 'Quitar día', async () => {
+    const { error } = await sb.from('dias_oficiales').delete().eq('fecha', f);
+    if (error){ toast(error.message,'error'); return; }
+    await audit('asistencia', `Día oficial quitado: ${esc(x.nombre)} (${f})`, 'a');
+    await renderDiasOficiales(); renderAsistencias(); toast('Día quitado','info');
+  });
 }
 
 function getNumSemana(d){
@@ -9740,7 +9812,13 @@ function fmt2(d){
 }
 
 function abrirAsistencia(colabId, diaStr){
-  if (!canDo('supervisor')){ toast('Sin permisos para registrar asistencia','error'); return; }
+  // Solo Dirección aprueba o modifica asistencias. RH únicamente justifica faltas (y agrega su nota).
+  const esDir = currentUser.role === 'direccion_ceo', soloRH = currentUser.role === 'rh';
+  const regPrev = DB.asistencias[`${diaStr}-${colabId}`];
+  if (!esDir){
+    if (!soloRH){ toast('Solo Dirección puede modificar asistencias','error'); return; }
+    if (!regPrev || !['F','FJ'].includes(regPrev.tipo)){ toast('RH solo puede justificar faltas. Cualquier otro cambio lo hace Dirección.','error'); return; }
+  }
   const c = DB.colaboradores.find(c=>String(c.id)===String(colabId));
   if (!c) return;
   asisCurrent = { colabId:String(colabId), dia:diaStr };
@@ -9769,6 +9847,12 @@ function abrirAsistencia(colabId, diaStr){
       document.getElementById('just-fn').textContent = reg.justNombre;
       document.getElementById('just-fs').textContent = 'Ya en sistema';
     }
+  }
+  document.querySelectorAll('[id^="ab-"]').forEach(b => { b.style.display = (soloRH && b.id !== 'ab-FJ') ? 'none' : ''; });
+  { const nt = document.getElementById('asis-nota'); if (nt) nt.placeholder = soloRH ? 'Motivo de la justificación (obligatorio)' : ''; }
+  if (soloRH){
+    asisTipo = 'FJ'; const bj = document.getElementById('ab-FJ'); if (bj) bj.classList.add('primary');
+    document.getElementById('asis-justificante-upload').style.display = 'block';
   }
   openModal('modal-asistencia');
 }
@@ -9800,6 +9884,20 @@ function handleJustFile(input){
 
 async function guardarAsistencia(){
   const key = `${asisCurrent.dia}-${asisCurrent.colabId}`;
+  if (currentUser.role === 'rh'){
+    // RH: solo justifica faltas, con motivo obligatorio (la base lo vuelve a validar)
+    const prevRH = DB.asistencias[key] || {}, notaRH = (document.getElementById('asis-nota').value || '').trim();
+    if (!notaRH){ toast('Escribe el motivo de la justificación','error'); return; }
+    if (!justFile && !prevRH.justNombre){ toast('Para falta justificada debes subir el justificante','error'); return; }
+    const { error } = await sb.rpc('asistencia_justificar', { p_fecha: asisCurrent.dia, p_colaborador_id: asisCurrent.colabId, p_nota: notaRH });
+    if (error){ toast(error.message,'error'); return; }
+    DB.asistencias[key] = { ...prevRH, tipo:'FJ', capturadoPor: currentUser.userId, ts: new Date().toISOString(), origen:'gerente', nota: notaRH };
+    const cRH = DB.colaboradores.find(c=>String(c.id)===asisCurrent.colabId);
+    await audit('asistencia', `${esc(cRH?cRH.nombre:'—')}: falta justificada por RH en ${asisCurrent.dia}`, 'a');
+    closeModal('modal-asistencia'); renderAsistencias(); toast('Falta justificada','success');
+    return;
+  }
+  if (currentUser.role !== 'direccion_ceo'){ toast('Solo Dirección puede modificar asistencias','error'); return; }
   if (asisTipo === ''){
     const { error } = await sb.from('asistencias').delete()
       .eq('fecha', asisCurrent.dia).eq('colaborador_id', asisCurrent.colabId);
@@ -9885,6 +9983,7 @@ async function guardarComentarioAsis(){
    sin librerías externas): título, semana, rango de fechas, y columnas
    NO. / NOMBRE / PUESTO / UNIDAD / DÍAS LABORADOS / OBSERVACIONES. ── */
 async function descargarPreNominaExcel(){
+  if (currentUser.role !== 'direccion_ceo') return;
   const dias = diasDeSemana(currentSemana);
   const semanaNum = getNumSemana(currentSemana);
   const anio = currentSemana.getFullYear();
@@ -12771,6 +12870,7 @@ async function _asisDatosSemana(){
 }
 const _ASIS_COLS = [ ['No. empleado','num'], ['Colaborador','nombre'], ['Faltas','faltas'], ['Retardos','retardos'], ['Precaución','precaucion'], ['Llegada prom.','llegada'], ['Puntualidad semana','puntSem'], ['Puntualidad mes','puntMes'], ['Tendencia','tend'], ['Atención','atencion'] ];
 async function descargarAsistenciaXLS(){
+  if (currentUser.role !== 'direccion_ceo'){ toast('El Excel de asistencias solo lo descarga Dirección. Usa el PDF.','error'); return; }
   toast('Preparando reporte…','info');
   const D = await _asisDatosSemana(), enc = new TextEncoder(), X = s => enc.encode(s), e = s => esc(s);
   const L = 'ABCDEFGHIJK', N = _ASIS_COLS.length + 1;
