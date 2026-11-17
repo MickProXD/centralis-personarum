@@ -2216,16 +2216,16 @@ select.form-input option{background:var(--bg2)}
 <div class="overlay" id="modal-codigo-cuenta" onclick="if(event.target===this)closeModal('modal-codigo-cuenta')">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title">Código de desbloqueo de cuenta</div>
+      <div class="modal-title" id="cc-titulo">Código de desbloqueo de cuenta</div>
       <button class="modal-close" onclick="closeModal('modal-codigo-cuenta')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </div>
     <div class="modal-body" style="text-align:center">
       <div id="cc-quien" style="font-size:12px;color:var(--text2);margin-bottom:10px"></div>
       <div id="cc-codigo" style="font-family:monospace;font-size:30px;font-weight:800;letter-spacing:6px;background:var(--surface);border-radius:10px;padding:14px;user-select:all">—</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.6">Entrégaselo en persona o por un medio privado. Vale <strong>7 días</strong>, se usa una sola vez y esta es la única vez que se muestra. La persona entra a «Ya me aprobaron mi cuenta», pone su correo y este código, y el sistema le da su contraseña de un solo uso. Tú nunca la ves.</div>
+      <div id="cc-nota" style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.6">Entrégaselo en persona o por un medio privado. Vale <strong>7 días</strong>, se usa una sola vez y esta es la única vez que se muestra. La persona entra a «Ya me aprobaron mi cuenta», pone su correo y este código, y el sistema le da su contraseña de un solo uso. Tú nunca la ves.</div>
     </div>
     <div class="modal-foot">
-      <button class="btn" onclick="navigator.clipboard?.writeText(document.getElementById('cc-codigo').textContent).then(()=>toast('Código copiado','success'))">Copiar</button>
+      <button class="btn" id="cc-copiar" onclick="navigator.clipboard?.writeText(document.getElementById('cc-codigo').textContent).then(()=>toast('Código copiado','success'))">Copiar</button>
       <button class="btn primary" onclick="closeModal('modal-codigo-cuenta')">Listo</button>
     </div>
   </div>
@@ -2536,9 +2536,11 @@ select.form-input option{background:var(--bg2)}
           <select class="form-input" id="aps-gerente" style="margin-bottom:10px"><option value="">Sin asignar</option></select>
         </div>
         <label class="form-lbl">Expediente (colaborador) <span style="font-weight:400;color:var(--text3)">— si no eliges uno se crea uno nuevo automáticamente</span></label>
-        <select class="form-input" id="aps-colab"><option value="">Sin ligar</option></select>
+        <select class="form-input" id="aps-colab" onchange="apsPrefillCurp()"><option value="">Sin ligar</option></select>
+        <label class="form-lbl" style="margin-top:10px">CURP de la persona <span style="font-weight:400;color:var(--text3)">— será su contraseña de primer acceso</span></label>
+        <input class="form-input" id="aps-curp" maxlength="18" autocomplete="off" style="text-transform:uppercase" placeholder="18 caracteres">
       </div>
-      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin-bottom:8px;line-height:1.5">Al aprobar, la persona desbloquea su contraseña de un solo uso con el código de seguimiento que recibió al enviar su solicitud. Tú no ves ni escribes ninguna contraseña. Al entrar tendrá que crear la suya de inmediato.</div>
+      <div style="font-size:12px;color:var(--text2);background:var(--surface2,#f3f6f4);border-radius:8px;padding:10px 12px;margin-bottom:8px;line-height:1.5">Al aprobar, la contraseña de primer acceso de la persona será su <strong>CURP</strong> (el sistema la pone; nadie la escribe). Entra con su correo + CURP y el sistema le pide crear una contraseña nueva de inmediato. El acceso vence en 72 horas si no entra.</div>
       <div class="form-err" id="err-aps" style="margin-bottom:8px">—</div>
     </div>
     <div class="modal-foot">
@@ -3103,6 +3105,30 @@ select.form-input option{background:var(--bg2)}
       <input class="form-input" id="asis-nota">
     </div>
     <div class="modal-foot"><button class="btn" onclick="closeModal('modal-asistencia')">Cerrar</button><button class="btn primary" onclick="guardarAsistencia()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- CREAR CUENTA DESDE EL EXPEDIENTE -->
+<div class="overlay" id="modal-cuenta-colab" onclick="if(event.target===this)closeModal('modal-cuenta-colab')">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Crear cuenta de acceso</div><button class="modal-close" onclick="closeModal('modal-cuenta-colab')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px">La cuenta nace sin contraseña: nadie la escribe ni la ve. Al guardar verás un código de un solo uso; entrégaselo a la persona en privado para que cree su contraseña en la pantalla de acceso.</div>
+      <label class="form-lbl">Colaborador</label>
+      <input class="form-input" id="cc-nombre" disabled style="margin-bottom:10px">
+      <label class="form-lbl">Tipo de cuenta</label>
+      <input class="form-input" id="cc-rol" disabled style="margin-bottom:10px">
+      <label class="form-lbl req">Correo de la persona</label>
+      <input class="form-input" type="email" id="cc-correo" placeholder="Correo donde recibirá avisos y recuperará su acceso" autocomplete="off" style="margin-bottom:10px">
+      <div class="grid2" style="margin-bottom:10px">
+        <div><label class="form-lbl req">CURP</label><input class="form-input" id="cc-curp" maxlength="18" autocomplete="off" placeholder="18 caracteres" style="text-transform:uppercase"></div>
+        <div><label class="form-lbl req">RFC</label><input class="form-input" id="cc-rfc" maxlength="13" autocomplete="off" placeholder="13 caracteres" style="text-transform:uppercase"></div>
+      </div>
+      <label class="form-lbl req">Usuario de acceso <span style="font-weight:400;color:var(--text3)">(identificador interno)</span></label>
+      <input class="form-input" id="cc-usuario" autocomplete="off" placeholder="ej. jgarcia">
+      <div class="form-err" id="err-cc" style="margin-top:8px">—</div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('modal-cuenta-colab')">Cancelar</button><button class="btn primary" onclick="guardarCuentaColab()">Crear cuenta</button></div>
   </div>
 </div>
 
@@ -5357,6 +5383,7 @@ async function guardarUsuario(){
   if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return fail('Escribe un correo institucional válido');
   if (!usuario || usuario.length<3) return fail('Usuario: mínimo 3 caracteres');
   if (!/^[a-z0-9._-]+$/.test(usuario)) return fail('Usuario: solo minúsculas, números, punto, guion');
+  if (document.getElementById('au-colab')?.value) return fail('Para darle cuenta a un colaborador que ya tiene expediente usa "Crear cuenta" desde su expediente: ahí se piden correo, RFC y CURP.');
 
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
@@ -5369,10 +5396,25 @@ async function guardarUsuario(){
   renderUsuariosConfig();
 }
 
-function mostrarCodigoCuenta(nombre, codigo){
+function mostrarCodigoCuenta(nombre, codigo, primerAcceso){
+  const t = document.getElementById('cc-titulo'), cod = document.getElementById('cc-codigo'), nota = document.getElementById('cc-nota'), cp = document.getElementById('cc-copiar');
+  if (primerAcceso === 'curp'){
+    // Contraseña de primer acceso = CURP de la persona (la puso el sistema; nadie la escribió)
+    t.textContent = 'Cuenta lista · contraseña de primer acceso';
+    document.getElementById('cc-quien').textContent = 'Para: ' + nombre;
+    cod.style.cssText = 'font-size:16px;font-weight:800;background:var(--surface);border-radius:10px;padding:14px';
+    cod.textContent = 'Su contraseña de primer acceso es su CURP';
+    nota.innerHTML = 'Dile a la persona que entre con su <strong>correo</strong> y su <strong>CURP</strong> (en mayúsculas, 18 caracteres) como contraseña. Al entrar, el sistema le pedirá <strong>crear una contraseña nueva</strong> de inmediato. Este acceso <strong>vence en 72 horas</strong>; si no entra a tiempo, se le restablece desde su fila en Usuarios (“Nuevo código”).';
+    cp.style.display = 'none';
+    openModal('modal-codigo-cuenta'); return;
+  }
+  t.textContent = 'Código de desbloqueo de cuenta';
+  cod.style.cssText = 'font-family:monospace;font-size:30px;font-weight:800;letter-spacing:6px;background:var(--surface);border-radius:10px;padding:14px;user-select:all';
+  nota.innerHTML = 'Entrégaselo en persona o por un medio privado. Vale <strong>7 días</strong>, se usa una sola vez y esta es la única vez que se muestra. La persona entra a «Ya me aprobaron mi cuenta», pone su correo y este código, y el sistema le da su contraseña de un solo uso. Tú nunca la ves.';
+  cp.style.display = '';
   if (!codigo){ toast('Cuenta lista. La persona ya puede desbloquear su contraseña con su código de seguimiento.','success'); return; }
   document.getElementById('cc-quien').textContent = 'Para: ' + nombre;
-  document.getElementById('cc-codigo').textContent = codigo;
+  cod.textContent = codigo;
   openModal('modal-codigo-cuenta');
 }
 async function reemitirCodigoCuenta(id, nombre){
@@ -5380,7 +5422,7 @@ async function reemitirCodigoCuenta(id, nombre){
     const { data: { session } } = await sb.auth.getSession();
     const { data, error } = await sb.functions.invoke('admin-create-user', { body:{ accion:'reemitir', user_id:id }, headers:{ Authorization:`Bearer ${session.access_token}` } });
     if (error || data?.error){ toast(data?.error || await errorFuncion(error, data), 'error'); return; }
-    mostrarCodigoCuenta(nombre, data?.codigo);
+    mostrarCodigoCuenta(nombre, data?.codigo, data?.primer_acceso);
     if (currentUser.role === 'rh') renderSolicitudes();
   });
 }
@@ -5811,6 +5853,7 @@ async function guardarNuevaPassword(){
   const minLen = (currentUser.role==='rh'||currentUser.role==='direccion_ceo') ? 12 : 8;
   if (nueva.length < minLen){ err.textContent = `Mínimo ${minLen} caracteres para tu rol`; err.classList.add('show'); return; }
   if (nueva !== confirmar){ err.textContent = 'Las contraseñas no coinciden'; err.classList.add('show'); return; }
+  if (/^[A-Za-z]{4}\d{6}[A-Za-z0-9]{8}$/.test(nueva)){ err.textContent = 'No uses tu CURP ni tu RFC como contraseña; elige una que solo tú conozcas'; err.classList.add('show'); return; }
   const { error: updErr } = await sb.auth.updateUser({ password: nueva });
   if (updErr){ err.textContent = updErr.message; err.classList.add('show'); return; }
   await sb.from('profiles').update({ debe_cambiar_password: false }).eq('id', currentUser.userId);
@@ -7645,8 +7688,15 @@ async function abrirAprobarSolicitud(id){
   const norm = t => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
   const par = (DB.colaboradores || []).filter(c => norm(c.nombre) === norm(data.nombre));
   if (par.length === 1) document.getElementById('aps-colab').value = par[0].id;
+  document.getElementById('aps-curp').value = '';
+  apsPrefillCurp();
   document.getElementById('err-aps').classList.remove('show');
   openModal('modal-aprobar-solicitud');
+}
+
+function apsPrefillCurp(){
+  const id = document.getElementById('aps-colab')?.value, c = id && (DB.colaboradores || []).find(x => String(x.id) === String(id));
+  const i = document.getElementById('aps-curp'); if (i && c?.curp) i.value = String(c.curp).toUpperCase();
 }
 
 async function aprobarSolicitud(){
@@ -7658,7 +7708,7 @@ async function aprobarSolicitud(){
   const fail = msg => { err.textContent = msg; err.classList.add('show'); };
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('admin-create-user', {
-    body: { solicitud_id: s.id, role, ...leerCamposRol('aps') },
+    body: { solicitud_id: s.id, role, curp: (document.getElementById('aps-curp')?.value || '').trim().toUpperCase(), ...leerCamposRol('aps') },
     headers: { Authorization: `Bearer ${session.access_token}` }
   });
   if (error || data?.error) return fail(await errorFuncion(error, data));
@@ -7666,7 +7716,7 @@ async function aprobarSolicitud(){
   await audit('config', `Solicitud de cuenta de <strong>${esc(s.nombre)}</strong> aprobada (${role})`, 'g');
   closeModal('modal-aprobar-solicitud');
   solicitudEnRevision = null;
-  if (data?.codigo) mostrarCodigoCuenta(s.nombre, data.codigo);
+  if (data?.codigo || data?.primer_acceso) mostrarCodigoCuenta(s.nombre, data.codigo, data.primer_acceso);
   else toast('Cuenta aprobada. ' + s.nombre + ' ya puede desbloquear su contraseña de un solo uso.','success');
   if (data?.expediente_creado) setTimeout(() => toast('Se creó el expediente de ' + s.nombre + ' con datos mínimos. Pídele que complete sus datos o que acuda a RH.','info'), 1800);
   if (currentUser.role === 'supervisor' || currentUser.role === 'rh') renderSolicitudes(); else { renderSolicitudesConfig(); renderUsuariosConfig(); }
@@ -7923,10 +7973,59 @@ function abrirExpedienteColab(id){
     document.getElementById('obs-saved-state').textContent = 'Guardado';
     obsEl.oninput = ()=>{ document.getElementById('obs-saved-state').textContent = 'Sin guardar'; document.getElementById('obs-saved-state').style.color = 'var(--amber)'; };
   }
-  renderExpDocs(); renderExpAsis(); renderExpHist(); renderExpActas(); renderExpHorario(); renderExpVac();
+  renderExpDocs(); renderExpAsis(); renderExpHist(); renderExpActas(); renderExpHorario(); renderExpVac(); renderExpCuenta(c);
   nav('expediente', null);
   document.getElementById('tb-crumb').textContent = '/ ' + c.nombre;
   expTab('datos', document.querySelector('.tab-item'));
+}
+
+/* ── Crear cuenta desde el expediente: Dirección y RH según su alcance; supervisores solo operadores y ayudantes de sus sedes.
+   La contraseña nunca la escribe ni la ve nadie: la persona la crea con un código de un solo uso. El servidor vuelve a validar todo. ── */
+const CUENTA_ROL_POR_PUESTO = { 'Operador':'chofer', 'Ayudante general':'chofer', 'Mecánico':'mantenimiento' };
+function rolCuentaPara(c){
+  const r = CUENTA_ROL_POR_PUESTO[c.puesto], yo = currentUser && currentUser.role;
+  if (!r || !['direccion_ceo', 'rh', 'supervisor'].includes(yo)) return null;
+  return (yo === 'supervisor' && r !== 'chofer') ? null : r;
+}
+async function renderExpCuenta(c){
+  const rol = rolCuentaPara(c), cont = document.getElementById('exp-tags');
+  if (!rol || !cont) return;
+  const { data: ids } = await sb.rpc('colaboradores_con_cuenta');
+  if (String(c.id) !== currentColabId || !cont) return;
+  const tiene = (ids || []).map(String).includes(String(c.id));
+  cont.insertAdjacentHTML('beforeend', tiene ? '<span class="tag g" id="exp-cuenta-btn">Con cuenta</span>' : '<button class="btn sm primary" id="exp-cuenta-btn" onclick="abrirCuentaColab()">Crear cuenta</button>');
+}
+function abrirCuentaColab(){
+  const c = DB.colaboradores.find(x => String(x.id) === currentColabId), rol = c && rolCuentaPara(c);
+  if (!rol){ toast('No tienes permiso para crear la cuenta de este colaborador','error'); return; }
+  const norm = t => (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+  const p = c.nombre.trim().split(/\s+/), sug = p.length > 1 ? norm(p[p.length - 1]).charAt(0) + norm(p[0]) : norm(p[0]);
+  document.getElementById('cc-nombre').value = c.nombre;
+  document.getElementById('cc-rol').value = rol === 'chofer' ? 'Operativo (campo)' : 'Mantenimiento';
+  document.getElementById('cc-correo').value = ''; document.getElementById('cc-usuario').value = sug;
+  // Si el expediente ya trae CURP/RFC se muestran; el supervisor no puede cambiarlos (lo corrige RH)
+  const bloquea = currentUser.role === 'supervisor';
+  [['cc-curp', c.curp], ['cc-rfc', c.rfc]].forEach(([id, v]) => { const el = document.getElementById(id); el.value = v || ''; el.disabled = bloquea && !!v; });
+  document.getElementById('err-cc').classList.remove('show');
+  openModal('modal-cuenta-colab');
+}
+async function guardarCuentaColab(){
+  const c = DB.colaboradores.find(x => String(x.id) === currentColabId), rol = c && rolCuentaPara(c);
+  const err = document.getElementById('err-cc'); err.classList.remove('show');
+  const fail = m => { err.textContent = m; err.classList.add('show'); };
+  if (!rol) return fail('No tienes permiso para crear esta cuenta');
+  const correo = document.getElementById('cc-correo').value.trim().toLowerCase(), usuario = document.getElementById('cc-usuario').value.trim().toLowerCase();
+  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return fail('Escribe un correo válido de la persona');
+  if (!usuario || usuario.length < 3 || !/^[a-z0-9._-]+$/.test(usuario)) return fail('Usuario: mínimo 3 caracteres, solo minúsculas, números, punto o guion');
+  const curp = document.getElementById('cc-curp').value.trim().toUpperCase(), rfc = document.getElementById('cc-rfc').value.trim().toUpperCase();
+  if (!/^[A-Z][AEIOUX][A-Z]{2}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[HMX][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]\d$/.test(curp)) return fail('CURP inválido: revisa que tenga 18 caracteres y el formato correcto');
+  if (!/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/.test(rfc)) return fail('RFC inválido: debe ser de persona física, de 13 caracteres');
+  const { data: { session } } = await sb.auth.getSession();
+  const { data, error } = await sb.functions.invoke('admin-create-user', { body: { usuario, nombre: c.nombre, correo, role: rol, colaborador_id: c.id, curp, rfc }, headers: { Authorization: `Bearer ${session.access_token}` } });
+  if (error || data?.error) return fail(await errorFuncion(error, data));
+  await audit('config', `Cuenta creada para <strong>${esc(c.nombre)}</strong> desde su expediente (${rol})`, 'g');
+  closeModal('modal-cuenta-colab'); mostrarCodigoCuenta(c.nombre, data?.codigo, data?.primer_acceso);
+  const b = document.getElementById('exp-cuenta-btn'); if (b) b.outerHTML = '<span class="tag g" id="exp-cuenta-btn">Con cuenta</span>';
 }
 
 /* ── Vacaciones: RH y Dirección determinan los días de cada año de servicio y registran los periodos tomados ── */
