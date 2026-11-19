@@ -1287,7 +1287,8 @@ select.form-input option{background:var(--bg2)}
         <select id="filter-site" onchange="renderColab()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-family:var(--head);font-size:11px;font-weight:700;outline:none"><option value="">Todas las sedes</option></select>
         <div class="ml" style="display:flex;gap:8px">
           <button class="btn primary" data-min-role="supervisor" onclick="openModal('modal-alta-colab')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>Alta colaborador</button>
-          <button class="btn danger" data-min-role="admintotal" onclick="openModal('modal-baja-colab')"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 11 11"><path d="M2 9l7-7M9 9L2 2"/></svg>Baja colaborador</button>
+          <button class="btn danger" data-min-role="admin" onclick="openModal('modal-baja-colab')"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 11 11"><path d="M2 9l7-7M9 9L2 2"/></svg>Baja colaborador</button>
+          <button class="btn danger btn-sol-baja" style="display:none" onclick="solicitarBajaRH()">Solicitar baja a RH</button>
         </div>
       </div>
       <div class="panel" id="colab-panel">
@@ -1310,7 +1311,8 @@ select.form-input option{background:var(--bg2)}
           <button class="btn" onclick="imprimirCredencial()" title="Imprimir credencial">🪪</button>
           <button class="btn" onclick="descargarExpZip()">⬇ ZIP</button>
           <button class="btn" data-min-role="supervisor" onclick="editarColab()">Editar</button>
-          <button class="btn danger" data-min-role="admintotal" onclick="openModal('modal-baja-colab')">Dar de baja</button>
+          <button class="btn danger" data-min-role="admin" onclick="openModal('modal-baja-colab')">Dar de baja</button>
+          <button class="btn danger btn-sol-baja" style="display:none" onclick="solicitarBajaRH(currentColabId)">Solicitar baja a RH</button>
         </div>
       </div>
       <div class="tab-bar">
@@ -4047,7 +4049,7 @@ const CAPS = {
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   supervisor: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','reportes','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','manual','muro','seguridad'],
+    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','calendario','reportes','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','manual','muro','seguridad'],
     fleet:true, personnel:'own_sites', editPersonnel:'own_sites', baja:false,
     sites:'own', createSite:true, permisosLegales:false, permisos:true,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -4455,6 +4457,7 @@ function colaboradoresVisibles(){
 }
 
 function applyRoleVisibility(){
+  document.querySelectorAll('.btn-sol-baja').forEach(el => { el.style.display = currentUser.role === 'supervisor' ? '' : 'none'; });
   const allowed = caps().pages;
   document.querySelectorAll('[data-min-role]').forEach(el => {
     el.classList.toggle('hidden-by-role', !canDo(el.getAttribute('data-min-role')));
@@ -7909,9 +7912,9 @@ function renderColab(){
           ${can('fleet')?`<div class="dot3-item" onclick="currentColabId='${c.id}';openReasignar()"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 13 13"><rect x="1" y="4" width="11" height="6" rx="1"/></svg>Asignar unidad</div>`:''}
           <div class="dot3-item" onclick="imprimirCredencialId('${c.id}')"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 13 13"><rect x="1" y="3" width="11" height="7" rx="1"/></svg>Credencial</div>
           <div class="dot3-sep"></div>
-          ${c.estatus==='baja' && can('baja')
+          ${c.estatus==='baja' && canDo('admin')
             ? `<div class="dot3-item success" onclick="reingresarColab('${c.id}')"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 13 13"><path d="M2 7l4 4 5-6"/></svg>Reingreso</div>`
-            : (c.estatus==='activo' && can('baja') ? `<div class="dot3-item danger" onclick="currentColabId='${c.id}';openModal('modal-baja-colab')"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 13 13"><path d="M2 11L11 2M2 2l9 9"/></svg>Baja de colaborador</div>`:'')}
+            : (c.estatus==='activo' && canDo('admin') ? `<div class="dot3-item danger" onclick="currentColabId='${c.id}';openModal('modal-baja-colab')"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 13 13"><path d="M2 11L11 2M2 2l9 9"/></svg>Baja de colaborador</div>`:(c.estatus==='activo' && currentUser.role==='supervisor' ? `<div class="dot3-item danger" onclick="solicitarBajaRH('${c.id}')"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 13 13"><path d="M2 11L11 2M2 2l9 9"/></svg>Solicitar baja a RH</div>`:''))}
         </div>
       </div>
       <div><div class="av g" style="${c.estatus==='baja'?'opacity:.4':''}">${ini}</div></div>
@@ -10179,6 +10182,12 @@ async function renderCalendario(){
     _calNotasMes[dia].push(n);
   });
 
+  _calLavMes = {}; _calUniMap = {};
+  try {
+    const { data: lv } = await sb.from('lavados_programados').select('id,unidad_id,tolva_id,tolva_numero,chofer_nombre,fecha_programada,estado,revision_estado').gte('fecha_programada', desde).lte('fecha_programada', hasta).neq('estado','cancelado');
+    (lv || []).forEach(l => { const dd = parseInt(l.fecha_programada.split('-')[2], 10); (_calLavMes[dd] = _calLavMes[dd] || []).push(l); });
+    if ((lv || []).some(l => l.unidad_id)){ const { data: un } = await sb.from('unidades').select('id,bak'); (un || []).forEach(u => { _calUniMap[u.id] = u.bak; }); }
+  } catch(e){}
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   let html = '<div class="cal-grid">';
   ['L','M','M','J','V','S','D'].forEach(d=>html += `<div class="cal-dow">${d}</div>`);
@@ -10200,12 +10209,30 @@ async function renderCalendario(){
       <div class="cal-num">${d}</div>
       ${notas.length ? '<div class="cal-nota-dot" title="'+notas.length+' nota(s)"></div>' : ''}
       ${evs.length ? `<div class="cal-events">${evs.length} doc${evs.length>1?'s':''}</div>` : ''}
+      ${(_calLavMes[d] || []).length ? `<div class="cal-events" style="color:${calLavColor(_calLavMes[d])}">🚿 ${_calLavMes[d].length} lavado${_calLavMes[d].length>1?'s':''}</div>` : ''}
     </div>`;
   }
   html += '</div>';
   document.getElementById('cal-grid').innerHTML = html;
   const totMes = Object.values(eventos).reduce((s,e)=>s+e.length, 0);
   document.getElementById('cal-tot-mes').textContent = totMes;
+}
+
+/* ── Lavados en el calendario (unidades y tolvas) ── */
+let _calLavMes = {}, _calUniMap = {};
+function calLavColor(arr){
+  if (arr.some(l => l.estado === 'incumplido')) return '#d64545';
+  if (arr.some(l => l.revision_estado === 'por_revisar')) return '#e0a100';
+  if (arr.every(l => l.estado === 'completado' && l.revision_estado === 'aprobado')) return '#2e9e5b';
+  return '#3b82f6';
+}
+function calLavadosDia(d){
+  const arr = _calLavMes[d] || []; if (!arr.length) return '';
+  const puedeIr = typeof mantEsGerencia === 'function' && mantEsGerencia() && caps().pages.includes('mantenimiento');
+  const est = l => l.estado === 'completado' ? (l.revision_estado === 'por_revisar' ? '<span class="tag a">Por revisar</span>' : '<span class="tag g">Con check</span>') : l.estado === 'incumplido' ? '<span class="tag r">Incumplido</span>' : '<span class="tag b">Pendiente</span>';
+  return `<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:10px"><div style="font-family:var(--head);font-weight:800;font-size:12px;margin-bottom:6px">Lavados programados</div>` +
+    arr.map(l => `<div class="doc-row"><div style="flex:1"><div class="doc-name">${l.tolva_id ? 'Tolva ' + esc(l.tolva_numero || '') : esc(_calUniMap[l.unidad_id] || 'Unidad')}</div><div class="doc-meta">${esc(l.chofer_nombre || '—')}</div></div>${est(l)}</div>`).join('') +
+    (puedeIr && arr.some(l => l.revision_estado === 'por_revisar') ? `<button class="btn sm primary" style="margin-top:8px" onclick="closeModal('modal-dia-calendario');nav('mantenimiento',null)">Ir a dar check</button>` : '') + '</div>';
 }
 
 /* ── Notas de calendario — Dirección, RH y Administración agregan ── */
@@ -10226,6 +10253,7 @@ function abrirDiaCalendario(fechaISO, etiqueta){
         ${(n.creado_por===currentUser.userId || currentUser.role==='rh' || currentUser.role==='direccion_ceo') ? `<button class="btn sm danger" onclick="eliminarNotaCalendario('${n.id}')">🗑</button>` : ''}
       </div>`).join('')
     : '<div class="empty" style="padding:14px"><div class="empty-sub">Sin notas este día</div></div>';
+  cont.innerHTML += calLavadosDia(parseInt(fechaISO.split('-')[2], 10));
 
   const puedeAgregar = ['direccion_ceo','rh','administracion'].includes(currentUser.role);
   document.getElementById('caldia-nueva-wrap').style.display = puedeAgregar ? 'block' : 'none';
@@ -11696,7 +11724,8 @@ async function renderMantenimiento(){
   const rs = ids.length ? (await sb.from('mant_respuestas').select('*').in('informe_id', ids)).data : [];
   MANT.resp = {}; (rs || []).forEach(r => { (MANT.resp[r.informe_id] = MANT.resp[r.informe_id] || []).push(r); });
   if (ger){
-    if (MANT.sel) await mantPrecargarFotos(MANT.sel);
+    try { const tv = await sb.from('tolvas').select('*').order('numero'); MANT.tolvas = tv.data || []; } catch(e){ MANT.tolvas = []; }
+    await mantPrecargarFotos(MANT.sel || null);
     return MANT.sel ? mantDetalleUnidad() : mantListaUnidades();
   }
   if (currentUser.role === 'mantenimiento' && MANT.tab === 'unidades'){
@@ -11730,12 +11759,13 @@ function mantVistaTaller(){
     ${mantTitulo(`Solicitudes por atender <span class="tag a">${act.length}</span>`)}
     <div style="display:flex;flex-direction:column;gap:8px">${act.map(mantFilaSolicitud).join('') || '<div class="empty-sub" style="padding:14px">No hay solicitudes pendientes de atender.</div>'}</div>
     ${sinResp.length ? mantTitulo(`Fallas reportadas por responder <span class="tag r">${sinResp.length}</span>`) + `<div style="display:flex;flex-direction:column;gap:10px">${sinResp.map(i => mantTarjetaInforme(i, true)).join('')}</div>` : ''}
-    ${fin.length ? mantTitulo('Terminadas recientes') + `<div style="display:flex;flex-direction:column;gap:8px">${fin.map(mantFilaSolicitud).join('')}</div>` : ''}`;
+    ${fin.length ? mantTitulo('Terminadas recientes') + `<div style="display:flex;flex-direction:column;gap:8px">${fin.map(mantFilaSolicitud).join('')}</div>` : ''}
+    ${(() => { const mis = MANT.lav.filter(l => l.chofer_user === currentUser.userId && l.estado !== 'cancelado').slice(0, 8); return mis.length ? mantTitulo('Mis lavados asignados') + `<div style="display:flex;flex-direction:column;gap:10px">${mis.map(l => mantTarjetaLavado(l, false)).join('')}</div>` : ''; })()}`;
 }
 async function mantPrecargarFotos(unidadId){
   const ps = [];
   MANT.inf.filter(i => !unidadId || i.unidad_id === unidadId).slice(0, 25).forEach(i => (i.fotos || []).slice(0, 4).forEach(p => ps.push(p)));
-  MANT.lav.filter(l => !unidadId || l.unidad_id === unidadId).slice(0, 12).forEach(l => ['foto_llegada', 'foto_lavando', 'foto_lavada'].forEach(k => { if (l[k]) ps.push(l[k]); }));
+  MANT.lav.filter(l => !unidadId || l.unidad_id === unidadId).slice(0, unidadId ? 12 : 40).forEach(l => ['foto_llegada', 'foto_lavando', 'foto_lavada'].forEach(k => { if (l[k]) ps.push(l[k]); }));
   Object.values(MANT.resp).flat().forEach(r => (r.fotos || []).slice(0, 4).forEach(p => ps.push(p)));
   await Promise.all([...new Set(ps)].map(p => avBlob('mant', p)));
 }
@@ -11757,9 +11787,13 @@ function mantTarjetaInforme(i, ger){
   </div>`;
 }
 function mantTarjetaLavado(l, ger){
-  const e = LAV_EST[l.estado] || LAV_EST.pendiente, hoy = hoyLocal();
+  let e = LAV_EST[l.estado] || LAV_EST.pendiente;
+  const hoy = hoyLocal();
+  if (l.estado === 'completado') e = l.revision_estado === 'por_revisar' ? ['a', 'Por revisar'] : ['g', 'Con check'];
+  const esTolva = !!l.tolva_id, nombre = esTolva ? 'Tolva ' + (l.tolva_numero || '') : mantUni(l.unidad_id);
   const cuando = l.fecha_programada === hoy ? '<span class="tag b">Hoy</span>' : (l.fecha_programada < hoy && l.estado === 'pendiente' ? '<span class="tag r">Vencido</span>' : '');
-  const yo = !ger && l.chofer_user === currentUser.userId && ['pendiente', 'incumplido'].includes(l.estado);
+  const abierto = ['pendiente', 'incumplido'].includes(l.estado);
+  const yo = abierto && ((!ger && l.chofer_user === currentUser.userId) || (ger && esTolva));
   const slots = LAV_SLOTS.map(([k, t, d], idx) => {
     const p = l['foto_' + k], b = p ? AV.blobs['mant/' + p] : null;
     const previo = idx === 0 || l['foto_' + LAV_SLOTS[idx - 1][0]];
@@ -11767,14 +11801,21 @@ function mantTarjetaLavado(l, ger){
     if (b) cuerpo = `<img src="${b}" alt="${esc(t)}" onclick="verImagenMuro(this.src)" style="width:100%;height:96px;object-fit:cover;border-radius:8px;cursor:zoom-in">`;
     else if (yo && previo) cuerpo = `<label class="btn sm primary" style="display:flex;align-items:center;justify-content:center;height:96px;margin:0;text-align:center;cursor:pointer">Tomar foto<input type="file" accept="image/*" capture="environment" style="display:none" onchange="lavSubir('${esc(l.id)}','${k}',this)"></label>`;
     else cuerpo = `<div style="height:96px;border:1px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);text-align:center;padding:4px">${p ? 'Foto cargando…' : (yo ? 'Primero la anterior' : 'Sin foto')}</div>`;
-    return `<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;margin-bottom:4px">${esc(t)}</div>${cuerpo}<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(d)}</div></div>`;
+    return `<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;margin-bottom:4px">${esc(t)}</div>${cuerpo}<div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(esTolva ? d.replace('el camión', 'la tolva').replace('Ya lavado', 'Ya lavada') : d)}</div></div>`;
   }).join('');
+  const rechazo = abierto && l.revision_estado === 'rechazado' ? `<div style="margin-bottom:8px;padding:8px 10px;border-radius:8px;background:rgba(214,69,69,.12);font-size:12px"><strong>El supervisor rechazó la evidencia:</strong> ${esc(l.revision_nota || '')}. Sube las fotos de nuevo.</div>` : '';
+  const espera = !ger && l.estado === 'completado' && l.revision_estado === 'por_revisar' ? '<div style="font-size:11px;color:var(--text3);margin-top:6px">Esperando el check del supervisor. Hasta que lo dé, no suma a tu score.</div>' : '';
+  const check = l.estado === 'completado' && l.revision_estado === 'aprobado' && l.revisado_en ? `<div style="font-size:11px;color:var(--text3);margin-top:4px">Check del supervisor: ${opFechaHora(l.revisado_en)}</div>` : '';
+  const botonesRev = ger && l.estado === 'completado' && l.revision_estado === 'por_revisar' ? `<div style="margin-top:8px;display:flex;gap:6px"><button class="btn sm primary" onclick="lavRevisar('${esc(l.id)}',true)">Dar check</button><button class="btn sm danger" onclick="lavRevisar('${esc(l.id)}',false)">Rechazar</button></div>` : '';
   return `<div class="panel" style="padding:14px;margin-bottom:0">
-    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><span class="tag ${e[0]}">${e[1]}</span><span class="tag b">${esc(mantUni(l.unidad_id))}</span>${cuando}
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><span class="tag ${e[0]}">${e[1]}</span><span class="tag ${esTolva ? 'a' : 'b'}">${esc(nombre)}</span>${cuando}
       <span style="font-size:11px;color:var(--text3);margin-left:auto">Programado: ${esc(mantFechaCorta(l.fecha_programada))}</span></div>
+    ${esTolva ? `<div style="font-size:11px;color:var(--text3);margin-bottom:6px">Asignado a: ${esc(l.chofer_nombre || '—')}</div>` : ''}
     ${l.notas ? `<div style="font-size:12px;color:var(--text2);margin-bottom:8px">${esc(l.notas)}</div>` : ''}
+    ${rechazo}
     <div style="display:flex;gap:8px">${slots}</div>
     ${l.completado_en ? `<div style="font-size:11px;color:var(--text3);margin-top:6px">Entregado: ${opFechaHora(l.completado_en)}</div>` : ''}
+    ${espera}${check}${botonesRev}
     ${ger && l.estado === 'pendiente' ? `<div style="margin-top:8px"><button class="btn sm danger" onclick="lavCancelar('${esc(l.id)}')">Cancelar lavado</button></div>` : ''}
   </div>`;
 }
@@ -11944,11 +11985,15 @@ function mantListaUnidades(){
   const cont = document.getElementById('mant-body');
   const est = MANT.unidades.map(mantEstadoUnidad).sort((a, b) => b.problema - a.problema || a.u.bak.localeCompare(b.u.bak));
   const sinCk = est.filter(e => !e.hoyInf && e.u.chofer_id).length, conFalla = est.filter(e => e.pendResp).length, lavInc = est.reduce((n, e) => n + e.lavInc, 0);
+  const porRev = MANT.lav.filter(l => l.revision_estado === 'por_revisar'), tolLav = MANT.lav.filter(l => l.tolva_id && l.revision_estado !== 'por_revisar' && l.estado !== 'cancelado').slice(0, 10), gerOk = mantEsGerencia();
   const chip = (n, t, c) => `<div class="panel" style="padding:10px 14px;margin:0;flex:1;min-width:130px"><div style="font-family:var(--head);font-weight:900;font-size:20px;color:${n ? c : 'inherit'}">${n}</div><div style="font-size:11px;color:var(--text3)">${t}</div></div>`;
   cont.innerHTML = mantTabsHtml() + `
     <div class="panel" style="padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--text2)">Cada unidad concentra su checklist diario, lavados y solicitudes. Toca una unidad para ver el detalle y la evidencia. Falla crítica: <strong>4 horas</strong> · requiere atención: <strong>24 horas</strong>. Sin respuesta con evidencia en plazo, baja el score de la gerencia operativa y del administrativo operativo.</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(conFalla, 'Unidades con falla sin responder', '#d64545')}${chip(sinCk, 'Sin checklist hoy', '#e0a100')}${chip(lavInc, 'Lavados incumplidos', '#d64545')}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${currentUser.role === 'mantenimiento' ? '' : '<button class="btn primary" onclick="lavProgramar()">Programar lavado</button><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button>'}<button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button><button class="btn" onclick="mantTalleresAbrir()">Talleres externos</button>${mantPuedeLlenar() ? '<button class="btn" onclick="mantNuevo()">Llenar mi checklist</button>' : ''}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${chip(conFalla, 'Unidades con falla sin responder', '#d64545')}${chip(sinCk, 'Sin checklist hoy', '#e0a100')}${chip(lavInc, 'Lavados incumplidos', '#d64545')}${chip(porRev.length, 'Lavados por revisar (check)', '#e0a100')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${currentUser.role === 'mantenimiento' ? '' : '<button class="btn primary" onclick="lavProgramar()">Programar lavado</button><button class="btn" onclick="lavProgramarTolva()">Lavado de tolva</button><button class="btn" onclick="tolvasAbrir()">Tolvas</button><button class="btn" onclick="mantSolicitar()">Solicitar mantenimiento</button>'}<button class="btn" onclick="mantBitacoraAbrir()">Bitácora</button><button class="btn" onclick="mantTalleresAbrir()">Talleres externos</button>${mantPuedeLlenar() ? '<button class="btn" onclick="mantNuevo()">Llenar mi checklist</button>' : ''}</div>
+    ${porRev.length ? mantTitulo(`Lavados por revisar <span class="tag a">${porRev.length}</span>`) + `<div style="display:flex;flex-direction:column;gap:10px">${porRev.map(l => mantTarjetaLavado(l, gerOk)).join('')}</div>` : ''}
+    ${tolLav.length ? mantTitulo('Lavados de tolvas') + `<div style="display:flex;flex-direction:column;gap:10px">${tolLav.map(l => mantTarjetaLavado(l, gerOk)).join('')}</div>` : ''}
+    ${mantTitulo('Unidades')}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">${est.map(e => `
       <div class="panel" onclick="mantAbrir('${esc(e.u.id)}')" style="padding:14px;margin:0;cursor:pointer;border-left:5px solid ${e.pendResp ? '#d64545' : (!e.hoyInf || e.lavInc) ? '#e0a100' : '#2e9e5b'}">
         <div style="display:flex;align-items:center;gap:8px"><div style="font-family:var(--head);font-weight:900;font-size:15px">${esc(e.u.bak)}</div><span style="font-size:11px;color:var(--text3);margin-left:auto">${esc(e.chofer)}</span></div>
@@ -12010,7 +12055,7 @@ async function mantBitacoraGenerar(){
     ent.push({ t:'Solicitud', u:x.unidad_id, f:x.created_at, titulo:(SOL_TIPOS[x.tipo] || { t:x.tipo }).t, quien:x.solicitante_nombre || '', det:x.detalle || '', estado:(SOL_ETAPAS[ult] || [, ult])[1], cierre:ult === 'terminada' ? (x.etapa_en || '') : '', sub:h.map(e => ({ f:e.created_at, t:(SOL_ETAPAS[e.etapa] || [, e.etapa])[1], por:e.por_nombre || '', nota:e.nota || '', fotos:e.fotos || [], b:'mant' })), fotos:(x.evidencia || []).filter(v => !/\.pdf$/i.test(v)), b:'solicitudes' }); });
   infs.forEach(x => { const rr = rePor[x.id] || [], fl = Object.entries(x.checklist || {}).filter(([, v]) => v !== 'ok').map(([k, v]) => (MANT_NOMBRES[k] || k) + ': ' + (v === 'falla' ? 'falla' : 'atención')).join(', ');
     ent.push({ t:'Falla reportada', u:x.unidad_id, f:x.created_at, titulo:(MANT_NIVEL[x.nivel] || [, x.nivel])[1], quien:x.chofer_nombre || '', det:(fl + (x.observaciones ? ' · ' + x.observaciones : '')).trim(), estado:rr.length ? 'Respondida' : 'Sin respuesta', cierre:rr.length ? rr[rr.length - 1].created_at : '', sub:rr.map(r => ({ f:r.created_at, t:'Respuesta con evidencia', por:'', nota:r.accion + (r.folio ? ' · Folio: ' + r.folio : ''), fotos:r.fotos || [], b:'mant' })), fotos:x.fotos || [], b:'mant' }); });
-  lavs.forEach(x => ent.push({ t:'Lavado', u:x.unidad_id, f:x.completado_en || (x.fecha_programada + 'T12:00:00-06:00'), titulo:'Lavado entregado', quien:'', det:x.notas || '', estado:'Completado', cierre:x.completado_en || '', sub:[], fotos:['foto_llegada', 'foto_lavando', 'foto_lavada'].map(k => x[k]).filter(Boolean), b:'mant' }));
+  lavs.forEach(x => ent.push({ t:'Lavado', u:x.unidad_id, f:x.completado_en || (x.fecha_programada + 'T12:00:00-06:00'), titulo:x.tolva_id ? 'Lavado de tolva ' + (x.tolva_numero || '') + ' entregado' : 'Lavado entregado', quien:x.tolva_id ? (x.chofer_nombre || '') : '', det:x.notas || '', estado:x.revision_estado === 'aprobado' ? 'Completado (con check)' : 'Completado (por revisar)', cierre:x.completado_en || '', sub:[], fotos:['foto_llegada', 'foto_lavando', 'foto_lavada'].map(k => x[k]).filter(Boolean), b:'mant' }));
   if (!ent.length) return finErr('No hay registros de mantenimiento en ese periodo');
   ent.sort((a, b) => (mantUni(a.u) + '').localeCompare(mantUni(b.u) + '', 'es', { numeric:true }) || a.f.localeCompare(b.f));
   const nom = uni ? mantUni(uni) : 'Toda la flota', fch = v => v ? opFechaHora(v) : '';
@@ -12068,6 +12113,63 @@ function lavProgramar(unidadId){
       if (error) return finErr(/duplicate|unique/i.test(error.message) ? 'Esa unidad ya tiene un lavado programado en una de esas fechas' : error.message);
       toast(n === 1 ? 'Lavado programado' : `${n} lavados programados`, 'success'); await audit('config', 'Lavado programado (' + mantUni(fv('lv-uni')) + ')', 'b'); renderMantenimiento();
     }, 'Programar');
+}
+function lavRevisar(id, ok){
+  if (ok){
+    confirmar('¿Dar check a este lavado? Desde ese momento cuenta para el score de la persona.', 'Dar check', async () => {
+      const { error } = await sb.from('lavados_programados').update({ revision_estado:'aprobado' }).eq('id', id);
+      if (error) return toast(error.message, 'error');
+      await audit('config', 'Check de lavado registrado', 'g');
+      toast('Check registrado', 'success'); renderMantenimiento();
+    });
+    return;
+  }
+  finModal('Rechazar evidencia', finArea('Motivo (la persona lo verá y volverá a subir las 3 fotos)', 'lv-rech', ''), async () => {
+    const m = fv('lv-rech').trim(); if (m.length < 3) return finErr('Indica el motivo');
+    const { error } = await sb.from('lavados_programados').update({ revision_estado:'rechazado', revision_nota:m }).eq('id', id);
+    if (error) return finErr(error.message);
+    await audit('config', 'Evidencia de lavado rechazada', 'r');
+    toast('Evidencia rechazada', 'success'); renderMantenimiento();
+  }, 'Rechazar');
+}
+async function lavProgramarTolva(){
+  const activas = (MANT.tolvas || []).filter(t => t.estatus === 'activa');
+  if (!activas.length){ toast('Primero da de alta una tolva en «Tolvas»', 'error'); return tolvasAbrir(); }
+  const { data: asig, error: ea } = await sb.rpc('lavado_asignables');
+  if (ea || !(asig || []).length){ toast(ea ? ea.message : 'No hay personas con cuenta a quién asignar', 'error'); return; }
+  finModal('Programar lavado de tolva',
+    finSelect('Tolva', 'lt-tolva', activas.map(t => [t.id, 'Tolva ' + t.numero + (t.tipo ? ' · ' + t.tipo : '')]), activas[0].id) +
+    finSelect('Quién la lava', 'lt-quien', asig.map(a => [a.colaborador_id, a.nombre + ' · ' + a.puesto]), asig[0].colaborador_id) +
+    finCampo('Fecha', 'lt-fecha', 'date', hoyLocal(), `min="${hoyLocal()}"`) +
+    finSelect('Repetir', 'lt-rep', [['1', 'Solo esta fecha'], ['w4', 'Cada semana (4 veces)'], ['q4', 'Cada 15 días (4 veces)']], '1') +
+    finArea('Indicaciones (opcional)', 'lt-notas', '') +
+    '<div style="font-size:11px;color:var(--text3)">La persona asignada sube 3 fotos (llegada, lavando, lavada); tú también puedes subirlas como supervisor. El lavado cuenta para el score cuando le des check.</div>',
+    async () => {
+      const f = fv('lt-fecha'); if (!f) return finErr('Elige la fecha');
+      const rep = fv('lt-rep'), n = rep === '1' ? 1 : 4, paso = rep === 'q4' ? 15 : 7, filas = [];
+      for (let i = 0; i < n; i++){ const d = new Date(f + 'T12:00:00'); d.setDate(d.getDate() + i * paso); filas.push({ tolva_id: fv('lt-tolva'), colaborador_id: fv('lt-quien'), fecha_programada: d.toLocaleDateString('en-CA'), notas: fv('lt-notas').trim() || null }); }
+      const { error } = await sb.from('lavados_programados').insert(filas);
+      if (error) return finErr(/duplicate|unique/i.test(error.message) ? 'Esa tolva ya tiene un lavado programado en una de esas fechas' : error.message);
+      const t = activas.find(x => x.id === fv('lt-tolva'));
+      toast(n === 1 ? 'Lavado de tolva programado' : `${n} lavados de tolva programados`, 'success'); await audit('config', 'Lavado de tolva programado (' + (t ? t.numero : '') + ')', 'b'); renderMantenimiento();
+    }, 'Programar');
+}
+function tolvasAbrir(){
+  const lista = MANT.tolvas || [];
+  const filas = lista.map(t => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)"><div style="flex:1"><strong>Tolva ${esc(t.numero)}</strong>${t.tipo ? ` <span style="color:var(--text3);font-size:11px">· ${esc(t.tipo)}</span>` : ''}</div><span class="tag ${t.estatus === 'activa' ? 'g' : 'm'}">${t.estatus === 'activa' ? 'Activa' : 'De baja'}</span><button class="btn sm" onclick="tolvaToggle('${esc(t.id)}','${esc(t.estatus)}')">${t.estatus === 'activa' ? 'Dar de baja' : 'Reactivar'}</button></div>`).join('') || '<div class="empty-sub" style="padding:10px">Aún no hay tolvas registradas.</div>';
+  finModal('Tolvas', `<div style="max-height:220px;overflow:auto;margin-bottom:12px">${filas}</div><div style="font-family:var(--head);font-weight:800;font-size:12px;margin-bottom:6px">Agregar tolva</div>` +
+    finCampo('Número o folio', 'tv-num', 'text', '', 'maxlength="30"') + finCampo('Tipo (opcional: hooklift, skip loader…)', 'tv-tipo', 'text', '', 'maxlength="40"'),
+    async () => {
+      const n = fv('tv-num').trim(); if (!n) return finErr('Escribe el número o folio de la tolva');
+      const { error } = await sb.from('tolvas').insert({ numero:n, tipo:fv('tv-tipo').trim() || null });
+      if (error) return finErr(/duplicate|unique/i.test(error.message) ? 'Esa tolva ya está registrada' : error.message);
+      await audit('config', 'Tolva dada de alta: ' + n, 'g'); toast('Tolva agregada', 'success'); renderMantenimiento();
+    }, 'Agregar tolva');
+}
+async function tolvaToggle(id, estatus){
+  const { error } = await sb.from('tolvas').update({ estatus: estatus === 'activa' ? 'baja' : 'activa' }).eq('id', id);
+  if (error) return toast(error.message, 'error');
+  await renderMantenimiento(); closeModal('modal-fin'); tolvasAbrir();
 }
 function lavCancelar(id){
   confirmar('¿Cancelar este lavado programado? El chofer ya no tendrá que subir evidencia.', 'Cancelar lavado', async () => {
@@ -12373,7 +12475,8 @@ const SOL_TIPOS = {
   constancia:           { t:'Constancia laboral',           ap:'rh',        campos:[['para','¿Para qué trámite?','text']] },
   capacitacion:         { t:'Capacitación',                 ap:'rh',        campos:[['curso','Curso o tema','text']] },
   cambio_ayudante:      { t:'Cambio de ayudante',           ap:'operativo', campos:[['ayudante','Ayudante que solicitas (opcional)','text']] },
-  sugerencia_queja:     { t:'Sugerencia o queja',           ap:'rh',        campos:[] }
+  sugerencia_queja:     { t:'Sugerencia o queja',           ap:'rh',        campos:[] },
+  baja_personal:        { t:'Baja de personal',             ap:'rh',        campos:[] }
 };
 /* Evidencia por tipo (el servidor aplica la misma regla) */
 const SOL_EV = { combustible:'requerida', falla_urgente:'requerida', incapacidad:'requerida', viaticos:'requerida', permiso:'opcional', material_unidad:'opcional', epp_uniforme:'opcional', cambio_unidad:'opcional' };
@@ -12400,6 +12503,7 @@ async function renderSolicitudes(){
       ${solEvidenciaHtml(s.evidencia)}
       ${s.motivo ? `<div style="font-size:12px;margin-top:6px"><strong>Motivo:</strong> ${esc(s.motivo)}</div>` : ''}
       ${solEtapaHtml(s)}
+      ${s.tipo === 'baja_personal' && s.estatus !== 'rechazada' && canDo('admin') ? `<div style="margin-top:10px"><button class="btn sm danger" onclick="solProcesarBaja('${esc(s.id)}')">Abrir la baja de ${esc(s.datos?.colaborador || 'esta persona')}</button></div>` : ''}
       ${puede ? `<div style="display:flex;gap:6px;margin-top:10px"><button class="btn sm primary" onclick="solResolver('${esc(s.id)}',true)">Aprobar</button><button class="btn sm danger" onclick="solResolver('${esc(s.id)}',false)">Rechazar</button></div>` : ''}</div>`; };
   const porRes = SOL.lista.filter(s => s.estatus === 'pendiente' && solPuedeResolver(s.aprobador));
   const mias = SOL.lista.filter(s => s.solicitante === currentUser.userId);
@@ -12423,7 +12527,7 @@ async function renderSolicitudes(){
 }
 function solNueva(){
   finModal('Nueva solicitud',
-    finSelect('¿Qué necesitas?', 'sl-tipo', Object.entries(SOL_TIPOS).map(([k, v]) => [k, v.t]), 'combustible').replace('<select ', '<select onchange="solCampos()" ') +
+    finSelect('¿Qué necesitas?', 'sl-tipo', Object.entries(SOL_TIPOS).filter(([k]) => k !== 'baja_personal').map(([k, v]) => [k, v.t]), 'combustible').replace('<select ', '<select onchange="solCampos()" ') +
     '<div id="sl-campos"></div>' + finArea('Detalle de tu solicitud', 'sl-det', ''), solEnviar, 'Enviar solicitud');
   solCampos();
 }
@@ -12465,6 +12569,31 @@ function solEvidenciaHtml(ev){
   return opMiniaturas('solicitudes', imgs) + (pdfs.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${pdfs.map((x, i) => `<button class="btn sm" onclick="solAbrirPdf('${esc(x)}')">📄 Documento PDF ${pdfs.length > 1 ? i + 1 : ''}</button>`).join('')}</div>` : '');
 }
 
+function solicitarBajaRH(colabId){
+  if (currentUser.role !== 'supervisor') return;
+  const lista = (DB.colaboradores || []).filter(c => c.estatus === 'activo' && String(c.id) !== String(currentUser.colaboradorId || ''));
+  if (!lista.length){ toast('No hay colaboradores activos en tus sedes', 'error'); return; }
+  finModal('Solicitar baja a RH',
+    finSelect('Colaborador', 'sb-col', lista.map(c => [String(c.id), c.nombre]), colabId ? String(colabId) : String(lista[0].id)) +
+    finSelect('Motivo', 'sb-mot', ['Renuncia voluntaria', 'Término relación laboral', 'Fin de contrato', 'Abandono de trabajo', 'Otro'].map(x => [x, x]), 'Renuncia voluntaria') +
+    finCampo('Fecha efectiva propuesta', 'sb-fecha', 'date', hoyLocal()) +
+    finArea('Detalle para RH', 'sb-det', '') +
+    '<div style="font-size:11px;color:var(--text3)">RH recibe la solicitud, la revisa y registra la baja con su documento. Tú no das la baja directamente.</div>',
+    async () => {
+      const id = fv('sb-col'), c = lista.find(x => String(x.id) === id); if (!c) return finErr('Elige al colaborador');
+      const det = fv('sb-det').trim(); if (det.length < 5) return finErr('Explica brevemente el motivo para RH');
+      const { error } = await sb.from('solicitudes_op').insert({ tipo:'baja_personal', detalle:`Baja de ${c.nombre} — ${fv('sb-mot')} (fecha propuesta ${fv('sb-fecha')}). ${det}`, datos:{ colaborador_id:id, colaborador:c.nombre, motivo:fv('sb-mot'), fecha:fv('sb-fecha') }, evidencia:[] });
+      if (error) return finErr(error.message);
+      await audit('baja', `Solicitud de baja de <strong>${esc(c.nombre)}</strong> enviada a RH`, 'a');
+      toast('Solicitud enviada a RH', 'success');
+    }, 'Enviar a RH');
+}
+function solProcesarBaja(id){
+  const s = SOL.lista.find(x => x.id === id); if (!s || !canDo('admin')) return;
+  const cid = s.datos?.colaborador_id; if (!cid || !(DB.colaboradores || []).some(c => String(c.id) === String(cid))){ toast('Ese colaborador ya no está activo o no se encontró', 'error'); return; }
+  currentColabId = String(cid);
+  openModal('modal-baja-colab');
+}
 async function solEnviar(){
   const tipo = fv('sl-tipo'), def = SOL_TIPOS[tipo], det = fv('sl-det').trim(), ev = SOL_EV[tipo];
   if (det.length < 5) return finErr('Escribe el detalle de tu solicitud');
