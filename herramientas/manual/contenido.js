@@ -1,7 +1,8 @@
 // Genera manual/manual.json. Lenguaje sencillo, sin detalles técnicos. Al publicar una mejora: subir `version`, agregar una novedad y regenerar capturas.
 const fs = require('fs');
-const VERSION = '2026-11-14a';
+const VERSION = '2026-11-23a';
 const novedades = [
+  { titulo:'Geocercas de asistencia', fecha:'23 nov 2026', texto:'La ubicación de cada sede ahora se coloca tocando un mapa, en vez de escribir coordenadas. Gerentes Operativos y Administrativos ya pueden configurar la geocerca de sus propias sedes, en el nuevo menú "Geocercas".', perfiles:['direccion_ceo','rh','supervisor','administracion'] },
   { titulo:'Puntualidad por semana y por mes', fecha:'14 nov 2026', texto:'Los reportes de Excel y PDF ahora muestran la puntualidad de la semana y la del mes, cada una con su porcentaje. Se calcula con los chequeos puntuales entre el total de chequeos del periodo.', perfiles:['supervisor','rh','direccion_ceo'] },
   { titulo:'Falta automática y notas visibles', fecha:'9 nov 2026', texto:'Si alguien no registra su asistencia en el día, el sistema le pone falta al cierre. Las notas que escribas en una asistencia ahora se guardan y se ven en la cuadrícula (📝), en la ventana del día y en el reporte.', perfiles:['supervisor','rh','direccion_ceo'] },
   { titulo:'Si no checas, se registra falta', fecha:'9 nov 2026', texto:'Registra tu entrada cada día: si no lo haces, el sistema marca falta al terminar el día.', perfiles:['chofer','ayudante','mantenimiento','monitoreo','administrativo_operativa','administrativo_finanzas','administracion','she'] },
@@ -43,6 +44,12 @@ const sSeg = (k) => ({ titulo:'Reportar un riesgo (Seguridad)', min:'2 min', int
   { t:'Cuenta qué pasó, dónde, y agrega fotos si puedes' },
   { t:'Consulta tus reportes', x:'. Verás cuándo se atiende y se cierra.' } ] });
 const sInsig = (k) => ({ titulo:'Insignias y score', min:'1 min', intro:'Tu constancia se premia: cada logro desbloquea una insignia.', pasos:[ P('Abre "Insignias"', k+'/insignias.webp'), { t:'Revisa qué logros te faltan', x:' y qué debes hacer para conseguirlos.' } ] });
+const sGeo = () => ({ titulo:'Geocercas de tus sedes', min:'2 min', intro:'La geocerca marca el área donde se acepta el registro de asistencia. Se coloca a mano sobre un mapa, sin escribir coordenadas.', pasos:[
+  { t:'Abre "Geocercas"', x:' en el menú.' },
+  { t:'Toca el mapa para colocar el centro de la sede', x:'. También puedes arrastrar el pin verde para ajustarlo.' },
+  { t:'Mueve la barra para fijar el radio', x:' en metros. Dentro de ese círculo se acepta el registro de asistencia.' },
+  { t:'Toca "Guardar"' } ],
+  tip:'Si administras varias sedes, verás una tarjeta con su propio mapa y su propio radio por cada una.' });
 
 const faqComun = [
   { q:'Olvidé mi contraseña, ¿qué hago?', a:'Avisa a Recursos Humanos. Ellos generan una nueva desde el sistema y te la hacen llegar. No la compartas con nadie.' },
@@ -91,7 +98,7 @@ perfiles.ayudante = { titulo:'Ayudante general', resumen:'Lo esencial para tu jo
   faq:faqComun };
 // ── Supervisor
 perfiles.supervisor = { titulo:'Gerente Operativo', resumen:'Vigila a tu equipo: asistencia, solicitudes, flota, rutas y seguridad en un solo lugar.',
-  puedes:['Ver la asistencia de tu equipo','Aprobar o rechazar solicitudes','Ver flota y mantenimiento','Dar seguimiento a rutas y servicios','Revisar reportes de seguridad','Consultar personal y documentos'],
+  puedes:['Ver la asistencia de tu equipo','Aprobar o rechazar solicitudes','Ver flota y mantenimiento','Dar seguimiento a rutas y servicios','Revisar reportes de seguridad','Consultar personal y documentos','Configurar la geocerca de tus sedes'],
   nopuedes:['Configuración del sistema','Auditoría'],
   datos:[...datosComun, { dato:'Datos del personal a tu cargo', para:'Para organizar turnos, permisos y la operación.' }],
   secciones:[ sEntrar(), sAsis('supervisor'),
@@ -99,11 +106,11 @@ perfiles.supervisor = { titulo:'Gerente Operativo', resumen:'Vigila a tu equipo:
     { titulo:'Aprobar solicitudes y permisos', min:'3 min', intro:'Tu equipo te pide permisos y material; tú decides.', pasos:[ P('Abre "Solicitudes"','supervisor/solicitudes.webp'), { t:'Abre una solicitud pendiente' }, { t:'Aprueba o rechaza', x:' y, si rechazas, escribe el motivo.' } ], tip:'Responder rápido evita que tu equipo se quede esperando.' },
     { titulo:'Flota y mantenimiento', min:'3 min', intro:'El estado de las unidades.', pasos:[ P('Abre "Flota"','supervisor/flota.webp'), P('Abre "Mantenimiento"','supervisor/mantenimiento.webp'), { t:'Atiende los informes de las unidades', x:' que tus operadores reportan.' } ] },
     { titulo:'Rutas y servicios', min:'2 min', intro:'Cumplimiento del día.', pasos:[ P('Abre "Rutas"','supervisor/rutas.webp'), { t:'Revisa avance y pendientes de cada ruta' } ] },
-    sSeg('supervisor'), sMuro('supervisor'), sPerfil('supervisor') ],
+    sGeo(), sSeg('supervisor'), sMuro('supervisor'), sPerfil('supervisor') ],
   faq:faqComun };
 // ── RH
 perfiles.rh = { titulo:'Recursos Humanos', resumen:'Altas, expedientes, asistencia, solicitudes y accesos del personal.',
-  puedes:['Dar de alta y editar personal','Ver y capturar asistencia','Aprobar solicitudes','Generar accesos y reiniciar contraseñas','Ver compliance y reportes','Crear el reto semanal'],
+  puedes:['Dar de alta y editar personal','Ver y capturar asistencia','Aprobar solicitudes','Generar accesos y reiniciar contraseñas','Ver compliance y reportes','Crear el reto semanal','Configurar la geocerca de las sedes'],
   nopuedes:['Finanzas'],
   datos:[...datosComun, { dato:'CURP, RFC, ingreso y contrato', para:'Para el expediente y la nómina de cada colaborador.' }],
   secciones:[ sEntrar(),
@@ -112,11 +119,11 @@ perfiles.rh = { titulo:'Recursos Humanos', resumen:'Altas, expedientes, asistenc
     { titulo:'Solicitudes', min:'3 min', intro:'Revisa y resuelve lo que llega.', pasos:[ P('Abre "Solicitudes"','rh/solicitudes.webp'), { t:'Abre una pendiente y aprueba o rechaza' } ] },
     { titulo:'Accesos y contraseñas', min:'2 min', intro:'Cuando alguien olvide su contraseña, tú se la restableces desde el sistema.', pasos:[ { t:'Busca a la persona en Personal' }, { t:'Genera su nuevo acceso desde su ficha' }, { t:'Compártelo solo con esa persona' } ], tip:'Nunca guardes contraseñas en chats ni notas.' },
     { titulo:'Compliance y reportes', min:'3 min', intro:'Vigencia de documentos e indicadores.', pasos:[ P('Abre "Compliance"','rh/compliance.webp'), P('Abre "Reportes"','rh/reportes.webp') ] },
-    sSeg('rh'), sMuro('rh'), sPerfil('rh') ],
+    sGeo(), sSeg('rh'), sMuro('rh'), sPerfil('rh') ],
   faq:faqComun };
 // ── Dirección
 perfiles.direccion_ceo = { titulo:'Dirección', resumen:'Visión completa de la empresa y control de todos los módulos.',
-  puedes:['Ver todos los módulos','Cambiar de vista para ver como otro perfil','Consultar finanzas y KPIs','Revisar auditoría','Configurar la empresa'],
+  puedes:['Ver todos los módulos','Cambiar de vista para ver como otro perfil','Consultar finanzas y KPIs','Revisar auditoría','Configurar la empresa','Configurar la geocerca de las sedes'],
   nopuedes:[],
   datos:datosComun,
   secciones:[ sEntrar(),
@@ -125,7 +132,7 @@ perfiles.direccion_ceo = { titulo:'Dirección', resumen:'Visión completa de la 
     { titulo:'Indicadores y finanzas', min:'3 min', intro:'Cómo va el negocio.', pasos:[ P('Abre "KPIs"','direccion/kpis.webp'), P('Abre "Finanzas"','direccion/finanzas.webp') ] },
     { titulo:'Personal, asistencia y solicitudes', min:'3 min', intro:'Control de la gente.', pasos:[ P('Abre "Personal"','direccion/personal.webp'), P('Abre "Asistencias"','direccion/asistencias.webp'), P('Abre "Solicitudes"','direccion/solicitudes.webp') ] },
     { titulo:'Auditoría y configuración', min:'2 min', intro:'Quién hizo qué, y ajustes generales.', pasos:[ P('Abre "Auditoría"','direccion/auditoria.webp'), P('Abre "Configuración"','direccion/configuracion.webp') ] },
-    sMuro('direccion'), sPerfil('direccion') ],
+    sGeo(), sMuro('direccion'), sPerfil('direccion') ],
   faq:faqComun };
 // ── Mantenimiento
 perfiles.mantenimiento = { titulo:'Mantenimiento', resumen:'Atiende los informes y servicios de las unidades.',
@@ -160,13 +167,13 @@ perfiles.administrativo_operativa = admin('administrativo','operativa');
 perfiles.administrativo_finanzas = admin('finanzas','finanzas');
 // ── Administración
 perfiles.administracion = { titulo:'Gerente Administrativo', resumen:'Finanzas, procesos y calendario de la empresa.',
-  puedes:['Consultar y aprobar finanzas','Ver calendario y procesos','Registrar asistencia','Hacer solicitudes'],
+  puedes:['Consultar y aprobar finanzas','Ver calendario y procesos','Registrar asistencia','Hacer solicitudes','Configurar la geocerca de tus sedes'],
   nopuedes:['Flota y rutas'],
   datos:datosComun,
   secciones:[ sEntrar(), sAsis('administracion'),
     { titulo:'Finanzas', min:'3 min', intro:'Revisa y da seguimiento.', pasos:[ P('Abre "Finanzas"','administracion/finanzas.webp') ] },
     { titulo:'Calendario y procesos', min:'2 min', intro:'Fechas y procesos.', pasos:[ P('Abre "Calendario"','administracion/calendario.webp'), P('Abre "Procesos"','administracion/procesos.webp') ] },
-    sSolicOK('administracion'), sMuro('administracion'), sPerfil('administracion') ],
+    sGeo(), sSolicOK('administracion'), sMuro('administracion'), sPerfil('administracion') ],
   faq:faqComun };
 // ── SHE
 perfiles.she = { titulo:'Seguridad, Salud y Ambiente', resumen:'Atiende los reportes de seguridad y da seguimiento hasta cerrarlos.',

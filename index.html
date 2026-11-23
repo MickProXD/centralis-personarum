@@ -1001,6 +1001,10 @@ select.form-input option{background:var(--bg2)}
       <svg fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" viewBox="0 0 16 16"><path d="M1.8 14V2.5h2.6V7l3.4-2.2V7L11.2 4.8V7l3-2V14z"/><path d="M4.3 11h1.4M7.5 11h1.4M10.7 11h1.4"/></svg>
       Sedes <span class="sb-bdg m" id="bdg-sites">0</span>
     </div>
+    <div class="sb-item" data-page="geocercas" onclick="nav('geocercas',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke-dasharray="2.4 2.2"/><circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"/></svg>
+      Geocercas
+    </div>
     <div class="sb-item" data-page="asistencias" onclick="nav('asistencias',this)">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="12" rx="1.5"/><path d="M1 6h14M5 2V1M11 2V1"/></svg>
       Asistencias
@@ -1206,11 +1210,17 @@ select.form-input option{background:var(--bg2)}
         <button class="btn primary" data-cap="createSite" onclick="openSite()"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 11 11"><path d="M5.5 1v9M2 5.5h7"/></svg>Crear sede</button>
       </div>
       <div id="sites-grid"></div>
-      <div class="panel" id="panel-sedes" style="display:none;margin-top:16px">
-        <div class="ph"><div class="ph-title">Sedes de asistencia — ubicación, red, foto y QR</div></div>
-        <div style="padding:0 14px 6px;font-size:11px;color:var(--text3);line-height:1.5">Cada sede y cada Bio-Nave es una sede con su propio QR. Para dar de alta una sede, ponte físicamente en el lugar y usa el botón de ubicación actual. Sube también una foto del lugar por fuera. El registro de asistencia solo se acepta dentro del radio de la sede; la red ya no se exige.</div>
-        <div id="cfg-sedes-list" style="padding:6px 14px 12px"></div>
+    </div>
+
+    <!-- GEOCERCAS -->
+    <div id="page-geocercas" class="page fadein">
+      <div class="row" style="margin-bottom:14px">
+        <div style="flex:1">
+          <div style="font-family:var(--head);font-size:13px;font-weight:800;color:var(--text)">Geocercas</div>
+          <div style="font-size:11px;color:var(--text3)">Toca el mapa para colocar el centro de la geocerca y ajusta el radio con la barra. El registro de asistencia solo se acepta dentro de ese radio; la red ya no se exige.</div>
+        </div>
       </div>
+      <div id="geo-list"></div>
     </div>
 
     <!-- DETALLE DE SITE -->
@@ -1967,6 +1977,11 @@ select.form-input option{background:var(--bg2)}
         <label class="form-lbl">Gerentes Operativos con acceso a esta sede</label>
         <div id="site-ger-list" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px"></div>
         <div style="font-size:10px;color:var(--text3);margin-top:4px">Quien esté marcado ve esta sede y puede dar de alta y gestionar a su personal. Quitar la marca le retira el acceso.</div>
+      </div>
+      <div id="site-ger-admin-wrap" style="display:none;margin-top:12px">
+        <label class="form-lbl">Gerentes Administrativos con acceso a esta sede</label>
+        <div id="site-ger-admin-list" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px"></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">Le da acceso para configurar la geocerca de esta sede desde Geocercas. No le da acceso a personal ni documentos.</div>
       </div>
     </div>
     <div class="modal-foot">
@@ -4049,21 +4064,21 @@ const CAPS = {
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   supervisor: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','permisos','calendario','reportes','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','manual','muro','seguridad'],
+    pages:['dashboard','sites','geocercas','personal','flota','documentos','asistencias','permisos','calendario','reportes','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','miasistencia','miperfil','manual','muro','seguridad'],
     fleet:true, personnel:'own_sites', editPersonnel:'own_sites', baja:false,
     sites:'own', createSite:true, permisosLegales:false, permisos:true,
     config:false, auditoria:false, kpis:false, compliance:false,
     reportes:'own', actas:'own_sites', firmaAsistencia:true, equipos:true
   },
   rh: {
-    pages:['dashboard','sites','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','solicitudes','miasistencia','miperfil','manual','muro','seguridad','insignias'],
+    pages:['dashboard','sites','geocercas','personal','asistencias','equipoasis','reportes','compliance','kpis','calendario','procesos','solicitudes','miasistencia','miperfil','manual','muro','seguridad','insignias'],
     fleet:false, personnel:'all', editPersonnel:'all', baja:false,
     sites:'all_view', createSite:false, permisosLegales:false, permisos:false,
     config:'personnel', auditoria:false, kpis:true, compliance:true,
     reportes:'personnel', actas:'all', firmaAsistencia:false, equipos:false
   },
   administracion: {
-    pages:['dashboard','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','manual','muro','seguridad','insignias'],
+    pages:['dashboard','geocercas','calendario','procesos','finanzas','solicitudes','miasistencia','miperfil','manual','muro','seguridad','insignias'],
     fleet:false, personnel:'none', editPersonnel:'none', baja:false,
     sites:'none', createSite:false, permisosLegales:false, permisos:false,
     config:false, auditoria:false, kpis:false, compliance:false,
@@ -4078,7 +4093,7 @@ const CAPS = {
     reportes:'none', actas:'none', firmaAsistencia:false, equipos:false
   },
   direccion_ceo: {
-    pages:['dashboard','sites','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','seguridad','miperfil','manual','muro'],
+    pages:['dashboard','sites','geocercas','personal','flota','documentos','asistencias','equipoasis','permisos','calendario','kpis','compliance','reportes','auditoria','configuracion','equipos','procesos','finanzas','rutas','mantenimiento','insignias','solicitudes','seguridad','miperfil','manual','muro'],
     fleet:true, personnel:'all', editPersonnel:'all', baja:true,
     sites:'all', createSite:true, permisosLegales:true, permisos:true,
     config:true, auditoria:true, kpis:true, compliance:true,
@@ -6542,11 +6557,12 @@ function nav(page, el){
   const parent = page==='expediente' ? 'personal' : page==='unidad' ? 'flota' : page==='sitedetail' ? 'sites' : page;
   if (el) el.classList.add('active');
   else document.querySelectorAll('.sb-item').forEach(i => { if (i.getAttribute('data-page') === parent) i.classList.add('active'); });
-  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sedes', sitedetail:'Sede', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Control de gastos', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score', manual:'Manual de usuario' };
+  const titles = { ajustes:'Ajustes', dashboard:'Dashboard', sites:'Sedes', sitedetail:'Sede', geocercas:'Geocercas', personal:'Personal', expediente:'Expediente', flota:'Flota', unidad:'Expediente de unidad', documentos:'Documentos', asistencias:'Asistencias', permisos:'Permisos y vigencias', calendario:'Calendario', kpis:'KPIs y dirección', compliance:'Cumplimiento', reportes:'Reportes', auditoria:'Auditoría', configuracion:'Configuración', equipos:'Equipos Móviles (CEL)', miasistencia:'Mi asistencia', equipoasis:'Asistencia del equipo', finanzas:'Control de gastos', muro:'Bio-Muro', rutas:'Rutas', miperfil:'Mi perfil', seguridad:'Seguridad', mantenimiento:'Mantenimiento', solicitudes:'Solicitudes', insignias:'Insignias y score', manual:'Manual de usuario' };
   if (currentUser.role === 'chofer'){ titles.flota = 'Mi unidad'; titles.unidad = 'Mi unidad'; }
   document.getElementById('tb-title').textContent = titles[page] || page;
   document.getElementById('tb-crumb').textContent = '';
   if (page === 'sites') renderSites();
+  if (page === 'geocercas') renderGeocercas();
   if (page === 'asistencias') renderAsistencias();
   if (page === 'documentos') renderDocumentos();
   if (page === 'personal') { poblarFiltroSitePersonal(); renderColab(); }
@@ -6895,7 +6911,6 @@ let editingUnidadId = null;
 function renderSites(){
   const grid = document.getElementById('sites-grid');
   if (!grid) return;
-  renderSedesConfig();
   const lista = sitesVisibles();
   const sub = document.getElementById('sites-sub');
   if (sub){
@@ -6946,15 +6961,24 @@ async function openSite(){
   openModal('modal-site');
 }
 
-/* Gerentes Operativos con acceso a una sede (solo Dirección los asigna) */
+/* Gerentes (Operativos y Administrativos) con acceso a una sede (solo Dirección los asigna) */
 async function siteGerentesPoblar(siteId){
   const wrap = document.getElementById('site-ger-wrap'), lista = document.getElementById('site-ger-list');
+  const wrapA = document.getElementById('site-ger-admin-wrap'), listaA = document.getElementById('site-ger-admin-list');
   if (!wrap || !lista) return;
-  if (!esDireccionReal()){ wrap.style.display = 'none'; return; }
-  const [pr, ar] = await Promise.all([sb.from('profiles').select('id,nombre').eq('role','supervisor').eq('activo', true).order('nombre'), siteId ? sb.from('site_gerentes').select('user_id').eq('site_id', siteId) : Promise.resolve({ data:[] })]);
+  if (!esDireccionReal()){ wrap.style.display = 'none'; if (wrapA) wrapA.style.display = 'none'; return; }
+  const [pr, pa, ar] = await Promise.all([
+    sb.from('profiles').select('id,nombre').eq('role','supervisor').eq('activo', true).order('nombre'),
+    sb.from('profiles').select('id,nombre').eq('role','administracion').eq('activo', true).order('nombre'),
+    siteId ? sb.from('site_gerentes').select('user_id').eq('site_id', siteId) : Promise.resolve({ data:[] })
+  ]);
   const marcados = new Set((ar.data||[]).map(x => x.user_id));
   wrap.style.display = '';
   lista.innerHTML = (pr.data||[]).map(g => `<label style="display:flex;gap:8px;align-items:center;padding:4px 0;cursor:pointer"><input type="checkbox" class="site-ger-chk" value="${esc(g.id)}" ${marcados.has(g.id) ? 'checked' : ''}> ${esc(g.nombre)}</label>`).join('') || '<div style="color:var(--text3)">No hay Gerentes Operativos activos.</div>';
+  if (wrapA && listaA){
+    wrapA.style.display = '';
+    listaA.innerHTML = (pa.data||[]).map(g => `<label style="display:flex;gap:8px;align-items:center;padding:4px 0;cursor:pointer"><input type="checkbox" class="site-ger-chk" value="${esc(g.id)}" ${marcados.has(g.id) ? 'checked' : ''}> ${esc(g.nombre)}</label>`).join('') || '<div style="color:var(--text3)">No hay Gerentes Administrativos activos.</div>';
+  }
 }
 async function siteGerentesGuardar(siteId){
   if (!esDireccionReal() || document.getElementById('site-ger-wrap')?.style.display === 'none') return '';
@@ -12670,7 +12694,7 @@ async function opBadges(){
    ═══════════════════════════════════════════════════════════════════ */
 const SYNC = { ultimo:Date.now(), corriendo:false };
 const SYNC_RENDER = {
-  sites:() => renderSites(), asistencias:() => renderAsistencias(), documentos:() => renderDocumentos(), personal:() => renderColab(),
+  sites:() => renderSites(), geocercas:() => renderGeocercas(), asistencias:() => renderAsistencias(), documentos:() => renderDocumentos(), personal:() => renderColab(),
   flota:() => renderFlota(), permisos:() => renderPermisos(), dashboard:() => renderDashboard(), calendario:() => renderCalendario(),
   kpis:() => renderKPIs(), procesos:() => renderProcesos(), muro:() => renderMuro(), finanzas:() => renderFinanzas(),
   miasistencia:() => renderMiAsistencia(), mantenimiento:() => renderMantenimiento(), solicitudes:() => renderSolicitudes(),
@@ -14685,47 +14709,108 @@ function descargarQrSede(){
   img.src = blobUrl;
 }
 
-/* ── Sedes de asistencia (RH y Dirección) ── */
-async function renderSedesConfig(){
-  const panel = document.getElementById('panel-sedes'), cont = document.getElementById('cfg-sedes-list');
-  if (!panel || !cont) return;
-  if (!['direccion_ceo','rh'].includes(currentUser.role)){ panel.style.display = 'none'; return; }
-  panel.style.display = 'block';
-  const [{ data: naves }, { data: sites }, { data: sedesN }, { data: sedesS }] = await Promise.all([
-    sb.from('bio_naves').select('id,nombre').order('nombre'), sb.from('sites').select('id,nombre,lat,lng').order('nombre'),
-    sb.from('sedes_asistencia').select('*'), sb.from('sedes_asistencia_site').select('*')
+/* ── Geocercas de asistencia (Dirección, RH, y Gerentes Operativo/Administrativo de sus propias sedes) ──
+   Centro + radio se colocan a mano sobre un mapa (Leaflet + OpenStreetMap, ya embebido localmente);
+   ya no se teclean coordenadas. ── */
+const _geoMapas = {};
+const _geoEstado = {};
+const CENTRO_DEFECTO_GEO = [19.5099844, -99.090379]; // Ecatepec — solo como punto de partida si la sede no tiene geocerca aún
+
+function puedeConfigurarGeocercas(){
+  return !!currentUser && ['direccion_ceo','rh','supervisor','administracion'].includes(currentUser.role);
+}
+
+async function renderGeocercas(){
+  const cont = document.getElementById('geo-list');
+  if (!cont) return;
+  if (!puedeConfigurarGeocercas()){ cont.innerHTML = '<div class="empty-sub">No tienes acceso a esta sección</div>'; return; }
+
+  Object.values(_geoMapas).forEach(m => { try{ m.remove(); }catch(e){} });
+  Object.keys(_geoMapas).forEach(k => delete _geoMapas[k]);
+
+  const esRHoDireccion = ['direccion_ceo','rh'].includes(currentUser.role);
+  const [{ data: sites }, { data: sedesS }] = await Promise.all([
+    sb.from('sites').select('id,nombre,lat,lng').order('nombre'),
+    sb.from('sedes_asistencia_site').select('*')
   ]);
-  const { data: fotos } = await sb.from('sedes_foto').select('*');
-  const fotoDe = (t,id) => (fotos||[]).find(f => f.sede_tipo===t && f.sede_id===id);
-  const items = [
-    ...(sites||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'site', etiqueta:'Site', s:(sedesS||[]).find(y => y.site_id === x.id) || (x.lat != null ? { lat:x.lat, lng:x.lng } : {}) })),
-    ...(naves||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'nave', etiqueta:'Bio-Nave', s:(sedesN||[]).find(y => y.bio_nave_id === x.id) || {} }))
-  ];
+  let items = (sites||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'site', etiqueta:'Site', s:(sedesS||[]).find(y => y.site_id === x.id) || (x.lat != null ? { lat:x.lat, lng:x.lng } : {}) }));
+
+  let fotos = [];
+  if (esRHoDireccion){
+    const [{ data: naves }, { data: sedesN }, { data: f }] = await Promise.all([
+      sb.from('bio_naves').select('id,nombre').order('nombre'),
+      sb.from('sedes_asistencia').select('*'),
+      sb.from('sedes_foto').select('*')
+    ]);
+    items = items.concat((naves||[]).map(x => ({ id:x.id, nombre:x.nombre, tipo:'nave', etiqueta:'Bio-Nave', s:(sedesN||[]).find(y => y.bio_nave_id === x.id) || {} })));
+    fotos = f || [];
+  }
+  // Para Gerente Operativo/Administrativo, el propio RLS de "sites" ya limita esta consulta a sus sedes (owner_id o site_gerentes)
+  const fotoDe = (t,id) => fotos.find(f => f.sede_tipo===t && f.sede_id===id);
+
+  if (!items.length){ cont.innerHTML = '<div class="empty-sub">Sin sedes asignadas para configurar geocerca</div>'; return; }
+
   cont.innerHTML = items.map(n => {
     const s = n.s, ok = s.lat != null;
-    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+    _geoEstado[n.id] = { lat: s.lat ?? null, lng: s.lng ?? null, radio: s.radio_m ?? 150 };
+    return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><strong style="font-size:12px">${esc(n.nombre)}</strong>
         <span class="tag m">${n.etiqueta}</span>
         <span class="tag ${ok?'g':'warn'}">${ok?'Configurada':'Pendiente'}</span></div>
-      <div class="grid2">
-        <div><label class="form-lbl">Latitud</label><input class="form-input" id="sa-lat-${n.id}" value="${s.lat ?? ''}"></div>
-        <div><label class="form-lbl">Longitud</label><input class="form-input" id="sa-lng-${n.id}" value="${s.lng ?? ''}"></div>
-        <div><label class="form-lbl">Radio permitido (m)</label><input class="form-input" type="number" id="sa-rad-${n.id}" value="${s.radio_m ?? 150}"></div>
+      <div id="geo-mapa-${n.id}" style="height:240px;border-radius:8px;overflow:hidden;border:1px solid var(--border)"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <label class="form-lbl" style="margin:0;white-space:nowrap">Radio: <strong id="geo-rad-val-${n.id}">${s.radio_m ?? 150}</strong> m</label>
+        <input type="range" min="30" max="1000" step="10" value="${s.radio_m ?? 150}" id="geo-rad-${n.id}" style="flex:1" oninput="actualizarRadioGeocerca('${n.id}', this.value)">
       </div>
-      <label class="form-lbl" style="margin-top:8px">Redes de la sede (opcional, solo informativo: ya no se exige para checar)</label>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">Toca el mapa (o arrastra el pin) para mover el centro de la geocerca.</div>
+      <label class="form-lbl" style="margin-top:10px">Redes de la sede (opcional, solo informativo: ya no se exige para checar)</label>
       <textarea class="form-input" rows="2" id="sa-ips-${n.id}">${esc((s.ips_permitidas||[]).join('\n'))}</textarea>
-      <div style="margin-top:10px"><label class="form-lbl">Foto del lugar por fuera</label>
+      ${esRHoDireccion ? `<div style="margin-top:10px"><label class="form-lbl">Foto del lugar por fuera</label>
         <div id="sf-prev-${n.id}" data-foto="${fotoDe(n.tipo,n.id)?esc(fotoDe(n.tipo,n.id).path):''}" style="margin-bottom:6px"></div>
-        <input type="file" accept="image/jpeg,image/png,image/webp" class="form-input" onchange="subirFotoSede('${n.id}','${n.tipo}',this)"></div>
+        <input type="file" accept="image/jpeg,image/png,image/webp" class="form-input" onchange="subirFotoSede('${n.id}','${n.tipo}',this)"></div>` : ''}
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-        <button class="btn sm" onclick="ubicacionSede('${n.id}')">Usar mi ubicación actual</button>
         <button class="btn sm" onclick="ipSede('${n.id}')">Agregar la red actual</button>
         <button class="btn sm" onclick="verQrSede('${n.id}','${esc(n.nombre)}')">Ver QR</button>
-        <button class="btn sm primary" onclick="guardarSede('${n.id}','${esc(n.nombre)}','${n.tipo}')">Guardar</button>
+        <button class="btn sm primary" onclick="guardarGeocerca('${n.id}','${esc(n.nombre)}','${n.tipo}')">Guardar</button>
       </div></div>`;
-  }).join('') || '<div class="empty-sub">Sin sedes ni Bio-Naves registrados</div>';
+  }).join('');
 
-  cont.querySelectorAll('[data-foto]').forEach(el => { if (el.dataset.foto) pintarFotoSede(el, el.dataset.foto); });
+  if (esRHoDireccion) cont.querySelectorAll('[data-foto]').forEach(el => { if (el.dataset.foto) pintarFotoSede(el, el.dataset.foto); });
+  items.forEach(n => initGeocercaMapa(n.id));
+}
+
+function initGeocercaMapa(id){
+  const cont = document.getElementById('geo-mapa-'+id);
+  if (!cont) return;
+  const st = _geoEstado[id] || {};
+  const yaConfigurada = st.lat != null && st.lng != null;
+  const centro = yaConfigurada ? [st.lat, st.lng] : CENTRO_DEFECTO_GEO;
+  const map = L.map(cont, { attributionControl: true }).setView(centro, yaConfigurada ? 16 : 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  const iconoPin = L.divIcon({
+    html: '<svg width="26" height="34" viewBox="0 0 26 34" fill="none"><path d="M13 0C5.8 0 0 5.8 0 13c0 9.5 13 21 13 21s13-11.5 13-21C26 5.8 20.2 0 13 0z" fill="#52d483"/><circle cx="13" cy="13" r="5" fill="#0a0a0a"/></svg>',
+    className: '', iconSize: [26,34], iconAnchor: [13,34]
+  });
+  const marker = L.marker(centro, { icon: iconoPin, draggable: true }).addTo(map);
+  const circle = L.circle(centro, { radius: st.radio || 150, color:'#52d483', fillColor:'#52d483', fillOpacity:0.15, weight:2 }).addTo(map);
+  function mover(latlng){
+    marker.setLatLng(latlng); circle.setLatLng(latlng);
+    _geoEstado[id].lat = latlng.lat; _geoEstado[id].lng = latlng.lng;
+  }
+  map.on('click', e => mover(e.latlng));
+  marker.on('drag', e => mover(e.target.getLatLng()));
+  if (!yaConfigurada){ _geoEstado[id].lat = centro[0]; _geoEstado[id].lng = centro[1]; }
+  _geoMapas[id] = map;
+  setTimeout(() => map.invalidateSize(), 150);
+}
+
+function actualizarRadioGeocerca(id, val){
+  const n = parseInt(val);
+  _geoEstado[id] = _geoEstado[id] || {};
+  _geoEstado[id].radio = n;
+  const lbl = document.getElementById('geo-rad-val-'+id); if (lbl) lbl.textContent = n;
+  const map = _geoMapas[id];
+  if (map) map.eachLayer(l => { if (l instanceof L.Circle) l.setRadius(n); });
 }
 async function pintarFotoSede(el, path){
   const u = await avBlob('sedes', path);
@@ -14788,14 +14873,6 @@ async function renderQrSedesAsis(){
   p.style.display= _asisSedesLista.length?'block':'none';
   pintarFiltroSedesAsis();
 }
-async function ubicacionSede(id){
-  try {
-    const c = await obtenerUbicacion();
-    document.getElementById('sa-lat-'+id).value = c.latitude.toFixed(6);
-    document.getElementById('sa-lng-'+id).value = c.longitude.toFixed(6);
-    toast(`Ubicación tomada (precisión ≈ ${Math.round(c.accuracy)} m). Revisa y guarda.`, c.accuracy > 50 ? 'info' : 'success');
-  } catch(e){ toast(e.message,'error'); }
-}
 async function ipSede(id){
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke('registrar-asistencia', { body:{ accion:'mi_ip' }, headers:{ Authorization:`Bearer ${session.access_token}` } });
@@ -14807,21 +14884,22 @@ async function ipSede(id){
   ta.value = ips.join('\n');
   toast(`Red agregada: ${nueva}. Pulsa Guardar.`, 'success');
 }
-async function guardarSede(id, nombre, tipo){
-  if (!['direccion_ceo','rh'].includes(currentUser.role)) return;
-  const lat = parseFloat(document.getElementById('sa-lat-'+id).value), lng = parseFloat(document.getElementById('sa-lng-'+id).value);
-  const radio_m = parseInt(document.getElementById('sa-rad-'+id).value);
-  const ips = document.getElementById('sa-ips-'+id).value.split('\n').map(x=>x.trim()).filter(Boolean);
-  if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180){ toast('Latitud o longitud inválida','error'); return; }
+async function guardarGeocerca(id, nombre, tipo){
+  if (!puedeConfigurarGeocercas()) return;
+  const st = _geoEstado[id];
+  if (!st || st.lat == null || st.lng == null){ toast('Toca el mapa para colocar la geocerca','error'); return; }
+  const radio_m = parseInt(st.radio) || 150;
+  const ipsEl = document.getElementById('sa-ips-'+id);
+  const ips = ipsEl ? ipsEl.value.split('\n').map(x=>x.trim()).filter(Boolean) : [];
   if (!(radio_m >= 30 && radio_m <= 1000)){ toast('El radio debe estar entre 30 y 1000 metros','error'); return; }
   if (ips.some(x => !/^[0-9a-fA-F:.]{3,45}(\/\d{1,3})?$/.test(x))){ toast('Hay una IP con formato inválido','error'); return; }
-  const fila = { lat, lng, radio_m, ips_permitidas:ips, actualizado_por:currentUser.userId, actualizado_en:new Date().toISOString() };
+  const fila = { lat: st.lat, lng: st.lng, radio_m, ips_permitidas:ips, actualizado_por:currentUser.userId, actualizado_en:new Date().toISOString() };
   const { error } = tipo === 'site'
     ? await sb.from('sedes_asistencia_site').upsert({ site_id:id, ...fila }, { onConflict:'site_id' })
     : await sb.from('sedes_asistencia').upsert({ bio_nave_id:id, ...fila }, { onConflict:'bio_nave_id' });
   if (error){ toast(error.message,'error'); return; }
-  await audit('config', `Sede de asistencia configurada: ${esc(nombre)}`, 'a');
-  toast('Sede guardada','success'); renderSedesConfig();
+  await audit('config', `Geocerca de sede configurada: ${esc(nombre)}`, 'a');
+  toast('Geocerca guardada','success'); renderGeocercas();
 }
 
 async function renderConfig(){
@@ -14845,7 +14923,7 @@ async function renderConfig(){
   renderRespaldoPanel();
   renderUsuariosConfig();
   renderHorariosConfig();
-  renderSedesConfig();
+  renderGeocercas();
 }
 
 async function guardarConfig(){

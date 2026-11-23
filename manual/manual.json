@@ -1,6 +1,17 @@
 {
- "version": "2026-11-14a",
+ "version": "2026-11-23a",
  "novedades": [
+  {
+   "titulo": "Geocercas de asistencia",
+   "fecha": "23 nov 2026",
+   "texto": "La ubicación de cada sede ahora se coloca tocando un mapa, en vez de escribir coordenadas. Gerentes Operativos y Administrativos ya pueden configurar la geocerca de sus propias sedes, en el nuevo menú \"Geocercas\".",
+   "perfiles": [
+    "direccion_ceo",
+    "rh",
+    "supervisor",
+    "administracion"
+   ]
+  },
   {
    "titulo": "Puntualidad por semana y por mes",
    "fecha": "14 nov 2026",
@@ -612,7 +623,8 @@
     "Ver flota y mantenimiento",
     "Dar seguimiento a rutas y servicios",
     "Revisar reportes de seguridad",
-    "Consultar personal y documentos"
+    "Consultar personal y documentos",
+    "Configurar la geocerca de tus sedes"
    ],
    "nopuedes": [
     "Configuración del sistema",
@@ -762,6 +774,29 @@
      ]
     },
     {
+     "titulo": "Geocercas de tus sedes",
+     "min": "2 min",
+     "intro": "La geocerca marca el área donde se acepta el registro de asistencia. Se coloca a mano sobre un mapa, sin escribir coordenadas.",
+     "pasos": [
+      {
+       "t": "Abre \"Geocercas\"",
+       "x": " en el menú."
+      },
+      {
+       "t": "Toca el mapa para colocar el centro de la sede",
+       "x": ". También puedes arrastrar el pin verde para ajustarlo."
+      },
+      {
+       "t": "Mueve la barra para fijar el radio",
+       "x": " en metros. Dentro de ese círculo se acepta el registro de asistencia."
+      },
+      {
+       "t": "Toca \"Guardar\""
+      }
+     ],
+     "tip": "Si administras varias sedes, verás una tarjeta con su propio mapa y su propio radio por cada una."
+    },
+    {
      "titulo": "Reportar un riesgo (Seguridad)",
      "min": "2 min",
      "intro": "Si ves algo inseguro —un piso mojado, un cable suelto— repórtalo para que se corrija a tiempo.",
@@ -851,7 +886,8 @@
     "Aprobar solicitudes",
     "Generar accesos y reiniciar contraseñas",
     "Ver compliance y reportes",
-    "Crear el reto semanal"
+    "Crear el reto semanal",
+    "Configurar la geocerca de las sedes"
    ],
    "nopuedes": [
     "Finanzas"
@@ -989,6 +1025,29 @@
      ]
     },
     {
+     "titulo": "Geocercas de tus sedes",
+     "min": "2 min",
+     "intro": "La geocerca marca el área donde se acepta el registro de asistencia. Se coloca a mano sobre un mapa, sin escribir coordenadas.",
+     "pasos": [
+      {
+       "t": "Abre \"Geocercas\"",
+       "x": " en el menú."
+      },
+      {
+       "t": "Toca el mapa para colocar el centro de la sede",
+       "x": ". También puedes arrastrar el pin verde para ajustarlo."
+      },
+      {
+       "t": "Mueve la barra para fijar el radio",
+       "x": " en metros. Dentro de ese círculo se acepta el registro de asistencia."
+      },
+      {
+       "t": "Toca \"Guardar\""
+      }
+     ],
+     "tip": "Si administras varias sedes, verás una tarjeta con su propio mapa y su propio radio por cada una."
+    },
+    {
      "titulo": "Reportar un riesgo (Seguridad)",
      "min": "2 min",
      "intro": "Si ves algo inseguro —un piso mojado, un cable suelto— repórtalo para que se corrija a tiempo.",
@@ -1077,7 +1136,8 @@
     "Cambiar de vista para ver como otro perfil",
     "Consultar finanzas y KPIs",
     "Revisar auditoría",
-    "Configurar la empresa"
+    "Configurar la empresa",
+    "Configurar la geocerca de las sedes"
    ],
    "nopuedes": [],
    "datos": [
@@ -1204,6 +1264,29 @@
        "img": "direccion/configuracion.webp"
       }
      ]
+    },
+    {
+     "titulo": "Geocercas de tus sedes",
+     "min": "2 min",
+     "intro": "La geocerca marca el área donde se acepta el registro de asistencia. Se coloca a mano sobre un mapa, sin escribir coordenadas.",
+     "pasos": [
+      {
+       "t": "Abre \"Geocercas\"",
+       "x": " en el menú."
+      },
+      {
+       "t": "Toca el mapa para colocar el centro de la sede",
+       "x": ". También puedes arrastrar el pin verde para ajustarlo."
+      },
+      {
+       "t": "Mueve la barra para fijar el radio",
+       "x": " en metros. Dentro de ese círculo se acepta el registro de asistencia."
+      },
+      {
+       "t": "Toca \"Guardar\""
+      }
+     ],
+     "tip": "Si administras varias sedes, verás una tarjeta con su propio mapa y su propio radio por cada una."
     },
     {
      "titulo": "Bio-Muro: avisos y reconocimientos",
@@ -1972,7 +2055,8 @@
     "Consultar y aprobar finanzas",
     "Ver calendario y procesos",
     "Registrar asistencia",
-    "Hacer solicitudes"
+    "Hacer solicitudes",
+    "Configurar la geocerca de tus sedes"
    ],
    "nopuedes": [
     "Flota y rutas"
@@ -2068,6 +2152,29 @@
        "img": "administracion/procesos.webp"
       }
      ]
+    },
+    {
+     "titulo": "Geocercas de tus sedes",
+     "min": "2 min",
+     "intro": "La geocerca marca el área donde se acepta el registro de asistencia. Se coloca a mano sobre un mapa, sin escribir coordenadas.",
+     "pasos": [
+      {
+       "t": "Abre \"Geocercas\"",
+       "x": " en el menú."
+      },
+      {
+       "t": "Toca el mapa para colocar el centro de la sede",
+       "x": ". También puedes arrastrar el pin verde para ajustarlo."
+      },
+      {
+       "t": "Mueve la barra para fijar el radio",
+       "x": " en metros. Dentro de ese círculo se acepta el registro de asistencia."
+      },
+      {
+       "t": "Toca \"Guardar\""
+      }
+     ],
+     "tip": "Si administras varias sedes, verás una tarjeta con su propio mapa y su propio radio por cada una."
     },
     {
      "titulo": "Hacer una solicitud",
